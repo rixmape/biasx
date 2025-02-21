@@ -4,6 +4,7 @@ __pycache__/
 logs/
 images/
 models/
+output/
 
 tmp*
 *tmp
