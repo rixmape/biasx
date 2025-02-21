@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 
@@ -10,23 +10,34 @@ from .types import Box
 class FaceDataset:
     """Manages the facial image dataset used for bias analysis."""
 
-    def __init__(self, dataset_path: str, max_samples: int = -1):
+    def __init__(
+        self,
+        dataset_path: str,
+        max_samples: int = -1,
+        shuffle: Optional[bool] = True,
+        seed: Optional[int] = 69,
+    ):
         """
         Initialize the dataset from a directory of facial images.
 
         Args:
             dataset_path: Path to directory containing facial images
             max_samples: Maximum number of samples to load (-1 for all)
+            shuffle: Whether to shuffle the dataset
+            seed: Random seed for shuffling
         """
         if not os.path.exists(dataset_path):
             raise ValueError(f"Dataset path does not exist: {dataset_path}")
 
-        self.image_paths = []
-        self.genders = []
-
         paths = [os.path.join(dataset_path, f) for f in os.listdir(dataset_path) if f.endswith(".jpg")]
+        if shuffle:
+            np.random.seed(seed)
+            np.random.shuffle(paths)
         if max_samples > 0:
             paths = paths[:max_samples]
+
+        self.image_paths = []
+        self.genders = []
 
         for path in paths:
             filename = os.path.basename(path).split(".")[0]
@@ -51,7 +62,15 @@ class AnalysisDataset:
         self.feature_probabilities = {}
         self.explanations = []
 
-    def add_explanation(self, image_path: str, true_gender: int, predicted_gender: int, activation_map: np.ndarray, activation_boxes: list[Box], landmark_boxes: list[Box]) -> None:
+    def add_explanation(
+        self,
+        image_path: str,
+        true_gender: int,
+        predicted_gender: int,
+        activation_map: np.ndarray,
+        activation_boxes: list[Box],
+        landmark_boxes: list[Box],
+    ) -> None:
         """Add a single image analysis result."""
         self.explanations.append(
             {
@@ -64,7 +83,12 @@ class AnalysisDataset:
             }
         )
 
-    def set_bias_metrics(self, bias_score: float, feature_scores: dict[str, float], feature_probabilities: dict[str, dict[int, float]]) -> None:
+    def set_bias_metrics(
+        self,
+        bias_score: float,
+        feature_scores: dict[str, float],
+        feature_probabilities: dict[str, dict[int, float]],
+    ) -> None:
         """Set computed bias metrics."""
         self.bias_score = bias_score
         self.feature_scores = feature_scores
@@ -72,7 +96,12 @@ class AnalysisDataset:
 
     def to_dict(self) -> dict[str, Any]:
         """Convert dataset to dictionary format."""
-        return {"biasScore": self.bias_score, "featureScores": self.feature_scores, "featureProbabilities": self.feature_probabilities, "explanations": self.explanations}
+        return {
+            "biasScore": self.bias_score,
+            "featureScores": self.feature_scores,
+            "featureProbabilities": self.feature_probabilities,
+            "explanations": self.explanations,
+        }
 
     def save(self, output_path: str) -> None:
         """Save dataset to JSON file."""

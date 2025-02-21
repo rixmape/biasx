@@ -1,14 +1,18 @@
 import json
+from typing import Literal, Optional
 
 import keras
 import mediapipe
 import numpy as np
+import skimage
 import tensorflow as tf
+import tf_keras_vis
 from mediapipe.tasks.python.core.base_options import BaseOptions
 from mediapipe.tasks.python.vision.face_landmarker import FaceLandmarker, FaceLandmarkerOptions
-from skimage.filters import threshold_otsu
 from skimage.measure import label, regionprops
-from tf_keras_vis.gradcam import GradcamPlusPlus
+import tf_keras_vis.gradcam
+import tf_keras_vis.gradcam_plus_plus
+import tf_keras_vis.scorecam
 
 from .types import Box
 
@@ -16,14 +20,23 @@ from .types import Box
 class VisualExplainer:
     """Generates and processes visual explanations for model decisions."""
 
-    def __init__(self, landmark_model_path: str, landmark_map_path: str, image_size: tuple[int, int]):
+    def __init__(
+        self,
+        landmark_model_path: str,
+        landmark_map_path: str,
+        cam_method: Literal["gradcam", "gradcam++", "scorecam"] = "gradcam++",
+        cutoff_percentile: Optional[int] = 90,
+        threshold_method: Optional[Literal["otsu", "niblack", "sauvola"]] = "otsu",
+    ):
         """
         Initialize the visual explanation generator.
 
         Args:
             landmark_model_path: Path to facial landmark detection model
             landmark_map_path: Path to landmark feature mapping file
-            image_size: Size of input images (height, width)
+            cam_method: Method for generating class activation maps
+            cutoff_percentile: Percentile value for initial static thresholding
+            threshold_method: Method for final adaptive thresholding
         """
         base_options = BaseOptions(model_asset_path=landmark_model_path)
         options = FaceLandmarkerOptions(base_options=base_options, num_faces=1)
@@ -32,7 +45,9 @@ class VisualExplainer:
         with open(landmark_map_path, "r") as f:
             self.landmark_map = json.load(f)
 
-        self.image_size = image_size
+        self.cam_method = cam_method
+        self.cutoff_percentile = cutoff_percentile
+        self.threshold_method = threshold_method
 
     def generate_heatmap(self, model: keras.Model, image: np.ndarray, target_class: int) -> np.ndarray:
         """Generate class activation map for an image."""
@@ -43,23 +58,32 @@ class VisualExplainer:
         def score_function(output: tf.Tensor) -> tf.Tensor:
             return output[0][target_class]
 
-        visualizer = GradcamPlusPlus(model, model_modifier=model_modifier, clone=True)
-        return visualizer(score_function, image[..., np.newaxis], penultimate_layer=-1)[0]
+        methods = {
+            "gradcam": tf_keras_vis.gradcam.Gradcam,
+            "gradcam++": tf_keras_vis.gradcam_plus_plus.GradcamPlusPlus,
+            "scorecam": tf_keras_vis.scorecam.Scorecam,
+        }
+        visualizer = methods[self.cam_method](model, model_modifier=model_modifier, clone=True)
+        image = image if image.ndim == 3 else np.expand_dims(image, axis=-1)  # CAM expects three-channel image
+        return visualizer(score_function, image, penultimate_layer=-1)[0]
 
     def process_heatmap(self, heatmap: np.ndarray) -> list[Box]:
         """Process heatmap into activation boxes."""
-        # Binarize heatmap
-        heatmap[heatmap < np.percentile(heatmap, 90)] = 0
-        binary = heatmap > threshold_otsu(heatmap)
+        heatmap[heatmap < np.percentile(heatmap, self.cutoff_percentile)] = 0  # Set low values to zero
+        methods = {
+            "otsu": skimage.filters.threshold_otsu,
+            "niblack": skimage.filters.threshold_niblack,
+            "sauvola": skimage.filters.threshold_sauvola,
+        }
+        binary = heatmap > methods[self.threshold_method](heatmap)
 
-        # Extract regions
         boxes = []
         for region in regionprops(label(binary)):
             min_row, min_col, max_row, max_col = region.bbox
             boxes.append(Box(min_col, min_row, max_col, max_row))
         return boxes
 
-    def detect_landmarks(self, image_path: str) -> list[Box]:
+    def detect_landmarks(self, image_path: str, image_size: tuple[int, int]) -> list[Box]:
         """Detect facial landmarks in an image."""
         image = mediapipe.Image.create_from_file(image_path)
         result = self.detector.detect(image)
@@ -67,7 +91,7 @@ class VisualExplainer:
             return []
 
         landmarks = result.face_landmarks[0]
-        points = [(int(round(point.x * self.image_size[1])), int(round(point.y * self.image_size[0]))) for point in landmarks]
+        points = [(int(round(point.x * image_size[1])), int(round(point.y * image_size[0]))) for point in landmarks]
 
         boxes = []
         for feature, indices in self.landmark_map.items():
