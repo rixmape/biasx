@@ -13,6 +13,7 @@ from mediapipe.tasks.python.core.base_options import BaseOptions
 from mediapipe.tasks.python.vision.face_landmarker import FaceLandmarker, FaceLandmarkerOptions
 from skimage.measure import label, regionprops
 
+from .models import ClassificationModel
 from .types import Box
 
 
@@ -124,37 +125,22 @@ class ClassActivationMapper:
 
 
 class VisualExplainer:
-    """Generates and processes visual explanations for model decisions."""
+    """Handles image explanation generation using activation maps and facial landmarks."""
 
     def __init__(
         self,
-        landmarker: Optional[FacialLandmarker] = None,
-        activation_mapper: Optional[ClassActivationMapper] = None,
-        overlap_threshold: Optional[float] = 0.2,
+        landmarker_model_path: str = FacialLandmarker.DEFAULT_MODEL_PATH,
+        cam_method: str = "gradcam++",
+        cutoff_percentile: int = 90,
+        threshold_method: str = "otsu",
+        overlap_threshold: float = 0.2,
     ):
-        """Initialize the visual explanation generator."""
-        self.landmarker = landmarker or FacialLandmarker()
-        self.activation_mapper = activation_mapper or ClassActivationMapper()
+        self.landmarker = FacialLandmarker(landmarker_model_path)
+        self.activation_mapper = ClassActivationMapper(cam_method=cam_method, cutoff_percentile=cutoff_percentile, threshold_method=threshold_method)
         self.overlap_threshold = overlap_threshold
 
-    def get_features(self) -> list[str]:
-        """Get list of supported facial features."""
-        return self.landmarker.mapping.get_features()
-
-    def generate_heatmap(self, model: keras.Model, image: np.ndarray, target_class: int) -> np.ndarray:
-        """Generate class activation map for an image."""
-        return self.activation_mapper.generate_heatmap(model, image, target_class)
-
-    def process_heatmap(self, heatmap: np.ndarray) -> list[Box]:
-        """Process heatmap into activation boxes."""
-        return self.activation_mapper.process_heatmap(heatmap)
-
-    def detect_landmarks(self, image_path: str, image_size: tuple[int, int]) -> list[Box]:
-        """Detect facial landmarks in an image."""
-        return self.landmarker.detect(image_path, image_size)
-
-    def match_landmarks(self, activation_boxes: list[Box], landmark_boxes: list[Box]) -> list[Box]:
-        """Match activation boxes with nearest landmarks."""
+    def _match_landmarks(self, activation_boxes: list[Box], landmark_boxes: list[Box]) -> list[Box]:
+        """Match activation regions with facial landmarks."""
         if not activation_boxes or not landmark_boxes:
             return activation_boxes
 
@@ -162,8 +148,21 @@ class VisualExplainer:
         for a_box in activation_boxes:
             nearest = min(landmark_boxes, key=lambda l: (l.center[0] - a_box.center[0]) ** 2 + (l.center[1] - a_box.center[1]) ** 2)
             overlap_area = max(0, min(a_box.max_x, nearest.max_x) - max(a_box.min_x, nearest.min_x)) * max(0, min(a_box.max_y, nearest.max_y) - max(a_box.min_y, nearest.min_y))
-            if overlap_area / a_box.area >= self.overlap_threshold:
-                matched_boxes.append(Box(a_box.min_x, a_box.min_y, a_box.max_x, a_box.max_y, feature=nearest.feature))
-            else:
-                matched_boxes.append(a_box)
+            a_box.feature = nearest.feature if overlap_area / a_box.area >= self.overlap_threshold else None
+            matched_boxes.append(a_box)
         return matched_boxes
+
+    def explain_image(
+        self,
+        image_path: str,
+        model: ClassificationModel,
+        true_gender: int,
+        target_size: tuple[int, int],
+    ) -> Optional[tuple[list[Box], list[Box], float]]:
+        """Generate an explanation for a single image."""
+        image = model.preprocess_image(image_path)
+        activation_map = self.activation_mapper.generate_heatmap(model.model, image, true_gender)
+        activation_boxes = self.activation_mapper.process_heatmap(activation_map)
+        landmark_boxes = self.landmarker.detect(image_path, target_size)
+        labeled_boxes = self._match_landmarks(activation_boxes, landmark_boxes)
+        return labeled_boxes, landmark_boxes, activation_map
