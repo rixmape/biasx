@@ -5,6 +5,8 @@ logs/
 images/
 models/
 output/
+dataset/
+biasx_example.py
 
 tmp*
 *tmp
