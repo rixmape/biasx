@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import NotRequired, TypedDict, Union
+from typing import NotRequired, Optional, TypedDict
 
 from typing_extensions import Required
 
@@ -29,16 +29,16 @@ class Config:
     """Configuration for the bias analysis pipeline."""
 
     model_path: str
-    target_size: ImageSize = (128, 128)
-    color_mode: ColorMode = "L"
-    single_channel: bool = False
+    target_size: Optional[ImageSize] = (128, 128)
+    color_mode: Optional[ColorMode] = "L"
+    single_channel: Optional[bool] = False
 
-    max_faces: int = 1
-    cam_method: CAMMethod = "gradcam++"
-    cutoff_percentile: int = 90
-    threshold_method: ThresholdMethod = "otsu"
-    overlap_threshold: float = 0.2
-    distance_metric: DistanceMetric = "euclidean"
+    max_faces: Optional[int] = 1
+    cam_method: Optional[CAMMethod] = "gradcam++"
+    cutoff_percentile: Optional[int] = 90
+    threshold_method: Optional[ThresholdMethod] = "otsu"
+    overlap_threshold: Optional[float] = 0.2
+    distance_metric: Optional[DistanceMetric] = "euclidean"
 
     ndigits: int = 3
 

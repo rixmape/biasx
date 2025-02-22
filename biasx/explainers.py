@@ -93,9 +93,9 @@ class ClassActivationMapper:
 
     def __init__(
         self,
-        cam_method: CAMMethod = "gradcam++",
-        cutoff_percentile: int = 90,
-        threshold_method: ThresholdMethod = "otsu",
+        cam_method: Optional[CAMMethod] = "gradcam++",
+        cutoff_percentile: Optional[int] = 90,
+        threshold_method: Optional[ThresholdMethod] = "otsu",
     ):
         """Initialize the activation map generator."""
         self.cam_method = self.CAM_METHODS[cam_method]

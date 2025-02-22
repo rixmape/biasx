@@ -11,7 +11,13 @@ from .types import Explanation
 class FaceDataset:
     """Manages the facial image dataset used for bias analysis."""
 
-    def __init__(self, dataset_path: str, max_samples: int = -1, shuffle: bool = True, seed: int = 69):
+    def __init__(
+        self,
+        dataset_path: str,
+        max_samples: Optional[int] = -1,
+        shuffle: Optional[bool] = True,
+        seed: Optional[int] = 69,
+    ):
         """Initialize the dataset from a directory of facial images."""
         self.image_paths = self._load_image_paths(dataset_path, max_samples, shuffle, seed)
         self.genders = [int(os.path.basename(p).split("_")[1].split(".")[0]) for p in self.image_paths]

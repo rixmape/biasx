@@ -24,6 +24,7 @@ class BiasAnalyzer:
         )
 
         self.visual_explainer = VisualExplainer(
+            max_faces=self.config.max_faces,
             cam_method=self.config.cam_method,
             cutoff_percentile=self.config.cutoff_percentile,
             threshold_method=self.config.threshold_method,
