@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 from typing import Any, Optional
 
 import numpy as np
@@ -38,6 +39,7 @@ class AnalysisDataset:
     """Manages storage and serialization of analysis results."""
 
     def __init__(self):
+        self.timestamp: str = datetime.now().isoformat()
         self.bias_score: Optional[float] = None
         self.feature_scores: dict[str, float] = {}
         self.feature_probabilities: dict[str, dict[int, float]] = {}
@@ -54,6 +56,7 @@ class AnalysisDataset:
     def to_dict(self) -> dict[str, Any]:
         """Convert dataset to dictionary format."""
         return {
+            "timestamp": self.timestamp,
             "biasScore": self.bias_score,
             "featureScores": self.feature_scores,
             "featureProbabilities": self.feature_probabilities,
