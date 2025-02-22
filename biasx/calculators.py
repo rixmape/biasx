@@ -1,6 +1,8 @@
-from typing import Any, Optional
+from typing import Optional
 
 import numpy as np
+
+from biasx.types import Explanation
 
 
 class BiasCalculator:
@@ -15,27 +17,27 @@ class BiasCalculator:
         """
         self.ndigits = ndigits
 
-    def compute_feature_probabilities(self, results: list[dict[str, Any]], feature: str) -> dict[int, float]:
+    def compute_feature_probabilities(self, results: list[Explanation], feature: str) -> dict[int, float]:
         """Compute feature activation probabilities per class."""
-        misclassified = [r for r in results if r["predictedGender"] != r["trueGender"]]
+        misclassified = [r for r in results if r.predicted_gender != r.true_gender]
         if not misclassified:
             return {0: 0.0, 1: 0.0}
         probs = {}
         for gender in (0, 1):
-            gender_results = [r for r in misclassified if r["trueGender"] == gender]
+            gender_results = [r for r in misclassified if r.true_gender == gender]
             if not gender_results:
                 probs[gender] = 0.0
                 continue
-            feature_count = sum(1 for r in gender_results for box in r["activationBoxes"] if box.feature == feature)
+            feature_count = sum(1 for r in gender_results for box in r.activation_boxes if box.feature == feature)
             probs[gender] = round(feature_count / len(gender_results), self.ndigits)
         return probs
 
-    def compute_feature_bias(self, results: list[dict[str, Any]], feature: str) -> float:
+    def compute_feature_bias(self, results: list[Explanation], feature: str) -> float:
         """Compute bias score for a specific feature."""
         probs = self.compute_feature_probabilities(results, feature)
         return round(abs(probs[1] - probs[0]), self.ndigits)
 
-    def compute_overall_bias(self, results: list[dict[str, Any]], features: list[str]) -> float:
+    def compute_overall_bias(self, results: list[Explanation], features: list[str]) -> float:
         """Compute overall bias score across all features."""
         scores = [self.compute_feature_bias(results, feature) for feature in features]
         return round(np.mean(scores), self.ndigits)

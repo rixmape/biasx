@@ -1,6 +1,31 @@
 from dataclasses import dataclass
 from typing import Any, Optional
 
+import numpy as np
+
+
+@dataclass
+class Explanation:
+    """Encapsulates analysis results and explanations for a single image."""
+
+    image_path: str
+    true_gender: int
+    predicted_gender: int
+    activation_map: np.ndarray
+    activation_boxes: list["Box"]
+    landmark_boxes: list["Box"]
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert explanation to dictionary format for serialization."""
+        return {
+            "imagePath": self.image_path,
+            "trueGender": self.true_gender,
+            "predictedGender": self.predicted_gender,
+            "activationMap": self.activation_map.tolist(),
+            "activationBoxes": [box.to_dict() for box in self.activation_boxes],
+            "landmarkBoxes": [box.to_dict() for box in self.landmark_boxes],
+        }
+
 
 @dataclass
 class Box:
