@@ -50,9 +50,9 @@ class FacialLandmarker:
 
     DEFAULT_MODEL_PATH = "biasx/models/mediapipe_landmarker.task"
 
-    def __init__(self, model_path: str = DEFAULT_MODEL_PATH):
+    def __init__(self, model_path: Optional[str] = DEFAULT_MODEL_PATH, max_faces: Optional[int] = 1):
         """Initialize the facial landmark detector."""
-        self.detector = FaceLandmarker.create_from_options(FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=model_path), num_faces=1))
+        self.detector = FaceLandmarker.create_from_options(FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=model_path), num_faces=max_faces))
         self.mapping = LandmarkMapping()
 
     def detect(self, image_path: str, image_size: tuple[int, int]) -> list[Box]:
