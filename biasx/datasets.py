@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 import numpy as np
 
-from .types import Box
+from .types import Explanation
 
 
 class FaceDataset:
@@ -60,28 +60,11 @@ class AnalysisDataset:
         self.bias_score = None
         self.feature_scores = {}
         self.feature_probabilities = {}
-        self.explanations = []
+        self.explanations: list[Explanation] = []
 
-    def add_explanation(
-        self,
-        image_path: str,
-        true_gender: int,
-        predicted_gender: int,
-        activation_map: np.ndarray,
-        activation_boxes: list[Box],
-        landmark_boxes: list[Box],
-    ) -> None:
+    def add_explanation(self, explanation: Explanation) -> None:
         """Add a single image analysis result."""
-        self.explanations.append(
-            {
-                "imagePath": image_path,
-                "trueGender": true_gender,
-                "predictedGender": predicted_gender,
-                "activationMap": activation_map.tolist(),
-                "activationBoxes": [box.to_dict() for box in activation_boxes],
-                "landmarkBoxes": [box.to_dict() for box in landmark_boxes],
-            }
-        )
+        self.explanations.append(explanation)
 
     def set_bias_metrics(
         self,
@@ -100,7 +83,7 @@ class AnalysisDataset:
             "biasScore": self.bias_score,
             "featureScores": self.feature_scores,
             "featureProbabilities": self.feature_probabilities,
-            "explanations": self.explanations,
+            "explanations": [exp.to_dict() for exp in self.explanations],
         }
 
     def save(self, output_path: str) -> None:
