@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 
 from .types import Explanation
@@ -6,7 +8,7 @@ from .types import Explanation
 class BiasCalculator:
     """Computes bias metrics from analysis results."""
 
-    def __init__(self, ndigits: int = 3):
+    def __init__(self, ndigits: Optional[int] = 3):
         """Initialize the bias calculator."""
         self.ndigits = ndigits
 

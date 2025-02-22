@@ -130,7 +130,7 @@ class VisualExplainer:
         self,
         landmarker: Optional[FacialLandmarker] = None,
         activation_mapper: Optional[ClassActivationMapper] = None,
-        overlap_threshold: float = 0.2,
+        overlap_threshold: Optional[float] = 0.2,
     ):
         """Initialize the visual explanation generator."""
         self.landmarker = landmarker or FacialLandmarker()

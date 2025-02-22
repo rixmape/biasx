@@ -1,3 +1,5 @@
+from typing import Optional
+
 import keras
 import numpy as np
 from PIL import Image
@@ -6,7 +8,13 @@ from PIL import Image
 class ClassificationModel:
     """Handles loading and inference of the face classification model."""
 
-    def __init__(self, model_path: str, target_size: tuple[int, int], color_mode: str = "L", single_channel: bool = False):
+    def __init__(
+        self,
+        model_path: str,
+        target_size: Optional[tuple[int, int]] = (128, 128),
+        color_mode: Optional[str] = "L",
+        single_channel: Optional[bool] = False,
+    ):
         """Initialize the classification model."""
         self.model = keras.models.load_model(model_path)
         self.target_size = target_size
