@@ -28,7 +28,7 @@ class BiasAnalyzer:
     def analyze_image(self, image_path: str, true_gender: int) -> Optional[Explanation]:
         """Analyze a single image and generate an explanation."""
         image = self.model.preprocess_image(image_path)
-        predicted_gender = self.model.predict(image)
+        predicted_gender, prediction_confidence = self.model.predict(image)
 
         activation_boxes, landmark_boxes, activation_map = self.visual_explainer.explain_image(image_path, self.model, true_gender, self.target_size)
 
@@ -36,6 +36,7 @@ class BiasAnalyzer:
             image_path=image_path,
             true_gender=true_gender,
             predicted_gender=predicted_gender,
+            prediction_confidence=prediction_confidence,
             activation_map=activation_map,
             activation_boxes=activation_boxes,
             landmark_boxes=landmark_boxes,

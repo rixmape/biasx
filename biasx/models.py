@@ -27,6 +27,7 @@ class ClassificationModel:
         image_array = np.array(image, dtype=np.float32) / 255.0
         return np.expand_dims(image_array, axis=-1) if self.color_mode == "L" and not self.single_channel else image_array
 
-    def predict(self, image: np.ndarray) -> int:
-        """Generate prediction for a single preprocessed image."""
-        return int(np.argmax(self.model.predict(np.expand_dims(image, axis=0), verbose=0)))
+    def predict(self, image: np.ndarray) -> tuple[int, float]:
+        """Make a prediction on a single image"""
+        output = self.model.predict(np.expand_dims(image, axis=0), verbose=0)
+        return int(output[0][0]), float(output[0][1])
