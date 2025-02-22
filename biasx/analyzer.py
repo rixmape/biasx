@@ -38,7 +38,7 @@ class BiasAnalyzer:
         if return_explanations:
             results.explanations = explanations
 
-        features = list(self.explainer.landmark_map.keys())
+        features = self.explainer.get_features()
         results.set_bias_metrics(
             bias_score=self.calculator.compute_overall_bias(explanations, features),
             feature_scores={feature: self.calculator.compute_feature_bias(explanations, feature) for feature in features},
