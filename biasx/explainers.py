@@ -12,6 +12,7 @@ import tf_keras_vis.scorecam
 from mediapipe.tasks.python.core.base_options import BaseOptions
 from mediapipe.tasks.python.vision.face_landmarker import FaceLandmarker, FaceLandmarkerOptions
 from skimage.measure import label, regionprops
+from scipy.spatial.distance import pdist
 
 from .models import ClassificationModel
 from .types import Box
@@ -129,15 +130,17 @@ class VisualExplainer:
 
     def __init__(
         self,
-        landmarker_model_path: str = FacialLandmarker.DEFAULT_MODEL_PATH,
-        cam_method: str = "gradcam++",
-        cutoff_percentile: int = 90,
-        threshold_method: str = "otsu",
-        overlap_threshold: float = 0.2,
+        landmarker_model_path: Optional[str] = FacialLandmarker.DEFAULT_MODEL_PATH,
+        cam_method: Optional[str] = "gradcam++",
+        cutoff_percentile: Optional[int] = 90,
+        threshold_method: Optional[str] = "otsu",
+        overlap_threshold: Optional[float] = 0.2,
+        distance_metric: Optional[Literal["euclidean", "manhattan"]] = "euclidean",
     ):
         self.landmarker = FacialLandmarker(landmarker_model_path)
         self.activation_mapper = ClassActivationMapper(cam_method=cam_method, cutoff_percentile=cutoff_percentile, threshold_method=threshold_method)
         self.overlap_threshold = overlap_threshold
+        self.distance_metric = distance_metric
 
     def _match_landmarks(self, activation_boxes: list[Box], landmark_boxes: list[Box]) -> list[Box]:
         """Match activation regions with facial landmarks."""
@@ -146,7 +149,7 @@ class VisualExplainer:
 
         matched_boxes = []
         for a_box in activation_boxes:
-            nearest = min(landmark_boxes, key=lambda l: (l.center[0] - a_box.center[0]) ** 2 + (l.center[1] - a_box.center[1]) ** 2)
+            nearest = min(landmark_boxes, key=lambda l: pdist([l.center, a_box.center], metric=self.distance_metric)[0])
             overlap_area = max(0, min(a_box.max_x, nearest.max_x) - max(a_box.min_x, nearest.min_x)) * max(0, min(a_box.max_y, nearest.max_y) - max(a_box.min_y, nearest.min_y))
             a_box.feature = nearest.feature if overlap_area / a_box.area >= self.overlap_threshold else None
             matched_boxes.append(a_box)
