@@ -1,7 +1,14 @@
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 import numpy as np
+
+
+ImageSize = tuple[int, int]
+ColorMode = Literal["L", "RGB"]
+CAMMethod = Literal["gradcam", "gradcam++", "scorecam"]
+ThresholdMethod = Literal["otsu", "niblack", "sauvola"]
+DistanceMetric = Literal["euclidean", "manhattan"]
 
 
 @dataclass

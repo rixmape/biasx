@@ -11,11 +11,11 @@ import tf_keras_vis.gradcam_plus_plus
 import tf_keras_vis.scorecam
 from mediapipe.tasks.python.core.base_options import BaseOptions
 from mediapipe.tasks.python.vision.face_landmarker import FaceLandmarker, FaceLandmarkerOptions
-from skimage.measure import label, regionprops
 from scipy.spatial.distance import pdist
+from skimage.measure import label, regionprops
 
 from .models import ClassificationModel
-from .types import Box
+from .types import Box, CAMMethod, DistanceMetric, ThresholdMethod
 
 
 class LandmarkMapping:
@@ -50,9 +50,9 @@ class FacialLandmarker:
 
     DEFAULT_MODEL_PATH = "biasx/models/mediapipe_landmarker.task"
 
-    def __init__(self, model_path: Optional[str] = DEFAULT_MODEL_PATH, max_faces: Optional[int] = 1):
+    def __init__(self, max_faces: Optional[int] = 1):
         """Initialize the facial landmark detector."""
-        self.detector = FaceLandmarker.create_from_options(FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=model_path), num_faces=max_faces))
+        self.detector = FaceLandmarker.create_from_options(FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=self.DEFAULT_MODEL_PATH), num_faces=max_faces))
         self.mapping = LandmarkMapping()
 
     def detect(self, image_path: str, image_size: tuple[int, int]) -> list[Box]:
@@ -93,9 +93,9 @@ class ClassActivationMapper:
 
     def __init__(
         self,
-        cam_method: Literal["gradcam", "gradcam++", "scorecam"] = "gradcam++",
+        cam_method: CAMMethod = "gradcam++",
         cutoff_percentile: int = 90,
-        threshold_method: Literal["otsu", "niblack", "sauvola"] = "otsu",
+        threshold_method: ThresholdMethod = "otsu",
     ):
         """Initialize the activation map generator."""
         self.cam_method = self.CAM_METHODS[cam_method]
@@ -130,14 +130,14 @@ class VisualExplainer:
 
     def __init__(
         self,
-        landmarker_model_path: Optional[str] = FacialLandmarker.DEFAULT_MODEL_PATH,
-        cam_method: Optional[str] = "gradcam++",
+        max_faces: Optional[int] = 1,
+        cam_method: CAMMethod = "gradcam++",
         cutoff_percentile: Optional[int] = 90,
-        threshold_method: Optional[str] = "otsu",
+        threshold_method: ThresholdMethod = "otsu",
         overlap_threshold: Optional[float] = 0.2,
-        distance_metric: Optional[Literal["euclidean", "manhattan"]] = "euclidean",
+        distance_metric: DistanceMetric = "euclidean",
     ):
-        self.landmarker = FacialLandmarker(landmarker_model_path)
+        self.landmarker = FacialLandmarker(max_faces=max_faces)
         self.activation_mapper = ClassActivationMapper(cam_method=cam_method, cutoff_percentile=cutoff_percentile, threshold_method=threshold_method)
         self.overlap_threshold = overlap_threshold
         self.distance_metric = distance_metric
@@ -160,12 +160,11 @@ class VisualExplainer:
         image_path: str,
         model: ClassificationModel,
         true_gender: int,
-        target_size: tuple[int, int],
-    ) -> Optional[tuple[list[Box], list[Box], float]]:
+    ) -> tuple[list[Box], list[Box], float]:
         """Generate an explanation for a single image."""
         image = model.preprocess_image(image_path)
         activation_map = self.activation_mapper.generate_heatmap(model.model, image, true_gender)
         activation_boxes = self.activation_mapper.process_heatmap(activation_map)
-        landmark_boxes = self.landmarker.detect(image_path, target_size)
+        landmark_boxes = self.landmarker.detect(image_path, model.target_size)
         labeled_boxes = self._match_landmarks(activation_boxes, landmark_boxes)
         return labeled_boxes, landmark_boxes, activation_map

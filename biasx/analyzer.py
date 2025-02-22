@@ -1,36 +1,46 @@
-from typing import Optional
+from typing import Optional, Union
 
 from biasx.explainers import VisualExplainer
 
 from .calculators import BiasCalculator
 from .datasets import AnalysisDataset, FaceDataset
 from .models import ClassificationModel
+from .options import Config, ConfigDict
 from .types import Explanation
 
 
 class BiasAnalyzer:
     """Orchestrates the bias analysis pipeline."""
 
-    def __init__(
-        self,
-        model_path: str,
-        target_size: tuple[int, int] = (128, 128),
-        color_mode: str = "L",
-        single_channel: bool = False,
-        visual_explainer: Optional[VisualExplainer] = None,
-        calculator: Optional[BiasCalculator] = None,
-    ):
-        self.model = ClassificationModel(model_path, target_size, color_mode, single_channel)
-        self.visual_explainer = visual_explainer or VisualExplainer()
-        self.calculator = calculator or BiasCalculator()
-        self.target_size = target_size
+    def __init__(self, config: Union[str, Config, ConfigDict]):
+        """Initialize analyzer components based on provided configuration."""
+        self.config = Config.from_path(config) if isinstance(config, str) else Config.from_dict(config) if isinstance(config, dict) else config
+
+        self.model = ClassificationModel(
+            model_path=self.config.model_path,
+            target_size=self.config.target_size,
+            color_mode=self.config.color_mode,
+            single_channel=self.config.single_channel,
+        )
+
+        self.visual_explainer = VisualExplainer(
+            cam_method=self.config.cam_method,
+            cutoff_percentile=self.config.cutoff_percentile,
+            threshold_method=self.config.threshold_method,
+            overlap_threshold=self.config.overlap_threshold,
+            distance_metric=self.config.distance_metric,
+        )
+
+        self.calculator = BiasCalculator(
+            ndigits=self.config.ndigits,
+        )
 
     def analyze_image(self, image_path: str, true_gender: int) -> Optional[Explanation]:
         """Analyze a single image and generate an explanation."""
         image = self.model.preprocess_image(image_path)
         predicted_gender, prediction_confidence = self.model.predict(image)
 
-        activation_boxes, landmark_boxes, activation_map = self.visual_explainer.explain_image(image_path, self.model, true_gender, self.target_size)
+        activation_boxes, landmark_boxes, activation_map = self.visual_explainer.explain_image(image_path, self.model, true_gender)
 
         return Explanation(
             image_path=image_path,
