@@ -1,3 +1,4 @@
+import os
 import keras
 import mediapipe
 import numpy as np
@@ -121,11 +122,29 @@ class ClassActivationMapper:
 class VisualExplainer:
     """Handles image explanation generation using activation maps and facial landmarks."""
 
-    def __init__(self, max_faces: int, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod, overlap_threshold: float, distance_metric: DistanceMetric):
+    def __init__(
+        self,
+        max_faces: int,
+        cam_method: CAMMethod,
+        cutoff_percentile: int,
+        threshold_method: ThresholdMethod,
+        overlap_threshold: float,
+        distance_metric: DistanceMetric,
+        activation_maps_path: str,
+    ):
         self.landmarker = FacialLandmarker(max_faces=max_faces)
         self.activation_mapper = ClassActivationMapper(cam_method=cam_method, cutoff_percentile=cutoff_percentile, threshold_method=threshold_method)
         self.overlap_threshold = overlap_threshold
         self.distance_metric = distance_metric
+        self.activation_maps_path = activation_maps_path
+
+    def _save_activation_map(self, activation_map: np.ndarray, image_path: str) -> str:
+        """Generate path for saving activation map."""
+        basename = os.path.splitext(os.path.basename(image_path))[0]
+        sanitized_name = "".join(c for c in basename if c.isalnum() or c in ("_", "-"))
+        activation_map_path = os.path.join(self.activation_maps_path, f"{sanitized_name}.npz")
+        os.makedirs(os.path.dirname(activation_map_path), exist_ok=True)
+        np.savez_compressed(activation_map_path, activation_map=activation_map)
 
     def _match_landmarks(self, activation_boxes: list[Box], landmark_boxes: list[Box]) -> list[Box]:
         """Match activation regions with facial landmarks."""
@@ -145,11 +164,14 @@ class VisualExplainer:
         image_path: str,
         model: ClassificationModel,
         true_gender: int,
-    ) -> tuple[list[Box], list[Box], float]:
+    ) -> tuple[list[Box], list[Box], str]:
         """Generate an explanation for a single image."""
         image = model.preprocess_image(image_path)
         activation_map = self.activation_mapper.generate_heatmap(model.model, image, true_gender)
         activation_boxes = self.activation_mapper.process_heatmap(activation_map)
         landmark_boxes = self.landmarker.detect(image_path, model.target_size)
         labeled_boxes = self._match_landmarks(activation_boxes, landmark_boxes)
-        return labeled_boxes, landmark_boxes, activation_map
+
+        activation_map_path = self._save_activation_map(activation_map, image_path)
+
+        return labeled_boxes, landmark_boxes, activation_map_path

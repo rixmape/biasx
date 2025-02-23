@@ -18,6 +18,7 @@ class ExplainerConfig(TypedDict, total=False):
     threshold_method: NotRequired[ThresholdMethod]
     overlap_threshold: NotRequired[float]
     distance_metric: NotRequired[DistanceMetric]
+    activation_maps_path: NotRequired[str]
 
 
 class CalculatorConfig(TypedDict, total=False):
@@ -56,6 +57,7 @@ def create_default_config(model_path: str, dataset_path: str) -> BaseConfig:
             "threshold_method": "otsu",
             "overlap_threshold": 0.2,
             "distance_metric": "euclidean",
+            "activation_maps_path": "outputs/activation_maps",
         },
         "calculator_options": {
             "ndigits": 3,

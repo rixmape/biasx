@@ -3,7 +3,6 @@ from typing import Any, Literal, Optional, TypeAlias
 
 import numpy as np
 
-
 ImageSize: TypeAlias = tuple[int, int]
 ColorMode = Literal["L", "RGB"]
 CAMMethod = Literal["gradcam", "gradcam++", "scorecam"]
@@ -44,7 +43,7 @@ class Explanation:
     true_gender: int
     predicted_gender: int
     prediction_confidence: float
-    activation_map: np.ndarray
+    activation_map_path: Optional[str]
     activation_boxes: list[Box]
     landmark_boxes: list[Box]
 
@@ -55,7 +54,7 @@ class Explanation:
             "trueGender": self.true_gender,
             "predictedGender": self.predicted_gender,
             "predictionConfidence": self.prediction_confidence,
-            "activationMap": self.activation_map.tolist(),
+            "activationMapPath": self.activation_map_path,
             "activationBoxes": [box.to_dict() for box in self.activation_boxes],
             "landmarkBoxes": [box.to_dict() for box in self.landmark_boxes],
         }

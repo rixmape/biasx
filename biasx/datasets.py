@@ -39,7 +39,6 @@ class AnalysisDataset:
     """Manages storage and serialization of analysis results."""
 
     def __init__(self):
-        self.timestamp: str = datetime.now().isoformat()
         self.bias_score: Optional[float] = None
         self.feature_scores: dict[str, float] = {}
         self.feature_probabilities: dict[str, dict[int, float]] = {}
@@ -49,14 +48,20 @@ class AnalysisDataset:
         """Add a single image analysis result."""
         self.explanations.append(explanation)
 
-    def set_bias_metrics(self, bias_score: float, feature_scores: dict[str, float], feature_probabilities: dict[str, dict[int, float]]) -> None:
+    def set_bias_metrics(
+        self,
+        bias_score: float,
+        feature_scores: dict[str, float],
+        feature_probabilities: dict[str, dict[int, float]],
+    ) -> None:
         """Set computed bias metrics."""
-        self.bias_score, self.feature_scores, self.feature_probabilities = bias_score, feature_scores, feature_probabilities
+        self.bias_score = bias_score
+        self.feature_scores = feature_scores
+        self.feature_probabilities = feature_probabilities
 
     def to_dict(self) -> dict[str, Any]:
         """Convert dataset to dictionary format."""
         return {
-            "timestamp": self.timestamp,
             "biasScore": self.bias_score,
             "featureScores": self.feature_scores,
             "featureProbabilities": self.feature_probabilities,
@@ -68,3 +73,12 @@ class AnalysisDataset:
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, "w") as f:
             json.dump(self.to_dict(), f, indent=2)
+
+    @staticmethod
+    def load_activation_map(activation_map_path: str) -> Optional[np.ndarray]:
+        """Load a compressed activation map from file."""
+        try:
+            with np.load(activation_map_path) as data:
+                return data["activation_map"]
+        except (FileNotFoundError, KeyError):
+            return None
