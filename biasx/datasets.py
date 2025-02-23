@@ -72,7 +72,7 @@ class AnalysisDataset:
         """Save dataset to JSON file."""
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, "w") as f:
-            json.dump(self.to_dict(), f, indent=2)
+            json.dump(self.to_dict(), f)
 
     @staticmethod
     def load_activation_map(activation_map_path: str) -> Optional[np.ndarray]:
