@@ -17,8 +17,9 @@ class BiasAnalyzer:
         self.config = config if isinstance(config, Config) else Config.create(config)
 
         self.model = ClassificationModel(model_path=self.config.model_path, **self.config.model_options)
+        self.dataset = FaceDataset(dataset_path=self.config.dataset_path, **self.config.dataset_options)
         self.explainer = VisualExplainer(**self.config.explainer_options)
-        self.calculator = BiasCalculator(ndigits=self.config.calculator_options["ndigits"])
+        self.calculator = BiasCalculator(**self.config.calculator_options)
 
     def analyze_image(self, image_path: str, true_gender: int) -> Optional[Explanation]:
         """Analyze a single image and generate an explanation."""
@@ -37,24 +38,11 @@ class BiasAnalyzer:
             landmark_boxes=landmark_boxes,
         )
 
-    def analyze(
-        self,
-        dataset_path: str,
-        max_samples: int = -1,
-        shuffle: bool = True,
-        seed: int = 69,
-        return_explanations: bool = True,
-        output_path: Optional[str] = None,
-    ) -> AnalysisDataset:
+    def analyze(self, output_path: Optional[str] = None) -> AnalysisDataset:
         """Analyze a dataset of facial images and compute bias metrics."""
-        dataset = FaceDataset(dataset_path, max_samples, shuffle, seed)
         results = AnalysisDataset()
-
-        explanations = [result for image_path, true_gender in dataset if (result := self.analyze_image(image_path, true_gender))]
-
-        if return_explanations:
-            results.explanations = explanations
-
+        explanations = [result for image_path, true_gender in self.dataset if (result := self.analyze_image(image_path, true_gender))]
+        results.explanations = explanations
         features = self.explainer.landmarker.mapping.get_features()
         results.set_bias_metrics(
             bias_score=self.calculator.compute_overall_bias(explanations, features),

@@ -20,24 +20,30 @@ class ExplainerConfig(TypedDict, total=False):
     distance_metric: NotRequired[DistanceMetric]
 
 
-class AnalysisConfig(TypedDict, total=False):
+class CalculatorConfig(TypedDict, total=False):
     ndigits: NotRequired[int]
+
+
+class DatasetConfig(TypedDict, total=False):
+    max_samples: NotRequired[int]
     shuffle: NotRequired[bool]
     seed: NotRequired[int]
-    max_samples: NotRequired[int]
 
 
 class BaseConfig(TypedDict, total=False):
     model_path: Required[str]
+    dataset_path: Required[str]
     model_options: NotRequired[ModelConfig]
     explainer_options: NotRequired[ExplainerConfig]
-    calculator_options: NotRequired[AnalysisConfig]
+    calculator_options: NotRequired[CalculatorConfig]
+    dataset_options: NotRequired[DatasetConfig]
 
 
-def create_default_config(model_path: str) -> BaseConfig:
+def create_default_config(model_path: str, dataset_path: str) -> BaseConfig:
     """Create a complete configuration with all defaults"""
     return {
         "model_path": model_path,
+        "dataset_path": dataset_path,
         "model_options": {
             "target_size": (128, 128),
             "color_mode": "L",
@@ -53,9 +59,11 @@ def create_default_config(model_path: str) -> BaseConfig:
         },
         "calculator_options": {
             "ndigits": 3,
+        },
+        "dataset_options": {
+            "max_samples": -1,
             "shuffle": True,
             "seed": 69,
-            "max_samples": -1,
         },
     }
 
