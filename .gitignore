@@ -3,6 +3,7 @@ __pycache__/
 
 logs/
 images/
+outputs/
 
 tmp*
 *tmp

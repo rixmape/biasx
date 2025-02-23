@@ -145,6 +145,7 @@ class VisualExplainer:
         activation_map_path = os.path.join(self.activation_maps_path, f"{sanitized_name}.npz")
         os.makedirs(os.path.dirname(activation_map_path), exist_ok=True)
         np.savez_compressed(activation_map_path, activation_map=activation_map)
+        return activation_map_path
 
     def _match_landmarks(self, activation_boxes: list[Box], landmark_boxes: list[Box]) -> list[Box]:
         """Match activation regions with facial landmarks."""
