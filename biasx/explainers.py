@@ -9,7 +9,7 @@ import tf_keras_vis.gradcam_plus_plus
 import tf_keras_vis.scorecam
 from mediapipe.tasks.python.core.base_options import BaseOptions
 from mediapipe.tasks.python.vision.face_landmarker import FaceLandmarker, FaceLandmarkerOptions
-from scipy.spatial.distance import pdist
+from scipy.spatial.distance import cdist
 from skimage.measure import label, regionprops
 
 from .models import ClassificationModel
@@ -134,7 +134,7 @@ class VisualExplainer:
 
         matched_boxes = []
         for a_box in activation_boxes:
-            nearest = min(landmark_boxes, key=lambda l: pdist([l.center, a_box.center], metric=self.distance_metric)[0])
+            nearest = min(landmark_boxes, key=lambda l: cdist([l.center], [a_box.center], metric=self.distance_metric)[0])
             overlap_area = max(0, min(a_box.max_x, nearest.max_x) - max(a_box.min_x, nearest.min_x)) * max(0, min(a_box.max_y, nearest.max_y) - max(a_box.min_y, nearest.min_y))
             a_box.feature = nearest.feature if overlap_area / a_box.area >= self.overlap_threshold else None
             matched_boxes.append(a_box)
