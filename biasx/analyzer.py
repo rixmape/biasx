@@ -3,45 +3,29 @@ from typing import Optional, Union
 from biasx.explainers import VisualExplainer
 
 from .calculators import BiasCalculator
+from .config import Config
 from .datasets import AnalysisDataset, FaceDataset
 from .models import ClassificationModel
-from .options import Config, ConfigDict
 from .types import Explanation
 
 
 class BiasAnalyzer:
     """Orchestrates the bias analysis pipeline."""
 
-    def __init__(self, config: Union[str, Config, ConfigDict]):
-        """Initialize analyzer components based on provided configuration."""
-        self.config = Config.from_path(config) if isinstance(config, str) else Config.from_dict(config) if isinstance(config, dict) else config
+    def __init__(self, config: Union[str, dict, Config]):
+        """Initialize analyzer with configuration"""
+        self.config = config if isinstance(config, Config) else Config.create(config)
 
-        self.model = ClassificationModel(
-            model_path=self.config.model_path,
-            target_size=self.config.target_size,
-            color_mode=self.config.color_mode,
-            single_channel=self.config.single_channel,
-        )
-
-        self.visual_explainer = VisualExplainer(
-            max_faces=self.config.max_faces,
-            cam_method=self.config.cam_method,
-            cutoff_percentile=self.config.cutoff_percentile,
-            threshold_method=self.config.threshold_method,
-            overlap_threshold=self.config.overlap_threshold,
-            distance_metric=self.config.distance_metric,
-        )
-
-        self.calculator = BiasCalculator(
-            ndigits=self.config.ndigits,
-        )
+        self.model = ClassificationModel(model_path=self.config.model_path, **self.config.model_options)
+        self.explainer = VisualExplainer(**self.config.explainer_options)
+        self.calculator = BiasCalculator(ndigits=self.config.calculator_options["ndigits"])
 
     def analyze_image(self, image_path: str, true_gender: int) -> Optional[Explanation]:
         """Analyze a single image and generate an explanation."""
         image = self.model.preprocess_image(image_path)
         predicted_gender, prediction_confidence = self.model.predict(image)
 
-        activation_boxes, landmark_boxes, activation_map = self.visual_explainer.explain_image(image_path, self.model, true_gender)
+        activation_boxes, landmark_boxes, activation_map = self.explainer.explain_image(image_path, self.model, true_gender)
 
         return Explanation(
             image_path=image_path,
@@ -71,7 +55,7 @@ class BiasAnalyzer:
         if return_explanations:
             results.explanations = explanations
 
-        features = self.visual_explainer.landmarker.mapping.get_features()
+        features = self.explainer.landmarker.mapping.get_features()
         results.set_bias_metrics(
             bias_score=self.calculator.compute_overall_bias(explanations, features),
             feature_scores={feature: self.calculator.compute_feature_bias(explanations, feature) for feature in features},

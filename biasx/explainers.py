@@ -1,5 +1,3 @@
-from typing import Literal, Optional
-
 import keras
 import mediapipe
 import numpy as np
@@ -50,7 +48,7 @@ class FacialLandmarker:
 
     DEFAULT_MODEL_PATH = "biasx/models/mediapipe_landmarker.task"
 
-    def __init__(self, max_faces: Optional[int] = 1):
+    def __init__(self, max_faces: int):
         """Initialize the facial landmark detector."""
         self.detector = FaceLandmarker.create_from_options(FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=self.DEFAULT_MODEL_PATH), num_faces=max_faces))
         self.mapping = LandmarkMapping()
@@ -91,12 +89,7 @@ class ClassActivationMapper:
         "sauvola": skimage.filters.threshold_sauvola,
     }
 
-    def __init__(
-        self,
-        cam_method: Optional[CAMMethod] = "gradcam++",
-        cutoff_percentile: Optional[int] = 90,
-        threshold_method: Optional[ThresholdMethod] = "otsu",
-    ):
+    def __init__(self, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod):
         """Initialize the activation map generator."""
         self.cam_method = self.CAM_METHODS[cam_method]
         self.cutoff_percentile = cutoff_percentile
@@ -128,15 +121,7 @@ class ClassActivationMapper:
 class VisualExplainer:
     """Handles image explanation generation using activation maps and facial landmarks."""
 
-    def __init__(
-        self,
-        max_faces: Optional[int] = 1,
-        cam_method: CAMMethod = "gradcam++",
-        cutoff_percentile: Optional[int] = 90,
-        threshold_method: ThresholdMethod = "otsu",
-        overlap_threshold: Optional[float] = 0.2,
-        distance_metric: DistanceMetric = "euclidean",
-    ):
+    def __init__(self, max_faces: int, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod, overlap_threshold: float, distance_metric: DistanceMetric):
         self.landmarker = FacialLandmarker(max_faces=max_faces)
         self.activation_mapper = ClassActivationMapper(cam_method=cam_method, cutoff_percentile=cutoff_percentile, threshold_method=threshold_method)
         self.overlap_threshold = overlap_threshold

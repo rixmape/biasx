@@ -10,13 +10,7 @@ from .types import ImageSize, ColorMode
 class ClassificationModel:
     """Handles loading and inference of the face classification model."""
 
-    def __init__(
-        self,
-        model_path: str,
-        target_size: Optional[ImageSize] = (128, 128),
-        color_mode: Optional[ColorMode] = "L",
-        single_channel: Optional[bool] = False,
-    ):
+    def __init__(self, model_path: str, target_size: ImageSize, color_mode: ColorMode, single_channel: bool):
         """Initialize the classification model."""
         self.model = keras.models.load_model(model_path)
         self.target_size = target_size

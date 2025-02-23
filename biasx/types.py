@@ -1,10 +1,10 @@
 from dataclasses import dataclass
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, TypeAlias
 
 import numpy as np
 
 
-ImageSize = tuple[int, int]
+ImageSize: TypeAlias = tuple[int, int]
 ColorMode = Literal["L", "RGB"]
 CAMMethod = Literal["gradcam", "gradcam++", "scorecam"]
 ThresholdMethod = Literal["otsu", "niblack", "sauvola"]

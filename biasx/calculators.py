@@ -8,7 +8,7 @@ from .types import Explanation
 class BiasCalculator:
     """Computes bias metrics from analysis results."""
 
-    def __init__(self, ndigits: Optional[int] = 3):
+    def __init__(self, ndigits: int):
         """Initialize the bias calculator."""
         self.ndigits = ndigits
 
