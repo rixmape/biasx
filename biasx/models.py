@@ -1,25 +1,24 @@
-from typing import Optional
-
 import keras
 import numpy as np
 from PIL import Image
 
-from .types import ImageSize, ColorMode
+from .types import ColorMode
 
 
 class ClassificationModel:
     """Handles loading and inference of the face classification model."""
 
-    def __init__(self, model_path: str, target_size: ImageSize, color_mode: ColorMode, single_channel: bool):
+    def __init__(self, model_path: str, image_width: int, image_height: int, color_mode: ColorMode, single_channel: bool):
         """Initialize the classification model."""
         self.model = keras.models.load_model(model_path)
-        self.target_size = target_size
+        self.image_width = image_width
+        self.image_height = image_height
         self.color_mode = color_mode
         self.single_channel = single_channel
 
     def preprocess_image(self, image_path: str) -> np.ndarray:
         """Preprocess a single image for model input."""
-        image = Image.open(image_path).convert(self.color_mode).resize(self.target_size)
+        image = Image.open(image_path).convert(self.color_mode).resize((self.image_width, self.image_height))
         image_array = np.array(image, dtype=np.float32) / 255.0
         return np.expand_dims(image_array, axis=-1) if self.color_mode == "L" and not self.single_channel else image_array
 

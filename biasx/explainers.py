@@ -54,13 +54,13 @@ class FacialLandmarker:
         self.detector = FaceLandmarker.create_from_options(FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=self.DEFAULT_MODEL_PATH), num_faces=max_faces))
         self.mapping = LandmarkMapping()
 
-    def detect(self, image_path: str, image_size: tuple[int, int]) -> list[Box]:
+    def detect(self, image_path: str, image_width: int, image_height: int) -> list[Box]:
         """Detect facial landmarks in an image."""
         result = self.detector.detect(mediapipe.Image.create_from_file(image_path))
         if not result.face_landmarks:
             return []
 
-        points = [(int(round(point.x * image_size[1])), int(round(point.y * image_size[0]))) for point in result.face_landmarks[0]]
+        points = [(int(round(point.x * image_width)), int(round(point.y * image_height))) for point in result.face_landmarks[0]]
 
         return [
             Box(
@@ -169,7 +169,7 @@ class VisualExplainer:
         image = model.preprocess_image(image_path)
         activation_map = self.activation_mapper.generate_heatmap(model.model, image, true_gender)
         activation_boxes = self.activation_mapper.process_heatmap(activation_map)
-        landmark_boxes = self.landmarker.detect(image_path, model.target_size)
+        landmark_boxes = self.landmarker.detect(image_path, model.image_width, model.image_height)
         labeled_boxes = self._match_landmarks(activation_boxes, landmark_boxes)
 
         activation_map_path = self._save_activation_map(activation_map, image_path)

@@ -2,11 +2,12 @@ from typing import TypedDict
 
 from typing_extensions import NotRequired, Required
 
-from .types import CAMMethod, ColorMode, DistanceMetric, ImageSize, ThresholdMethod
+from .types import CAMMethod, ColorMode, DistanceMetric, ThresholdMethod
 
 
 class ModelConfig(TypedDict, total=False):
-    target_size: NotRequired[ImageSize]
+    image_width: NotRequired[int]
+    image_height: NotRequired[int]
     color_mode: NotRequired[ColorMode]
     single_channel: NotRequired[bool]
 
@@ -46,7 +47,8 @@ def create_default_config(model_path: str, dataset_path: str) -> BaseConfig:
         "model_path": model_path,
         "dataset_path": dataset_path,
         "model_config": {
-            "target_size": (128, 128),
+            "image_width": 224,
+            "image_height": 224,
             "color_mode": "L",
             "single_channel": False,
         },
