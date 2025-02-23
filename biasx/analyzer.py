@@ -16,10 +16,10 @@ class BiasAnalyzer:
         """Initialize analyzer with configuration"""
         self.config = config if isinstance(config, Config) else Config.create(config)
 
-        self.model = ClassificationModel(model_path=self.config.model_path, **self.config.model_options)
-        self.dataset = FaceDataset(dataset_path=self.config.dataset_path, **self.config.dataset_options)
-        self.explainer = VisualExplainer(**self.config.explainer_options)
-        self.calculator = BiasCalculator(**self.config.calculator_options)
+        self.model = ClassificationModel(model_path=self.config.model_path, **self.config.model_config)
+        self.dataset = FaceDataset(dataset_path=self.config.dataset_path, **self.config.dataset_config)
+        self.explainer = VisualExplainer(**self.config.explainer_config)
+        self.calculator = BiasCalculator(**self.config.calculator_config)
 
     def analyze_image(self, image_path: str, true_gender: int) -> Optional[Explanation]:
         """Analyze a single image and generate an explanation."""

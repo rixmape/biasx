@@ -34,10 +34,10 @@ class DatasetConfig(TypedDict, total=False):
 class BaseConfig(TypedDict, total=False):
     model_path: Required[str]
     dataset_path: Required[str]
-    model_options: NotRequired[ModelConfig]
-    explainer_options: NotRequired[ExplainerConfig]
-    calculator_options: NotRequired[CalculatorConfig]
-    dataset_options: NotRequired[DatasetConfig]
+    model_config: NotRequired[ModelConfig]
+    explainer_config: NotRequired[ExplainerConfig]
+    calculator_config: NotRequired[CalculatorConfig]
+    dataset_config: NotRequired[DatasetConfig]
 
 
 def create_default_config(model_path: str, dataset_path: str) -> BaseConfig:
@@ -45,12 +45,12 @@ def create_default_config(model_path: str, dataset_path: str) -> BaseConfig:
     return {
         "model_path": model_path,
         "dataset_path": dataset_path,
-        "model_options": {
+        "model_config": {
             "target_size": (128, 128),
             "color_mode": "L",
             "single_channel": False,
         },
-        "explainer_options": {
+        "explainer_config": {
             "max_faces": 1,
             "cam_method": "gradcam++",
             "cutoff_percentile": 90,
@@ -59,10 +59,10 @@ def create_default_config(model_path: str, dataset_path: str) -> BaseConfig:
             "distance_metric": "euclidean",
             "activation_maps_path": "outputs/activation_maps",
         },
-        "calculator_options": {
+        "calculator_config": {
             "ndigits": 3,
         },
-        "dataset_options": {
+        "dataset_config": {
             "max_samples": -1,
             "shuffle": True,
             "seed": 69,

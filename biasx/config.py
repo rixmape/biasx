@@ -10,10 +10,10 @@ class Config:
 
     model_path: str
     dataset_path: str
-    model_options: ModelConfig
-    explainer_options: ExplainerConfig
-    calculator_options: CalculatorConfig
-    dataset_options: DatasetConfig
+    model_config: ModelConfig
+    explainer_config: ExplainerConfig
+    calculator_config: CalculatorConfig
+    dataset_config: DatasetConfig
 
     @classmethod
     def create(cls, config: Union[str, dict, BaseConfig]) -> "Config":
@@ -29,10 +29,10 @@ class Config:
         return cls(
             model_path=base_config["model_path"],
             dataset_path=base_config["dataset_path"],
-            model_options=base_config["model_options"],
-            explainer_options=base_config["explainer_options"],
-            calculator_options=base_config["calculator_options"],
-            dataset_options=base_config["dataset_options"],
+            model_config=base_config["model_config"],
+            explainer_config=base_config["explainer_config"],
+            calculator_config=base_config["calculator_config"],
+            dataset_config=base_config["dataset_config"],
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -40,8 +40,8 @@ class Config:
         return {
             "model_path": self.model_path,
             "dataset_path": self.dataset_path,
-            "model_options": asdict(self.model_options),
-            "explainer_options": asdict(self.explainer_options),
-            "calculator_options": asdict(self.calculator_options),
-            "dataset_options": asdict(self.dataset_options),
+            "model_config": asdict(self.model_config),
+            "explainer_config": asdict(self.explainer_config),
+            "calculator_config": asdict(self.calculator_config),
+            "dataset_config": asdict(self.dataset_config),
         }
