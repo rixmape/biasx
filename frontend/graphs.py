@@ -1,20 +1,8 @@
-from pathlib import Path
-from tempfile import mktemp
-from typing import Any
-
-import gradio as gr
-import h5py
 import numpy as np
 import plotly.graph_objects as go
 from sklearn.metrics import auc, confusion_matrix, roc_curve
 
-from biasx import BiasAnalyzer
-from biasx.config import Config
-from biasx.datasets import AnalysisDataset
-from biasx.defaults import create_default_config
 from biasx.types import Explanation
-
-COMPONENTS: dict[str, gr.Component] = {}
 
 
 def create_radar_chart(feature_scores: dict[str, float]) -> go.Figure:
@@ -149,102 +137,3 @@ def create_violin_plot(explanations: list[Explanation]) -> go.Figure:
     )
 
     return fig
-
-
-def validate_model(file: gr.File) -> str:
-    """Validate uploaded model file."""
-    if not file:
-        raise gr.Error("Model file required")
-    temp = Path(mktemp(suffix=".h5"))
-    temp.write_bytes(Path(file).read_bytes())
-    try:
-        with h5py.File(temp):
-            return str(temp)
-    except:
-        temp.unlink()
-        raise gr.Error("Invalid model file")
-
-
-def create_config(model_path: str, dataset_path: str, **cfg: Any) -> Config:
-    """Create configuration from inputs."""
-    base = create_default_config(model_path, dataset_path)
-    {base[sec].update({k: v}) for k, v in cfg.items() for sec in base if k in base[sec]}
-    return Config(**base)
-
-
-def format_output(dataset: AnalysisDataset) -> list:
-    """Format analysis results for display."""
-    return [
-        create_radar_chart(dataset.feature_scores),
-        create_parallel_coordinates(dataset.feature_probabilities),
-        create_confusion_matrix(dataset.explanations),
-        create_roc_curves(dataset.explanations),
-        create_violin_plot(dataset.explanations),
-    ]
-
-
-def analyze(*args: Any, **kwargs: Any) -> tuple[dict, list[dict], str]:
-    """Run bias analysis and format results."""
-    if args:
-        params = dict(zip(COMPONENTS.keys(), args))
-    else:
-        params = kwargs.copy()
-
-    model_path = validate_model(params.pop("model_file"))
-    config = create_config(model_path, params.pop("dataset_path"), **params)
-
-    return format_output(BiasAnalyzer(config).analyze())
-
-
-def create_component(key: str, type_hint: Any, default: Any = None) -> gr.Component:
-    """Create appropriate Gradio component based on parameter type."""
-    if isinstance(type_hint, bool) or type_hint is bool:
-        return gr.Checkbox(label=key, value=default)
-    if isinstance(type_hint, (int, float)) or type_hint in (int, float):
-        precision = 0 if type_hint is int else None
-        return gr.Number(label=key, value=default, precision=precision)
-    if hasattr(type_hint, "__args__"):
-        return gr.Dropdown(label=key, choices=list(type_hint.__args__), value=default)
-    return gr.Textbox(label=key, value=default)
-
-
-def create_interface() -> gr.Blocks:
-    """Create enhanced Gradio interface."""
-    defaults = create_default_config("", "")
-
-    with gr.Blocks(title="BiasX Analyzer") as demo:
-        gr.Markdown("# BiasX: Face Classification Bias Analysis")
-
-        with gr.Row():
-            with gr.Column(scale=1):
-                gr.Markdown("## Inputs")
-                COMPONENTS["model_file"] = gr.File("tmp/identiface.h5", label="Upload Model", file_types=[".h5"])
-                COMPONENTS["dataset_path"] = gr.Textbox("images/utkface", label="Dataset Path")
-
-                gr.Markdown("## Configuration")
-                with gr.Tabs():
-                    for section in ("model_config", "explainer_config", "calculator_config", "dataset_config"):
-                        with gr.Tab(section.split("_")[0].capitalize()):
-                            for k, v in defaults[section].items():
-                                COMPONENTS[k] = create_component(k, type(v), v)
-
-                analyze_btn = gr.Button("Run Analysis", variant="primary")
-
-            outputs = {}
-            with gr.Column(scale=4):
-                gr.Markdown("## Results")
-                with gr.Row():
-                    outputs["radar_chart"] = gr.Plot(label="Feature Bias Scores", scale=1)
-                    outputs["parallel_coordinates"] = gr.Plot(label="Feature Activation Patterns by Gender", scale=2)
-                with gr.Row():
-                    outputs["confusion_matrix"] = gr.Plot(label="Confusion Matrix", scale=1)
-                    outputs["roc_curves"] = gr.Plot(label="ROC Curves by Gender", scale=1)
-                    outputs["violin_plot"] = gr.Plot(label="Confidence Score Distribution", scale=1)
-
-        analyze_btn.click(fn=analyze, inputs=list(COMPONENTS.values()), outputs=list(outputs.values()))
-
-    return demo
-
-
-if __name__ == "__main__":
-    create_interface().launch()
