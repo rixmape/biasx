@@ -10,6 +10,7 @@ class ModelConfig(TypedDict, total=False):
     image_height: NotRequired[int]
     color_mode: NotRequired[ColorMode]
     single_channel: NotRequired[bool]
+    inverted_classes: NotRequired[bool]
 
 
 class ExplainerConfig(TypedDict, total=False):
@@ -51,6 +52,7 @@ def create_default_config(model_path: str, dataset_path: str) -> BaseConfig:
             "image_height": 224,
             "color_mode": "L",
             "single_channel": False,
+            "inverted_classes": False,
         },
         "explainer_config": {
             "max_faces": 1,
