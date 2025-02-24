@@ -1,16 +1,12 @@
-import json
 from pathlib import Path
-from tempfile import NamedTemporaryFile, mktemp
+from tempfile import mktemp
 from typing import Any
 
 import gradio as gr
 import h5py
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import plotly.figure_factory as ff
 import plotly.graph_objects as go
-from PIL import Image
+from sklearn.metrics import auc, confusion_matrix, roc_curve
 
 from biasx import BiasAnalyzer
 from biasx.config import Config
@@ -21,16 +17,138 @@ from biasx.types import Explanation
 COMPONENTS: dict[str, gr.Component] = {}
 
 
-def create_component(key: str, type_hint: Any, default: Any = None) -> gr.Component:
-    """Create appropriate Gradio component based on parameter type."""
-    if isinstance(type_hint, bool) or type_hint is bool:
-        return gr.Checkbox(label=key, value=default)
-    if isinstance(type_hint, (int, float)) or type_hint in (int, float):
-        precision = 0 if type_hint is int else None
-        return gr.Number(label=key, value=default, precision=precision)
-    if hasattr(type_hint, "__args__"):
-        return gr.Dropdown(label=key, choices=list(type_hint.__args__), value=default)
-    return gr.Textbox(label=key, value=default)
+def create_radar_chart(feature_scores: dict[str, float]) -> go.Figure:
+    """Creates a radar chart comparing bias scores across facial features."""
+    features = list(feature_scores.keys())
+    scores = list(feature_scores.values())
+
+    fig = go.Figure(
+        go.Scatterpolar(
+            r=scores + [scores[0]],
+            theta=features + [features[0]],
+            fill="toself",
+            fillcolor="blue",
+            line=dict(color="blue"),
+        )
+    )
+
+    fig.update_layout(polar=dict(radialaxis=dict(range=[0, max(scores) + 0.1], tickformat=".2f")))
+
+    return fig
+
+
+def create_parallel_coordinates(feature_probabilities: dict[str, dict[int, float]]) -> go.Figure:
+    """Creates a parallel coordinates plot showing gender and feature activation relationships."""
+    dimensions = [
+        dict(
+            range=[0, 1],
+            label=feature.replace("_", " ").title(),
+            values=[probs[0], probs[1]],
+            tickformat=".2f",
+        )
+        for feature, probs in feature_probabilities.items()
+    ]
+
+    fig = go.Figure()
+    fig.add_trace(go.Parcoords(line=dict(color=[0, 1], colorscale=[[0, "blue"], [1, "red"]]), dimensions=dimensions))
+    fig.add_trace(go.Scatter(x=[None], y=[None], mode="lines", name="Male", line=dict(color="blue"), showlegend=True))
+    fig.add_trace(go.Scatter(x=[None], y=[None], mode="lines", name="Female", line=dict(color="red"), showlegend=True))
+
+    fig.update_layout(showlegend=True, legend=dict(yanchor="bottom", xanchor="right", x=0.95, y=0.05))
+
+    return fig
+
+
+def create_confusion_matrix(explanations: list[Explanation]) -> go.Figure:
+    """Creates a confusion matrix visualization for gender predictions."""
+    y_true = [exp.true_gender for exp in explanations]
+    y_pred = [exp.predicted_gender for exp in explanations]
+    cm = confusion_matrix(y_true, y_pred, normalize="pred")
+
+    fig = go.Figure(
+        go.Heatmap(
+            z=cm,
+            x=["Predicted Male", "Predicted Female"],
+            y=["True Male", "True Female"],
+            text=[[f"{val:.2%}" for val in row] for row in cm],
+            texttemplate="%{text}",
+            colorscale="Blues",
+            zmax=1,
+            showscale=False,
+        )
+    )
+
+    fig.update_layout(xaxis_title="Predicted Label", yaxis_title="True Label", yaxis=dict(tickangle=-90))
+
+    return fig
+
+
+def create_roc_curves(explanations: list[Explanation]) -> go.Figure:
+    """Creates ROC curves for model performance analysis."""
+    y_true = np.array([exp.true_gender for exp in explanations])
+    y_score = np.array([exp.prediction_confidence for exp in explanations])
+
+    fpr, tpr, _ = roc_curve(y_true, y_score)
+    roc_auc = auc(fpr, tpr)
+    fpr_inv, tpr_inv, _ = roc_curve(1 - y_true, 1 - y_score)
+    roc_auc_inv = auc(fpr_inv, tpr_inv)
+
+    fig = go.Figure(
+        [
+            go.Scatter(x=fpr, y=tpr, name=f"Female (AUC = {roc_auc:.3f})", line=dict(color="red", width=2)),
+            go.Scatter(x=fpr_inv, y=tpr_inv, name=f"Male (AUC = {roc_auc_inv:.3f})", line=dict(color="blue", width=2)),
+            go.Scatter(x=[0, 1], y=[0, 1], name="Random", line=dict(color="gray", width=2), showlegend=False),
+        ]
+    )
+
+    fig.update_layout(
+        xaxis_title="False Positive Rate",
+        yaxis_title="True Positive Rate",
+        xaxis_range=[-0.02, 1.02],
+        yaxis_range=[-0.02, 1.02],
+        legend=dict(yanchor="bottom", xanchor="right", x=0.95, y=0.05),
+    )
+
+    return fig
+
+
+def create_violin_plot(explanations: list[Explanation]) -> go.Figure:
+    """Creates a violin plot showing confidence score distributions across prediction outcomes."""
+    correct = {"male": [], "female": []}
+    incorrect = {"male": [], "female": []}
+
+    for exp in explanations:
+        target = correct if exp.predicted_gender == exp.true_gender else incorrect
+        gender = "male" if exp.true_gender == 0 else "female"
+        target[gender].append(exp.prediction_confidence)
+
+    fig = go.Figure(
+        [
+            go.Violin(
+                x=["Male"] * len(correct["male"]) + ["Female"] * len(correct["female"]),
+                y=correct["male"] + correct["female"],
+                side="positive",
+                fillcolor="blue",
+                name="Correct",
+            ),
+            go.Violin(
+                x=["Male"] * len(incorrect["male"]) + ["Female"] * len(incorrect["female"]),
+                y=incorrect["male"] + incorrect["female"],
+                side="negative",
+                fillcolor="red",
+                name="Incorrect",
+            ),
+        ]
+    )
+
+    fig.update_layout(
+        yaxis_title="Confidence Score",
+        yaxis_range=[-0.02, 1.02],
+        violinmode="overlay",
+        legend=dict(yanchor="bottom", xanchor="right", x=0.95, y=0.05),
+    )
+
+    return fig
 
 
 def validate_model(file: gr.File) -> str:
@@ -54,85 +172,14 @@ def create_config(model_path: str, dataset_path: str, **cfg: Any) -> Config:
     return Config(**base)
 
 
-def create_feature_bias_plot(features_data: list[list[Any]]) -> go.Figure:
-    """Create horizontal bar chart showing bias scores by facial feature."""
-    df = pd.DataFrame(features_data, columns=["Feature", "Male_Prob", "Female_Prob", "Bias_Score"])
-    fig = go.Figure()
-    fig.add_trace(go.Bar(y=df["Feature"], x=df["Bias_Score"], orientation="h", marker_color=df["Bias_Score"]))
-    fig.update_layout(title="Feature Bias Scores", xaxis_title="Bias Score", yaxis_title="Facial Feature", height=400)
-    return fig
-
-
-def create_parallel_coordinates(features_data: list[list[Any]]) -> go.Figure:
-    """Create parallel coordinates plot showing relationships between probabilities and bias."""
-    df = pd.DataFrame(features_data, columns=["Feature", "Male_Prob", "Female_Prob", "Bias_Score"])
-    fig = go.Figure(
-        data=go.Parcoords(
-            line=dict(color=df["Bias_Score"]),
-            dimensions=[
-                dict(range=[0, 1], label="Male Probability", values=df["Male_Prob"]),
-                dict(range=[0, 1], label="Female Probability", values=df["Female_Prob"]),
-                dict(range=[0, 1], label="Bias Score", values=df["Bias_Score"]),
-            ],
-        )
-    )
-    fig.update_layout(title="Feature Bias Analysis Parallel Coordinates", height=400)
-    return fig
-
-
-def create_confusion_matrix(results: list[Explanation]) -> go.Figure:
-    """Create confusion matrix heatmap."""
-    matrix = np.zeros((2, 2))
-    for r in results:
-        matrix[r.true_gender][r.predicted_gender] += 1
-
-    fig = ff.create_annotated_heatmap(matrix, x=["Predicted Male", "Predicted Female"], y=["True Male", "True Female"])
-    fig.update_layout(title="Gender Classification Confusion Matrix", height=400)
-    return fig
-
-
-def create_confidence_violin(results: list[Explanation]) -> go.Figure:
-    """Create violin plot of prediction confidence distributions."""
-    df = pd.DataFrame([{"Confidence": r.prediction_confidence, "Type": "Correct" if r.predicted_gender == r.true_gender else "Incorrect"} for r in results])
-    fig = go.Figure()
-    for type_ in ["Correct", "Incorrect"]:
-        subset = df[df["Type"] == type_]
-        fig.add_trace(go.Violin(x=subset["Type"], y=subset["Confidence"], name=type_, box_visible=True, meanline_visible=True))
-    fig.update_layout(title="Prediction Confidence Distribution", xaxis_title="Prediction Type", yaxis_title="Confidence Score", height=400)
-    return fig
-
-
-def overlay_heatmap(image_path: str, heatmap: np.ndarray, alpha: float = 0.6) -> np.ndarray:
-    """Overlay heatmap on original image."""
-    img = np.array(Image.open(image_path))
-    heatmap_resized = np.array(Image.fromarray(heatmap).resize(img.shape[:2][::-1], Image.BILINEAR))
-    heatmap_norm = (heatmap_resized - heatmap_resized.min()) / (heatmap_resized.max() - heatmap_resized.min())
-    heatmap_colored = plt.cm.jet(heatmap_norm)[..., :3]
-    overlay = (1 - alpha) * img + alpha * heatmap_colored * 255
-    overlay = np.clip(overlay, 0, 255).astype(np.uint8)
-    return overlay
-
-
 def format_output(dataset: AnalysisDataset) -> list:
     """Format analysis results for display."""
-    features = [[f, p[0], p[1], dataset.feature_scores[f]] for f, p in dataset.feature_probabilities.items()]
-
-    samples = []
-    for exp in dataset.explanations[:5]:
-        heatmap = AnalysisDataset.load_activation_map(exp.activation_map_path)
-        samples.append(overlay_heatmap(exp.image_path, heatmap))
-
-    with NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-        json.dump(dataset.to_dict(), f, indent=2)
-        download_path = f.name
-
     return [
-        create_feature_bias_plot(features),
-        create_parallel_coordinates(features),
+        create_radar_chart(dataset.feature_scores),
+        create_parallel_coordinates(dataset.feature_probabilities),
         create_confusion_matrix(dataset.explanations),
-        create_confidence_violin(dataset.explanations),
-        samples,
-        download_path,
+        create_roc_curves(dataset.explanations),
+        create_violin_plot(dataset.explanations),
     ]
 
 
@@ -149,18 +196,32 @@ def analyze(*args: Any, **kwargs: Any) -> tuple[dict, list[dict], str]:
     return format_output(BiasAnalyzer(config).analyze())
 
 
+def create_component(key: str, type_hint: Any, default: Any = None) -> gr.Component:
+    """Create appropriate Gradio component based on parameter type."""
+    if isinstance(type_hint, bool) or type_hint is bool:
+        return gr.Checkbox(label=key, value=default)
+    if isinstance(type_hint, (int, float)) or type_hint in (int, float):
+        precision = 0 if type_hint is int else None
+        return gr.Number(label=key, value=default, precision=precision)
+    if hasattr(type_hint, "__args__"):
+        return gr.Dropdown(label=key, choices=list(type_hint.__args__), value=default)
+    return gr.Textbox(label=key, value=default)
+
+
 def create_interface() -> gr.Blocks:
     """Create enhanced Gradio interface."""
     defaults = create_default_config("", "")
 
     with gr.Blocks(title="BiasX Analyzer") as demo:
-        gr.Markdown("# BiasX Analyzer")
+        gr.Markdown("# BiasX: Face Classification Bias Analysis")
 
         with gr.Row():
-            with gr.Column(scale=2):
-                COMPONENTS["model_file"] = gr.File(label="Upload Model", file_types=[".h5"])
-                COMPONENTS["dataset_path"] = gr.Textbox(label="Dataset Path")
+            with gr.Column(scale=1):
+                gr.Markdown("## Inputs")
+                COMPONENTS["model_file"] = gr.File("tmp/identiface.h5", label="Upload Model", file_types=[".h5"])
+                COMPONENTS["dataset_path"] = gr.Textbox("images/utkface", label="Dataset Path")
 
+                gr.Markdown("## Configuration")
                 with gr.Tabs():
                     for section in ("model_config", "explainer_config", "calculator_config", "dataset_config"):
                         with gr.Tab(section.split("_")[0].capitalize()):
@@ -169,24 +230,18 @@ def create_interface() -> gr.Blocks:
 
                 analyze_btn = gr.Button("Run Analysis", variant="primary")
 
-            outputs = []
-            with gr.Column(scale=3):
-                with gr.Tabs():
-                    with gr.Tab("Overview"):
-                        outputs.append(gr.Plot(label="Feature Bias Scores"))
-                        outputs.append(gr.Plot(label="Confusion Matrix"))
+            outputs = {}
+            with gr.Column(scale=4):
+                gr.Markdown("## Results")
+                with gr.Row():
+                    outputs["radar_chart"] = gr.Plot(label="Feature Bias Scores", scale=1)
+                    outputs["parallel_coordinates"] = gr.Plot(label="Feature Activation Patterns by Gender", scale=2)
+                with gr.Row():
+                    outputs["confusion_matrix"] = gr.Plot(label="Confusion Matrix", scale=1)
+                    outputs["roc_curves"] = gr.Plot(label="ROC Curves by Gender", scale=1)
+                    outputs["violin_plot"] = gr.Plot(label="Confidence Score Distribution", scale=1)
 
-                    with gr.Tab("Detailed Analysis"):
-                        outputs.append(gr.Plot(label="Parallel Coordinates"))
-                        outputs.append(gr.Plot(label="Confidence Distribution"))
-
-                    with gr.Tab("Sample Analysis"):
-                        outputs.append(gr.Gallery(label="Sample Results", columns=5))
-
-                    with gr.Tab("Raw Data"):
-                        outputs.append(gr.File(label="Download Complete Results", file_types=[".json"]))
-
-        analyze_btn.click(fn=analyze, inputs=list(COMPONENTS.values()), outputs=outputs)
+        analyze_btn.click(fn=analyze, inputs=list(COMPONENTS.values()), outputs=list(outputs.values()))
 
     return demo
 
