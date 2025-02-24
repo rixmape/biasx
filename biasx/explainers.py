@@ -1,3 +1,4 @@
+import os
 import keras
 import mediapipe
 import numpy as np
@@ -53,13 +54,13 @@ class FacialLandmarker:
         self.detector = FaceLandmarker.create_from_options(FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=self.DEFAULT_MODEL_PATH), num_faces=max_faces))
         self.mapping = LandmarkMapping()
 
-    def detect(self, image_path: str, image_size: tuple[int, int]) -> list[Box]:
+    def detect(self, image_path: str, image_width: int, image_height: int) -> list[Box]:
         """Detect facial landmarks in an image."""
         result = self.detector.detect(mediapipe.Image.create_from_file(image_path))
         if not result.face_landmarks:
             return []
 
-        points = [(int(round(point.x * image_size[1])), int(round(point.y * image_size[0]))) for point in result.face_landmarks[0]]
+        points = [(int(round(point.x * image_width)), int(round(point.y * image_height))) for point in result.face_landmarks[0]]
 
         return [
             Box(
@@ -113,19 +114,39 @@ class ClassActivationMapper:
 
     def process_heatmap(self, heatmap: np.ndarray) -> list[Box]:
         """Process heatmap into activation boxes."""
-        heatmap[heatmap < np.percentile(heatmap, self.cutoff_percentile)] = 0
-        binary = heatmap > self.threshold_method(heatmap)
+        heatmap_copy = heatmap.copy()
+        heatmap_copy[heatmap_copy < np.percentile(heatmap_copy, self.cutoff_percentile)] = 0
+        binary = heatmap_copy > self.threshold_method(heatmap_copy)
         return [Box(min_col, min_row, max_col, max_row) for region in regionprops(label(binary)) for min_row, min_col, max_row, max_col in [region.bbox]]
 
 
 class VisualExplainer:
     """Handles image explanation generation using activation maps and facial landmarks."""
 
-    def __init__(self, max_faces: int, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod, overlap_threshold: float, distance_metric: DistanceMetric):
+    def __init__(
+        self,
+        max_faces: int,
+        cam_method: CAMMethod,
+        cutoff_percentile: int,
+        threshold_method: ThresholdMethod,
+        overlap_threshold: float,
+        distance_metric: DistanceMetric,
+        activation_maps_path: str,
+    ):
         self.landmarker = FacialLandmarker(max_faces=max_faces)
         self.activation_mapper = ClassActivationMapper(cam_method=cam_method, cutoff_percentile=cutoff_percentile, threshold_method=threshold_method)
         self.overlap_threshold = overlap_threshold
         self.distance_metric = distance_metric
+        self.activation_maps_path = activation_maps_path
+
+    def _save_activation_map(self, activation_map: np.ndarray, image_path: str) -> str:
+        """Generate path for saving activation map."""
+        basename = os.path.splitext(os.path.basename(image_path))[0]
+        sanitized_name = "".join(c for c in basename if c.isalnum() or c in ("_", "-"))
+        activation_map_path = os.path.join(self.activation_maps_path, f"{sanitized_name}.npz")
+        os.makedirs(os.path.dirname(activation_map_path), exist_ok=True)
+        np.savez_compressed(activation_map_path, activation_map=activation_map)
+        return activation_map_path
 
     def _match_landmarks(self, activation_boxes: list[Box], landmark_boxes: list[Box]) -> list[Box]:
         """Match activation regions with facial landmarks."""
@@ -145,11 +166,14 @@ class VisualExplainer:
         image_path: str,
         model: ClassificationModel,
         true_gender: int,
-    ) -> tuple[list[Box], list[Box], float]:
+    ) -> tuple[list[Box], list[Box], str]:
         """Generate an explanation for a single image."""
         image = model.preprocess_image(image_path)
         activation_map = self.activation_mapper.generate_heatmap(model.model, image, true_gender)
         activation_boxes = self.activation_mapper.process_heatmap(activation_map)
-        landmark_boxes = self.landmarker.detect(image_path, model.target_size)
+        landmark_boxes = self.landmarker.detect(image_path, model.image_width, model.image_height)
         labeled_boxes = self._match_landmarks(activation_boxes, landmark_boxes)
-        return labeled_boxes, landmark_boxes, activation_map
+
+        activation_map_path = self._save_activation_map(activation_map, image_path)
+
+        return labeled_boxes, landmark_boxes, activation_map_path

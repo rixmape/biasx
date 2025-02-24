@@ -2,13 +2,15 @@ from typing import TypedDict
 
 from typing_extensions import NotRequired, Required
 
-from .types import CAMMethod, ColorMode, DistanceMetric, ImageSize, ThresholdMethod
+from .types import CAMMethod, ColorMode, DistanceMetric, ThresholdMethod
 
 
 class ModelConfig(TypedDict, total=False):
-    target_size: NotRequired[ImageSize]
+    image_width: NotRequired[int]
+    image_height: NotRequired[int]
     color_mode: NotRequired[ColorMode]
     single_channel: NotRequired[bool]
+    inverted_classes: NotRequired[bool]
 
 
 class ExplainerConfig(TypedDict, total=False):
@@ -18,44 +20,56 @@ class ExplainerConfig(TypedDict, total=False):
     threshold_method: NotRequired[ThresholdMethod]
     overlap_threshold: NotRequired[float]
     distance_metric: NotRequired[DistanceMetric]
+    activation_maps_path: NotRequired[str]
 
 
-class AnalysisConfig(TypedDict, total=False):
+class CalculatorConfig(TypedDict, total=False):
     ndigits: NotRequired[int]
+
+
+class DatasetConfig(TypedDict, total=False):
+    max_samples: NotRequired[int]
     shuffle: NotRequired[bool]
     seed: NotRequired[int]
-    max_samples: NotRequired[int]
 
 
 class BaseConfig(TypedDict, total=False):
     model_path: Required[str]
-    model_options: NotRequired[ModelConfig]
-    explainer_options: NotRequired[ExplainerConfig]
-    calculator_options: NotRequired[AnalysisConfig]
+    dataset_path: Required[str]
+    model_config: NotRequired[ModelConfig]
+    explainer_config: NotRequired[ExplainerConfig]
+    calculator_config: NotRequired[CalculatorConfig]
+    dataset_config: NotRequired[DatasetConfig]
 
 
-def create_default_config(model_path: str) -> BaseConfig:
+def create_default_config(model_path: str, dataset_path: str) -> BaseConfig:
     """Create a complete configuration with all defaults"""
     return {
         "model_path": model_path,
-        "model_options": {
-            "target_size": (128, 128),
+        "dataset_path": dataset_path,
+        "model_config": {
+            "image_width": 224,
+            "image_height": 224,
             "color_mode": "L",
             "single_channel": False,
+            "inverted_classes": False,
         },
-        "explainer_options": {
+        "explainer_config": {
             "max_faces": 1,
             "cam_method": "gradcam++",
             "cutoff_percentile": 90,
             "threshold_method": "otsu",
             "overlap_threshold": 0.2,
             "distance_metric": "euclidean",
+            "activation_maps_path": "outputs/activation_maps",
         },
-        "calculator_options": {
+        "calculator_config": {
             "ndigits": 3,
+        },
+        "dataset_config": {
+            "max_samples": -1,
             "shuffle": True,
             "seed": 69,
-            "max_samples": -1,
         },
     }
 
