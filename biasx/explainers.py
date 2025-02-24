@@ -114,8 +114,9 @@ class ClassActivationMapper:
 
     def process_heatmap(self, heatmap: np.ndarray) -> list[Box]:
         """Process heatmap into activation boxes."""
-        heatmap[heatmap < np.percentile(heatmap, self.cutoff_percentile)] = 0
-        binary = heatmap > self.threshold_method(heatmap)
+        heatmap_copy = heatmap.copy()
+        heatmap_copy[heatmap_copy < np.percentile(heatmap_copy, self.cutoff_percentile)] = 0
+        binary = heatmap_copy > self.threshold_method(heatmap_copy)
         return [Box(min_col, min_row, max_col, max_row) for region in regionprops(label(binary)) for min_row, min_col, max_row, max_col in [region.bbox]]
 
 
