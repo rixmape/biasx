@@ -11,7 +11,14 @@ from biasx.config import Config
 from biasx.defaults import create_default_config
 from biasx.types import CAMMethod, ColorMode, DistanceMetric, ThresholdMethod
 
-from .graphs import create_confusion_matrix, create_parallel_coordinates, create_radar_chart, create_roc_curves, create_violin_plot
+from .graphs import (
+    create_confusion_matrix,
+    create_parallel_coordinates,
+    create_radar_chart,
+    create_roc_curves,
+    create_spatial_heatmap,
+    create_violin_plot,
+)
 
 CONFIG_SCHEMA = {
     "model_config": {
@@ -89,8 +96,15 @@ def validate_model(file: gr.File) -> str:
         raise gr.Error(f"Invalid model file: {e}")
 
 
-def create_analysis_function(component_map: dict[int, tuple[str, str, Any]]) -> Callable[..., list[go.Figure]]:
+def create_analysis_function(
+    component_map: dict[int, tuple[str, str, Any]],
+    filter_map: dict[str, dict[str, gr.Component]],
+) -> Callable[..., list[go.Figure]]:
     """Create analysis function with proper configuration mapping."""
+
+    for section, components in filter_map.items():
+        for key, component in components.items():
+            filter_map[section][key] = component.value
 
     def analyze(*values: list[Any]) -> list[go.Figure]:
         model_path = validate_model(values[0])
@@ -111,6 +125,7 @@ def create_analysis_function(component_map: dict[int, tuple[str, str, Any]]) -> 
             create_confusion_matrix(results.explanations),
             create_roc_curves(results.explanations),
             create_violin_plot(results.explanations),
+            create_spatial_heatmap(results.explanations, **filter_map["spatial_heatmap"]),
         ]
 
     return analyze

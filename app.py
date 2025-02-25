@@ -2,6 +2,7 @@ from typing import Any
 
 import gradio as gr
 
+from biasx.types import FacialFeature, Gender
 from frontend.utils import CONFIG_SCHEMA, create_analysis_function, create_component, create_default_config
 
 
@@ -45,6 +46,7 @@ def create_interface() -> gr.Blocks:
             with gr.Column(scale=4):
                 gr.Markdown("## Results")
                 outputs = []
+                filter_map: dict[str, dict[str, gr.Component]] = {}
                 with gr.Row():
                     outputs.extend(
                         [
@@ -61,7 +63,35 @@ def create_interface() -> gr.Blocks:
                         ]
                     )
 
-        analyze_fn = create_analysis_function(input_component_map)
+                with gr.Row():
+                    with gr.Column():
+                        with gr.Accordion(label="Filters", open=False):
+                            genders = list(Gender.__args__)
+                            features = list(FacialFeature.__args__)
+                            filter_map["spatial_heatmap"] = {
+                                "gender_filters": gr.Dropdown(
+                                    choices=genders,
+                                    value=genders,
+                                    multiselect=True,
+                                    label="Gender",
+                                    scale=1,
+                                ),
+                                "feature_filters": gr.Dropdown(
+                                    choices=features,
+                                    value=features,
+                                    multiselect=True,
+                                    label="Feature",
+                                    scale=2,
+                                    interactive=True,
+                                ),
+                                "misclassified_only": gr.Checkbox(label="Misclassified Only", scale=1),
+                            }
+                        outputs.append(gr.Plot(label="Activation Frequency Across Facial Regions", scale=1))
+
+                    gr.Plot(label="Empty", scale=1),
+                    gr.Plot(label="Empty", scale=1),
+
+        analyze_fn = create_analysis_function(input_component_map, filter_map)
         analyze_btn.click(fn=analyze_fn, inputs=components, outputs=outputs)
 
     return demo

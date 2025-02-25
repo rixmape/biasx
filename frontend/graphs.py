@@ -1,3 +1,4 @@
+from typing import Optional
 import numpy as np
 import plotly.graph_objects as go
 from sklearn.metrics import auc, confusion_matrix, roc_curve
@@ -134,6 +135,42 @@ def create_violin_plot(explanations: list[Explanation]) -> go.Figure:
         yaxis_range=[-0.02, 1.02],
         violinmode="overlay",
         legend=dict(yanchor="bottom", xanchor="right", x=0.95, y=0.05),
+    )
+
+    return fig
+
+
+def create_spatial_heatmap(
+    explanations: list[Explanation],
+    gender_filters: list[int] = None,
+    feature_filters: list[str] = None,
+    misclassified_only: bool = True,
+) -> go.Figure:
+    """Creates a spatial heatmap of activation frequency across facial regions."""
+    filtered_exps = [
+        exp
+        for exp in explanations
+        if (not misclassified_only or exp.predicted_gender != exp.true_gender)
+        and (gender_filters is None or exp.true_gender in gender_filters)
+    ]
+    heatmap = np.zeros((48, 48))
+
+    for exp in filtered_exps:
+        for box in exp.activation_boxes:
+            if feature_filters is None or box.feature in feature_filters:
+                y_range = (max(0, box.min_y), min(48, box.max_y))
+                x_range = (max(0, box.min_x), min(48, box.max_x))
+                heatmap[y_range[0] : y_range[1], x_range[0] : x_range[1]] += 1
+
+    max_activation = np.max(heatmap)
+    normalized_heatmap = heatmap / max_activation if max_activation > 0 else heatmap
+
+    fig = go.Figure(go.Heatmap(z=normalized_heatmap, colorscale="Reds", showscale=False, zmin=0, zmax=1))
+    fig.update_layout(
+        xaxis=dict(showticklabels=False, showgrid=False, zeroline=False, range=[-1, 49]),
+        yaxis=dict(showticklabels=False, showgrid=False, zeroline=False, scaleanchor="x", scaleratio=1, range=[49, -1]),
+        margin=dict(l=0, r=0, b=0, t=0, pad=0),
+        plot_bgcolor="rgba(0,0,0,0)",
     )
 
     return fig
