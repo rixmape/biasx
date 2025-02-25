@@ -123,7 +123,8 @@ def create_analysis_function(
             create_confusion_matrix(results.explanations),
             create_roc_curves(results.explanations),
             create_violin_plot(results.explanations),
-            create_spatial_heatmap(results.explanations, **filter_vals),
+            create_spatial_heatmap(results.explanations, **(filter_vals | {"genders": [0]})),
+            create_spatial_heatmap(results.explanations, **(filter_vals | {"genders": [1]})),
         ]
 
     return analyze
