@@ -45,17 +45,15 @@ class BiasAnalyzer:
     def analyze(self, output_path: Optional[str] = None) -> AnalysisDataset:
         """Analyze a dataset of facial images and compute bias metrics."""
         results = AnalysisDataset()
-        results.explanations = [
-            result
-            for image_path, true_gender in self.dataset
-            if (result := self.analyze_image(image_path, true_gender))
-        ]
+        results.explanations = [result for image_path, true_gender in self.dataset if (result := self.analyze_image(image_path, true_gender))]
+
         features = self.explainer.landmarker.mapping.get_features()
-        results.set_bias_metrics(
-            bias_score=self.calculator.compute_overall_bias(results.explanations, features),
-            feature_scores={f: self.calculator.compute_feature_scores(results.explanations, f) for f in features},
-            feature_probabilities={f: self.calculator.compute_feature_probs(results.explanations, f) for f in features},
-        )
+
+        fairness_scores = self.calculator.compute_all_fairness_scores(results.explanations, features)
+        feature_scores = {feature: self.calculator.compute_feature_scores(results.explanations, feature) for feature in features}
+        feature_probabilities = {feature: self.calculator.compute_feature_probs(results.explanations, feature) for feature in features}
+
+        results.set_bias_metrics(feature_scores=feature_scores, feature_probabilities=feature_probabilities, fairness_scores=fairness_scores)
 
         if output_path:
             results.save(output_path)

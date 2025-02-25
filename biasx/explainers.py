@@ -50,16 +50,23 @@ class LandmarkMapping:
 class FacialLandmarker:
     """Handles facial landmark detection using MediaPipe."""
 
-    DEFAULT_MODEL_PATH = "biasx/models/mediapipe_landmarker.task"
-
     def __init__(self, max_faces: int):
         """Initialize the facial landmark detector."""
-        self.options = FaceLandmarkerOptions(
-            base_options=BaseOptions(model_asset_path=self.DEFAULT_MODEL_PATH),
-            num_faces=max_faces,
-        )
+        model_path = self._get_model_path()
+        self.options = FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=model_path), num_faces=max_faces)
         self.detector = FaceLandmarker.create_from_options(self.options)
         self.mapping = LandmarkMapping()
+
+    def _get_model_path(self):
+        """Get the absolute path to the model file."""
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        model_path = os.path.join(current_dir, "models", "mediapipe_landmarker.task")
+        abs_model_path = os.path.abspath(model_path)
+
+        if not os.path.exists(abs_model_path):
+            raise FileNotFoundError(f"MediaPipe model not found at {abs_model_path}")
+
+        return abs_model_path
 
     def detect(self, image_path: str, image_width: int, image_height: int) -> list[Box]:
         """Detect facial landmarks in an image."""
@@ -67,10 +74,7 @@ class FacialLandmarker:
         if not result.face_landmarks:
             return []
 
-        points = [
-            (int(round(point.x * image_width)), int(round(point.y * image_height)))
-            for point in result.face_landmarks[0]
-        ]
+        points = [(int(round(point.x * image_width)), int(round(point.y * image_height))) for point in result.face_landmarks[0]]
 
         return [
             Box(
@@ -135,11 +139,7 @@ class ClassActivationMapper:
         heatmap_copy = heatmap.copy()
         heatmap_copy[heatmap_copy < np.percentile(heatmap_copy, self.cutoff_percentile)] = 0
         binary = heatmap_copy > self.threshold_method(heatmap_copy)
-        return [
-            Box(min_col, min_row, max_col, max_row)
-            for region in regionprops(label(binary))
-            for min_row, min_col, max_row, max_col in [region.bbox]
-        ]
+        return [Box(min_col, min_row, max_col, max_row) for region in regionprops(label(binary)) for min_row, min_col, max_row, max_col in [region.bbox]]
 
 
 class VisualExplainer:

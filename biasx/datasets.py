@@ -1,10 +1,10 @@
 import json
 import os
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 import numpy as np
 
-from .types import Explanation
+from .types import Explanation, FairnessScores, FeatureProbability, FeatureScore
 
 
 class FaceDataset:
@@ -38,30 +38,26 @@ class AnalysisDataset:
     """Manages storage and serialization of analysis results."""
 
     def __init__(self):
-        self.bias_score: Optional[float] = None
-        self.feature_scores: dict[str, float] = {}
-        self.feature_probabilities: dict[str, dict[int, float]] = {}
+        """Initialize an empty analysis dataset."""
+        self.feature_scores: FeatureScore = {}
+        self.feature_probabilities: FeatureProbability = {}
+        self.fairness_scores: FairnessScores = {}
         self.explanations: list[Explanation] = []
 
     def add_explanation(self, explanation: Explanation) -> None:
         """Add a single image analysis result."""
         self.explanations.append(explanation)
 
-    def set_bias_metrics(
-        self,
-        bias_score: float,
-        feature_scores: dict[str, float],
-        feature_probabilities: dict[str, dict[int, float]],
-    ) -> None:
-        """Set computed bias metrics."""
-        self.bias_score = bias_score
+    def set_bias_metrics(self, feature_scores: FeatureScore, feature_probabilities: FeatureProbability, fairness_scores: FairnessScores) -> None:
+        """Set computed bias and fairness metrics."""
         self.feature_scores = feature_scores
         self.feature_probabilities = feature_probabilities
+        self.fairness_scores = fairness_scores
 
-    def to_dict(self) -> dict[str, Any]:
-        """Convert dataset to dictionary format."""
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert dataset to dictionary format for serialization."""
         return {
-            "biasScore": self.bias_score,
+            **self.fairness_scores,  # All fairness scores at root level
             "featureScores": self.feature_scores,
             "featureProbabilities": self.feature_probabilities,
             "explanations": [exp.to_dict() for exp in self.explanations],

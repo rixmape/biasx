@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Literal, Optional
+from typing import Any, Dict, Literal, Optional, TypedDict
 
 Gender = Literal[0, 1]
 
@@ -58,6 +58,34 @@ DistanceMetric = Literal[
     "yule",
 ]
 
+FairnessMetric = Literal[
+    "overall_bias",
+    "equalized_odds",
+    "demographic_parity",
+    "disparate_impact",
+    "predictive_parity",
+    "equal_opportunity",
+    "accuracy_parity",
+    "treatment_equality",
+]
+
+
+class ConfusionMatrixStats(TypedDict):
+    TP: int
+    FP: int
+    TN: int
+    FN: int
+
+
+ConfusionMatrix = Dict[Gender, ConfusionMatrixStats]
+
+
+class ProcessedResults(TypedDict):
+    by_gender: Dict[Gender, list]
+    misclassified: list
+    misclassified_by_gender: Dict[Gender, list]
+    total_count: int
+
 
 @dataclass
 class Box:
@@ -110,3 +138,8 @@ class Explanation:
             "activationBoxes": [box.to_dict() for box in self.activation_boxes],
             "landmarkBoxes": [box.to_dict() for box in self.landmark_boxes],
         }
+
+
+FeatureScore = Dict[FacialFeature, float]
+FeatureProbability = Dict[str, Dict[Gender, float]]
+FairnessScores = Dict[FairnessMetric, float]
