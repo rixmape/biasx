@@ -46,7 +46,6 @@ def create_interface() -> gr.Blocks:
             with gr.Column(scale=4):
                 gr.Markdown("## Results")
                 outputs = []
-                filter_map: dict[str, dict[str, gr.Component]] = {}
                 with gr.Row():
                     outputs.extend(
                         [
@@ -64,32 +63,23 @@ def create_interface() -> gr.Blocks:
                     )
 
                 with gr.Row():
-                    with gr.Column():
-                        with gr.Accordion(label="Filters", open=False):
-                            genders = list(Gender.__args__)
-                            features = list(FacialFeature.__args__)
-                            filter_map["spatial_heatmap"] = {
-                                "gender_filters": gr.Dropdown(
-                                    choices=genders,
-                                    value=genders,
-                                    multiselect=True,
-                                    label="Gender",
-                                    scale=1,
-                                ),
-                                "feature_filters": gr.Dropdown(
-                                    choices=features,
-                                    value=features,
-                                    multiselect=True,
-                                    label="Feature",
-                                    scale=2,
-                                    interactive=True,
-                                ),
-                                "misclassified_only": gr.Checkbox(label="Misclassified Only", scale=1),
-                            }
-                        outputs.append(gr.Plot(label="Activation Frequency Across Facial Regions", scale=1))
+                    genders = list(Gender.__args__)
+                    features = list(FacialFeature.__args__)
 
-                    gr.Plot(label="Empty", scale=1),
-                    gr.Plot(label="Empty", scale=1),
+                    filter_map: dict[str, gr.Component] = {
+                        "genders": gr.CheckboxGroup(choices=genders, label="Gender Filter", scale=1),
+                        "features": gr.CheckboxGroup(choices=features, label="Facial Features Filter", scale=4),
+                        "misclassified_only": gr.Checkbox(label="Show Misclassified Only", scale=1),
+                    }
+
+                with gr.Row():
+                    outputs.extend(
+                        [
+                            gr.Plot(label="Activation Frequency Across Facial Regions", scale=1),
+                        ]
+                    )
+                    gr.Plot()
+                    gr.Plot()
 
         analyze_fn = create_analysis_function(input_component_map, filter_map)
         analyze_btn.click(fn=analyze_fn, inputs=components, outputs=outputs)

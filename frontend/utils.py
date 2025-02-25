@@ -98,13 +98,11 @@ def validate_model(file: gr.File) -> str:
 
 def create_analysis_function(
     component_map: dict[int, tuple[str, str, Any]],
-    filter_map: dict[str, dict[str, gr.Component]],
+    filter_map: dict[str, gr.Component],
 ) -> Callable[..., list[go.Figure]]:
     """Create analysis function with proper configuration mapping."""
 
-    for section, components in filter_map.items():
-        for key, component in components.items():
-            filter_map[section][key] = component.value
+    filter_vals = {key: component.value for key, component in filter_map.items()}
 
     def analyze(*values: list[Any]) -> list[go.Figure]:
         model_path = validate_model(values[0])
@@ -125,7 +123,7 @@ def create_analysis_function(
             create_confusion_matrix(results.explanations),
             create_roc_curves(results.explanations),
             create_violin_plot(results.explanations),
-            create_spatial_heatmap(results.explanations, **filter_map["spatial_heatmap"]),
+            create_spatial_heatmap(results.explanations, **filter_vals),
         ]
 
     return analyze
