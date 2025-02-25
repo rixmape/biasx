@@ -1,13 +1,47 @@
+# Virtual environments
 .venv/
-.gradio/
-__pycache__/
+venv/
+env/
+.env/
 
+# Gradio cache
+.gradio/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs and outputs
 logs/
 images/
 outputs/
 
+# Temporary files
 tmp*
 *tmp
 
+# Model files
 *.h5
 *.keras
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+biasx.egg-info/
+
+# Development
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Documentation build
+docs/_build/
+site/

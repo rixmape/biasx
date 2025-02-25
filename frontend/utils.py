@@ -11,7 +11,7 @@ from biasx.config import Config
 from biasx.defaults import create_default_config
 from biasx.types import CAMMethod, ColorMode, DistanceMetric, ThresholdMethod
 
-from .graphs import (
+from graphs import (
     create_confusion_matrix,
     create_parallel_coordinates,
     create_radar_chart,
