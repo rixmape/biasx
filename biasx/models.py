@@ -2,7 +2,7 @@ import keras
 import numpy as np
 from PIL import Image
 
-from .types import ColorMode
+from .types import ColorMode, Gender
 
 
 class ClassificationModel:
@@ -28,10 +28,10 @@ class ClassificationModel:
     def preprocess_image(self, image_path: str) -> np.ndarray:
         """Preprocess a single image for model input."""
         image = Image.open(image_path).convert(self.color_mode).resize((self.image_width, self.image_height))
-        image_array = np.array(image, dtype=np.float32) / 255.0
-        return np.expand_dims(image_array, axis=-1) if self.color_mode == "L" and not self.single_channel else image_array
+        img_array = np.array(image, dtype=np.float32) / 255.0
+        return np.expand_dims(img_array, axis=-1) if self.color_mode == "L" and not self.single_channel else img_array
 
-    def predict(self, image: np.ndarray) -> tuple[int, float]:
+    def predict(self, image: np.ndarray) -> tuple[Gender, float]:
         """Make single prediction with confidence score."""
         batch = np.expand_dims(image, axis=0)
         output = self.model.predict(batch, verbose=0)

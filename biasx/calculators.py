@@ -10,7 +10,7 @@ class BiasCalculator:
         """Initialize the bias calculator."""
         self.ndigits = ndigits
 
-    def compute_feature_probabilities(self, results: list[Explanation], feature: str) -> dict[int, float]:
+    def compute_feature_probs(self, results: list[Explanation], feature: str) -> dict[int, float]:
         """Compute feature activation probabilities per class."""
         misclassified = [r for r in results if r.predicted_gender != r.true_gender]
         return {
@@ -22,11 +22,11 @@ class BiasCalculator:
             for gender in (0, 1)
         }
 
-    def compute_feature_bias(self, results: list[Explanation], feature: str) -> float:
+    def compute_feature_scores(self, results: list[Explanation], feature: str) -> float:
         """Compute bias score for a specific feature."""
-        probs = self.compute_feature_probabilities(results, feature)
+        probs = self.compute_feature_probs(results, feature)
         return round(abs(probs[1] - probs[0]), self.ndigits)
 
     def compute_overall_bias(self, results: list[Explanation], features: list[str]) -> float:
         """Compute overall bias score across all features."""
-        return round(np.mean([self.compute_feature_bias(results, feature) for feature in features]), self.ndigits)
+        return round(np.mean([self.compute_feature_scores(results, feature) for feature in features]), self.ndigits)

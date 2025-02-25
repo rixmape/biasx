@@ -1,7 +1,15 @@
 from dataclasses import asdict, dataclass
 from typing import Any, Union
 
-from .defaults import BaseConfig, CalculatorConfig, DatasetConfig, ExplainerConfig, ModelConfig, create_default_config, merge_configs
+from .defaults import (
+    BaseConfig,
+    CalculatorConfig,
+    DatasetConfig,
+    ExplainerConfig,
+    ModelConfig,
+    create_default_config,
+    merge_configs,
+)
 
 
 @dataclass(frozen=True)

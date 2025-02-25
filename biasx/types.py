@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Literal, Optional
 
 Gender = Literal[0, 1]
+
 FacialFeature = Literal[
     "left_eye",
     "right_eye",
@@ -9,14 +10,53 @@ FacialFeature = Literal[
     "lips",
     "left_cheek",
     "right_cheek",
+    "chin",
+    "forehead",
     "left_eyebrow",
     "right_eyebrow",
 ]
 
 ColorMode = Literal["L", "RGB"]
 CAMMethod = Literal["gradcam", "gradcam++", "scorecam"]
-ThresholdMethod = Literal["otsu", "niblack", "sauvola"]
-DistanceMetric = Literal["euclidean", "manhattan"]
+
+ThresholdMethod = Literal[
+    "isodata",
+    "li",
+    "local",
+    "mean",
+    "minimum",
+    "multiotsu",
+    "niblack",
+    "otsu",
+    "sauvola",
+    "triangle",
+    "yen",
+]
+
+DistanceMetric = Literal[
+    "braycurtis",
+    "canberra",
+    "chebyshev",
+    "cityblock",
+    "correlation",
+    "cosine",
+    "dice",
+    "euclidean",
+    "hamming",
+    "jaccard",
+    "jensenshannon",
+    "kulczynski1",
+    "mahalanobis",
+    "matching",
+    "minkowski",
+    "rogerstanimoto",
+    "russellrao",
+    "seuclidean",
+    "sokalmichener",
+    "sokalsneath",
+    "sqeuclidean",
+    "yule",
+]
 
 
 @dataclass
@@ -52,8 +92,8 @@ class Explanation:
     """Encapsulates analysis results and explanations for a single image."""
 
     image_path: str
-    true_gender: int
-    predicted_gender: int
+    true_gender: Gender
+    predicted_gender: Gender
     prediction_confidence: float
     activation_map_path: Optional[str]
     activation_boxes: list[Box]

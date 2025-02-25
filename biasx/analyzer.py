@@ -6,7 +6,7 @@ from .calculators import BiasCalculator
 from .config import Config
 from .datasets import AnalysisDataset, FaceDataset
 from .models import ClassificationModel
-from .types import Explanation
+from .types import Explanation, Gender
 
 
 class BiasAnalyzer:
@@ -21,12 +21,16 @@ class BiasAnalyzer:
         self.explainer = VisualExplainer(**self.config.explainer_config)
         self.calculator = BiasCalculator(**self.config.calculator_config)
 
-    def analyze_image(self, image_path: str, true_gender: int) -> Optional[Explanation]:
+    def analyze_image(self, image_path: str, true_gender: Gender) -> Optional[Explanation]:
         """Analyze a single image and generate an explanation."""
         image = self.model.preprocess_image(image_path)
         predicted_gender, prediction_confidence = self.model.predict(image)
 
-        activation_boxes, landmark_boxes, activation_map_path = self.explainer.explain_image(image_path=image_path, model=self.model, true_gender=true_gender)
+        activation_boxes, landmark_boxes, activation_map_path = self.explainer.explain_image(
+            image_path=image_path,
+            model=self.model,
+            true_gender=true_gender,
+        )
 
         return Explanation(
             image_path=image_path,
@@ -41,12 +45,16 @@ class BiasAnalyzer:
     def analyze(self, output_path: Optional[str] = None) -> AnalysisDataset:
         """Analyze a dataset of facial images and compute bias metrics."""
         results = AnalysisDataset()
-        results.explanations = [result for image_path, true_gender in self.dataset if (result := self.analyze_image(image_path, true_gender))]
+        results.explanations = [
+            result
+            for image_path, true_gender in self.dataset
+            if (result := self.analyze_image(image_path, true_gender))
+        ]
         features = self.explainer.landmarker.mapping.get_features()
         results.set_bias_metrics(
             bias_score=self.calculator.compute_overall_bias(results.explanations, features),
-            feature_scores={feature: self.calculator.compute_feature_bias(results.explanations, feature) for feature in features},
-            feature_probabilities={feature: self.calculator.compute_feature_probabilities(results.explanations, feature) for feature in features},
+            feature_scores={f: self.calculator.compute_feature_scores(results.explanations, f) for f in features},
+            feature_probabilities={f: self.calculator.compute_feature_probs(results.explanations, f) for f in features},
         )
 
         if output_path:
