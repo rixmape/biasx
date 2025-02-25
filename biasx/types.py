@@ -1,6 +1,18 @@
 from dataclasses import dataclass
 from typing import Any, Literal, Optional
 
+Gender = Literal[0, 1]
+FacialFeature = Literal[
+    "left_eye",
+    "right_eye",
+    "nose",
+    "lips",
+    "left_cheek",
+    "right_cheek",
+    "left_eyebrow",
+    "right_eyebrow",
+]
+
 ColorMode = Literal["L", "RGB"]
 CAMMethod = Literal["gradcam", "gradcam++", "scorecam"]
 ThresholdMethod = Literal["otsu", "niblack", "sauvola"]
@@ -29,7 +41,10 @@ class Box:
 
     def to_dict(self) -> dict[str, Any]:
         """Convert box to dictionary format."""
-        return {**{"minX": self.min_x, "minY": self.min_y, "maxX": self.max_x, "maxY": self.max_y}, **({"feature": self.feature} if self.feature else {})}
+        return {
+            **{"minX": self.min_x, "minY": self.min_y, "maxX": self.max_x, "maxY": self.max_y},
+            **({"feature": self.feature} if self.feature else {}),
+        }
 
 
 @dataclass
