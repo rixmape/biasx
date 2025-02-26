@@ -10,7 +10,7 @@ class ClassificationModel:
 
     def __init__(
         self,
-        model_path: str,
+        path: str,
         image_width: int,
         image_height: int,
         color_mode: ColorMode,
@@ -18,7 +18,7 @@ class ClassificationModel:
         inverted_classes: bool,
     ):
         """Initialize the classification model."""
-        self.model = keras.models.load_model(model_path)
+        self.model = keras.models.load_model(path)
         self.image_width = image_width
         self.image_height = image_height
         self.color_mode = color_mode

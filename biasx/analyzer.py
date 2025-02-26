@@ -12,12 +12,12 @@ from .types import Explanation, Gender
 class BiasAnalyzer:
     """Orchestrates the bias analysis pipeline."""
 
-    def __init__(self, config: Union[str, dict, Config]):
+    def __init__(self, config: Union[dict, Config]):
         """Initialize analyzer with configuration"""
         self.config = config if isinstance(config, Config) else Config.create(config)
 
-        self.model = ClassificationModel(model_path=self.config.model_path, **self.config.model_config)
-        self.dataset = FaceDataset(dataset_path=self.config.dataset_path, **self.config.dataset_config)
+        self.model = ClassificationModel(**self.config.model_config)
+        self.dataset = FaceDataset(**self.config.dataset_config)
         self.explainer = VisualExplainer(**self.config.explainer_config)
         self.calculator = BiasCalculator(**self.config.calculator_config)
 

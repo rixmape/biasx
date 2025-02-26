@@ -6,6 +6,7 @@ from .types import CAMMethod, ColorMode, DistanceMetric, ThresholdMethod
 
 
 class ModelConfig(TypedDict, total=False):
+    path: Required[str]
     image_width: NotRequired[int]
     image_height: NotRequired[int]
     color_mode: NotRequired[ColorMode]
@@ -28,14 +29,13 @@ class CalculatorConfig(TypedDict, total=False):
 
 
 class DatasetConfig(TypedDict, total=False):
+    path: Required[str]
     max_samples: NotRequired[int]
     shuffle: NotRequired[bool]
     seed: NotRequired[int]
 
 
 class BaseConfig(TypedDict, total=False):
-    model_path: Required[str]
-    dataset_path: Required[str]
     model_config: NotRequired[ModelConfig]
     explainer_config: NotRequired[ExplainerConfig]
     calculator_config: NotRequired[CalculatorConfig]
@@ -45,9 +45,8 @@ class BaseConfig(TypedDict, total=False):
 def create_default_config(model_path: str, dataset_path: str) -> BaseConfig:
     """Create a complete configuration with all defaults"""
     return {
-        "model_path": model_path,
-        "dataset_path": dataset_path,
         "model_config": {
+            "path": model_path,
             "image_width": 224,
             "image_height": 224,
             "color_mode": "L",
@@ -67,6 +66,7 @@ def create_default_config(model_path: str, dataset_path: str) -> BaseConfig:
             "ndigits": 3,
         },
         "dataset_config": {
+            "path": dataset_path,
             "max_samples": -1,
             "shuffle": True,
             "seed": 69,
