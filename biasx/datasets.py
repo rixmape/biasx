@@ -7,27 +7,15 @@ import numpy as np
 import pyarrow.parquet as pq
 from huggingface_hub import hf_hub_download
 
-from .types import DatasetSource, Explanation, FairnessScores, FeatureProbability, FeatureScore
+from .types import Age, DatasetSource, Explanation, FairnessScores, FeatureProbability, FeatureScore, Gender, Race
 
 
 class FaceDataset:
     """Manages the facial image dataset used for bias analysis."""
 
     DATASET_INFO = {
-        "utkface": {
-            "repo_id": "rixmape/utkface",
-            "filename": "data/train-00000-of-00001.parquet",
-            "repo_type": "dataset",
-            "image_col": "image",
-            "gender_col": "gender",
-        },
-        "fairface": {
-            "repo_id": "rixmape/fairface",
-            "filename": "data/train-00000-of-00001.parquet",
-            "repo_type": "dataset",
-            "image_col": "image",
-            "gender_col": "gender",
-        },
+        "utkface": {"repo_id": "rixmape/utkface", "filename": "data/train-00000-of-00001.parquet", "repo_type": "dataset", "image_id_col": "image_id", "image_col": "image", "gender_col": "gender", "age_col": "age", "race_col": "race"},
+        "fairface": {"repo_id": "rixmape/fairface", "filename": "data/train-00000-of-00001.parquet", "repo_type": "dataset", "image_id_col": "image_id", "image_col": "image", "gender_col": "gender", "age_col": "age", "race_col": "race"},
     }
 
     def __init__(
@@ -51,7 +39,7 @@ class FaceDataset:
         self.dataset_info = self.DATASET_INFO[source]
 
         # Download and process dataset
-        self.image_paths, self.genders = self._load_dataset()
+        self.image_paths, self.image_ids, self.genders, self.ages, self.races = self._load_dataset()
 
     def _load_dataset(self) -> tuple[list[str], list[int]]:
         """Download and process dataset from HuggingFace."""
@@ -72,10 +60,16 @@ class FaceDataset:
     def _process_dataset(self, df) -> tuple[list[str], list[int]]:
         """Process dataset and extract image paths and genders."""
         image_paths = []
+        image_ids = []
         genders = []
+        ages = []
+        races = []
 
         image_col = self.dataset_info["image_col"]
+        image_id_col = self.dataset_info["image_id_col"]
         gender_col = self.dataset_info["gender_col"]
+        age_col = self.dataset_info["age_col"]
+        race_col = self.dataset_info["race_col"]
 
         if self.max_samples > 0:
             df = df.sample(min(self.max_samples, len(df)), random_state=self.seed) if self.shuffle else df.head(self.max_samples)
@@ -96,18 +90,24 @@ class FaceDataset:
                 f.write(img_data)
 
             # Get gender (ensure it's binary 0 or 1)
+            image_id = str(row[image_id_col])
             gender = int(row[gender_col])
+            age = int(row[age_col])
+            race = int(row[race_col])
 
             image_paths.append(img_path)
+            image_ids.append(image_id)
             genders.append(gender)
+            ages.append(age)
+            races.append(race)
 
-        return image_paths, genders
+        return image_paths, image_ids, genders, ages, races
 
     def __len__(self) -> int:
         return len(self.image_paths)
 
-    def __getitem__(self, idx: int) -> tuple[str, int]:
-        return self.image_paths[idx], self.genders[idx]
+    def __getitem__(self, idx: int) -> tuple[str, str, Gender, Age, Race]:
+        return self.image_paths[idx], self.image_ids[idx], self.genders[idx], self.ages[idx], self.races[idx]
 
     def __del__(self):
         """Clean up temporary directory when object is destroyed."""

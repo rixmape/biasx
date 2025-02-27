@@ -6,7 +6,7 @@ from .calculators import BiasCalculator
 from .config import Config
 from .datasets import AnalysisDataset, FaceDataset
 from .models import ClassificationModel
-from .types import Explanation, Gender
+from .types import Age, Explanation, Gender, Race
 
 
 class BiasAnalyzer:
@@ -21,7 +21,7 @@ class BiasAnalyzer:
         self.explainer = VisualExplainer(**self.config.explainer_config)
         self.calculator = BiasCalculator(**self.config.calculator_config)
 
-    def analyze_image(self, image_path: str, true_gender: Gender) -> Optional[Explanation]:
+    def analyze_image(self, image_path: str, image_id: str, true_gender: Gender, age: Age, race: Race) -> Optional[Explanation]:
         """Analyze a single image and generate an explanation."""
         image = self.model.preprocess_image(image_path)
         predicted_gender, prediction_confidence = self.model.predict(image)
@@ -34,8 +34,11 @@ class BiasAnalyzer:
 
         return Explanation(
             image_path=image_path,
+            image_id=image_id,
             true_gender=true_gender,
             predicted_gender=predicted_gender,
+            age=age,
+            race=race,
             prediction_confidence=prediction_confidence,
             activation_map_path=activation_map_path,
             activation_boxes=activation_boxes,
@@ -45,7 +48,20 @@ class BiasAnalyzer:
     def analyze(self, output_path: Optional[str] = None) -> AnalysisDataset:
         """Analyze a dataset of facial images and compute bias metrics."""
         results = AnalysisDataset()
-        results.explanations = [result for image_path, true_gender in self.dataset if (result := self.analyze_image(image_path, true_gender))]
+
+        results.explanations = [
+            result
+            for image_path, image_id, true_gender, age, race in self.dataset
+            if (
+                result := self.analyze_image(
+                    image_path=image_path,
+                    image_id=image_id,
+                    true_gender=true_gender,
+                    age=age,
+                    race=race,
+                )
+            )
+        ]
 
         features = self.explainer.landmarker.mapping.get_features()
 

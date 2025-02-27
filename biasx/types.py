@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Literal, Optional, TypedDict
 
-Gender = Literal[0, 1]
+Gender = Literal[0, 1]  # Male, Female
+Age = Literal[0, 1, 2, 3, 4, 5, 6, 7]  # 0-9, 10-19, ..., 70+
+Race = Literal[0, 1, 2, 3, 4]  # White, Black, Asian, Indian, Others
 
 FacialFeature = Literal[
     "left_eye",
@@ -122,8 +124,11 @@ class Explanation:
     """Encapsulates analysis results and explanations for a single image."""
 
     image_path: str
+    image_id: str
     true_gender: Gender
     predicted_gender: Gender
+    age: Age
+    race: Race
     prediction_confidence: float
     activation_map_path: Optional[str]
     activation_boxes: list[Box]
@@ -133,8 +138,11 @@ class Explanation:
         """Convert explanation to dictionary format for serialization."""
         return {
             "imagePath": self.image_path,
+            "imageId": self.image_id,
             "trueGender": self.true_gender,
             "predictedGender": self.predicted_gender,
+            "age": self.age,
+            "race": self.race,
             "predictionConfidence": self.prediction_confidence,
             "activationMapPath": self.activation_map_path,
             "activationBoxes": [box.to_dict() for box in self.activation_boxes],
