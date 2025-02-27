@@ -2,7 +2,7 @@ from typing import TypedDict
 
 from typing_extensions import NotRequired, Required
 
-from .types import CAMMethod, ColorMode, DistanceMetric, ThresholdMethod
+from .types import CAMMethod, ColorMode, DatasetSource, DistanceMetric, ThresholdMethod
 
 
 class ModelConfig(TypedDict, total=False):
@@ -29,7 +29,7 @@ class CalculatorConfig(TypedDict, total=False):
 
 
 class DatasetConfig(TypedDict, total=False):
-    path: Required[str]
+    source: NotRequired[DatasetSource]
     max_samples: NotRequired[int]
     shuffle: NotRequired[bool]
     seed: NotRequired[int]
@@ -42,7 +42,7 @@ class BaseConfig(TypedDict, total=False):
     dataset_config: NotRequired[DatasetConfig]
 
 
-def create_default_config(model_path: str, dataset_path: str) -> BaseConfig:
+def create_default_config(model_path: str) -> BaseConfig:
     """Create a complete configuration with all defaults"""
     return {
         "model_config": {
@@ -66,7 +66,7 @@ def create_default_config(model_path: str, dataset_path: str) -> BaseConfig:
             "ndigits": 3,
         },
         "dataset_config": {
-            "path": dataset_path,
+            "source": "utkface",
             "max_samples": -1,
             "shuffle": True,
             "seed": 69,

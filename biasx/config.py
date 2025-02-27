@@ -24,10 +24,14 @@ class Config:
     @classmethod
     def create(cls, config: Union[dict, BaseConfig]) -> "Config":
         """Create configuration from path or dict, merging with defaults"""
+        if "model_config" not in config or "path" not in config["model_config"]:
+            raise ValueError("model_config.path is required")
+
         base_config = merge_configs(
-            create_default_config(config["model_config"]["path"], config["dataset_config"]["path"]),
+            create_default_config(config["model_config"]["path"]),
             config,
         )
+
         return cls(
             model_config=base_config["model_config"],
             explainer_config=base_config["explainer_config"],

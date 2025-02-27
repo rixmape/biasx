@@ -16,6 +16,8 @@ FacialFeature = Literal[
     "right_eyebrow",
 ]
 
+DatasetSource = Literal["utkface", "fairface"]
+
 ColorMode = Literal["L", "RGB"]
 CAMMethod = Literal["gradcam", "gradcam++", "scorecam"]
 

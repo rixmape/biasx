@@ -19,6 +19,8 @@ dependencies = [
     "scikit-image",
     "tf_keras_vis",
     "scikit-learn",
+    "huggingface_hub",
+    "pyarrow",
 ]
 
 [project.optional-dependencies]
