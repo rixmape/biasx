@@ -1,10 +1,9 @@
 from typing import Optional, Union
 
-from biasx.explainers import VisualExplainer
-
 from .calculators import BiasCalculator
 from .config import Config
 from .datasets import AnalysisDataset, FaceDataset
+from .explainers import VisualExplainer
 from .models import ClassificationModel
 from .types import Age, Explanation, Gender, Race
 
@@ -16,10 +15,10 @@ class BiasAnalyzer:
         """Initialize analyzer with configuration"""
         self.config = config if isinstance(config, Config) else Config.create(config)
 
-        self.model = ClassificationModel(**self.config.model_config)
-        self.dataset = FaceDataset(**self.config.dataset_config)
-        self.explainer = VisualExplainer(**self.config.explainer_config)
-        self.calculator = BiasCalculator(**self.config.calculator_config)
+        self.model = ClassificationModel(**self.config.model_config.to_dict())
+        self.dataset = FaceDataset(**self.config.dataset_config.to_dict())
+        self.explainer = VisualExplainer(**self.config.explainer_config.to_dict())
+        self.calculator = BiasCalculator(**self.config.calculator_config.to_dict())
 
     def analyze_image(self, image_path: str, image_id: str, true_gender: Gender, age: Age, race: Race) -> Optional[Explanation]:
         """Analyze a single image and generate an explanation."""

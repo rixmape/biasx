@@ -1,3 +1,4 @@
+import json
 import os
 
 import keras
@@ -22,21 +23,26 @@ class LandmarkMapping:
     """Maps facial features to their corresponding landmark indices."""
 
     def __init__(self):
-        """Initialize the facial feature to landmark index mapping."""
-        # fmt: off
-        self.mapping = {
-            "left_eye": [249, 263, 362, 373, 374, 380, 381, 382, 384, 385, 386, 387, 388, 390, 398, 466],
-            "right_eye": [7, 33, 133, 144, 145, 153, 154, 155, 157, 158, 159, 160, 161, 163, 173, 246],
-            "nose": [1, 2, 4, 5, 6, 19, 45, 48, 64, 94, 97, 98, 115, 168, 195, 197, 220, 275, 278, 294, 326, 327, 344, 440],
-            "lips": [0, 13, 14, 17, 37, 39, 40, 61, 78, 80, 81, 82, 84, 87, 88, 91, 95, 146, 178, 181, 185, 191, 267, 269, 270, 291, 308, 310, 311, 312, 314, 317, 318, 321, 324, 375, 402, 405, 409, 415],
-            "left_cheek": [454, 447, 345, 346, 347, 330, 425, 427, 434, 416, 435, 288, 361, 323, 280, 352, 366, 411, 376, 401, 433],
-            "right_cheek": [234, 227, 116,117,118, 101, 205, 207, 214, 192, 215, 58, 132, 93, 127, 50, 123, 137, 177, 147, 187, 213],
-            "chin": [202, 210, 169, 150, 149, 176,148, 152, 377, 400, 378, 379, 394, 430, 422, 211, 32, 208, 199, 428, 262, 431, 170, 140, 171, 175, 396, 369, 395],
-            "forehead": [54, 71, 68, 104, 69, 109, 151, 337, 299, 333, 298, 301, 284, 332, 297, 338, 10, 67, 103],
-            "left_eyebrow": [276, 282, 283, 285, 293, 295, 296, 300, 334, 336],
-            "right_eyebrow": [46, 52, 53, 55, 63, 65, 66, 70, 105, 107],
-        }
-        # fmt: on
+        """Initialize the facial feature to landmark index mapping by loading from JSON."""
+        self.mapping = self._load_mapping()
+
+    def _load_mapping(self) -> dict:
+        """Load the landmark mapping from a JSON file."""
+        mapping_path = self._get_mapping_path()
+        with open(mapping_path, "r") as f:
+            return json.load(f)
+
+    def _get_mapping_path(self) -> str:
+        """Get the absolute path to the mapping file."""
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        data_dir = os.path.join(current_dir, "data")
+        mapping_path = os.path.join(data_dir, "landmark_mapping.json")
+        abs_mapping_path = os.path.abspath(mapping_path)
+
+        if not os.path.exists(abs_mapping_path):
+            raise FileNotFoundError(f"Landmark mapping file not found at {abs_mapping_path}")
+
+        return abs_mapping_path
 
     def get_indices(self, feature: str) -> list[int]:
         """Get landmark indices for a given facial feature."""

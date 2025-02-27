@@ -1,49 +1,110 @@
-from dataclasses import asdict, dataclass
-from typing import Any, Union
+"""
+Configuration module for the bias analysis pipeline.
+Handles loading, merging, and validation of configuration settings.
+"""
 
-from .defaults import (
-    BaseConfig,
-    CalculatorConfig,
-    DatasetConfig,
-    ExplainerConfig,
-    ModelConfig,
-    create_default_config,
-    merge_configs,
-)
+from dataclasses import asdict, dataclass, field
+from typing import Any, Dict
+
+from .types import CAMMethod, ColorMode, DatasetSource, DistanceMetric, ThresholdMethod
 
 
-@dataclass(frozen=True)
+@dataclass
+class ModelConfig:
+    """Configuration for the classification model."""
+
+    path: str
+    image_width: int = 224
+    image_height: int = 224
+    color_mode: ColorMode = "L"
+    single_channel: bool = False
+    inverted_classes: bool = False
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for unpacking with **."""
+        return asdict(self)
+
+
+@dataclass
+class ExplainerConfig:
+    """Configuration for the visual explainer."""
+
+    max_faces: int = 1
+    cam_method: CAMMethod = "gradcam++"
+    cutoff_percentile: int = 90
+    threshold_method: ThresholdMethod = "otsu"
+    overlap_threshold: float = 0.2
+    distance_metric: DistanceMetric = "euclidean"
+    activation_maps_path: str = "outputs/activation_maps"
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for unpacking with **."""
+        return asdict(self)
+
+
+@dataclass
+class CalculatorConfig:
+    """Configuration for the bias calculator."""
+
+    ndigits: int = 3
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for unpacking with **."""
+        return asdict(self)
+
+
+@dataclass
+class DatasetConfig:
+    """Configuration for the dataset loader."""
+
+    source: DatasetSource = "utkface"
+    max_samples: int = -1
+    shuffle: bool = True
+    seed: int = 69
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for unpacking with **."""
+        return asdict(self)
+
+
+@dataclass
 class Config:
-    """Configuration class for the bias analysis pipeline"""
+    """Main configuration class for the bias analysis pipeline."""
 
     model_config: ModelConfig
-    explainer_config: ExplainerConfig
-    calculator_config: CalculatorConfig
-    dataset_config: DatasetConfig
+    explainer_config: ExplainerConfig = field(default_factory=ExplainerConfig)
+    calculator_config: CalculatorConfig = field(default_factory=CalculatorConfig)
+    dataset_config: DatasetConfig = field(default_factory=DatasetConfig)
 
     @classmethod
-    def create(cls, config: Union[dict, BaseConfig]) -> "Config":
-        """Create configuration from path or dict, merging with defaults"""
+    def create(cls, config: Dict[str, Any]) -> "Config":
+        """Create configuration from dict, merging with defaults."""
         if "model_config" not in config or "path" not in config["model_config"]:
             raise ValueError("model_config.path is required")
 
-        base_config = merge_configs(
-            create_default_config(config["model_config"]["path"]),
-            config,
-        )
+        model_config = ModelConfig(path=config["model_config"]["path"])
 
-        return cls(
-            model_config=base_config["model_config"],
-            explainer_config=base_config["explainer_config"],
-            calculator_config=base_config["calculator_config"],
-            dataset_config=base_config["dataset_config"],
-        )
+        model_config = cls._update_from_dict(model_config, config.get("model_config", {}))
+        explainer_config = cls._update_from_dict(ExplainerConfig(), config.get("explainer_config", {}))
+        calculator_config = cls._update_from_dict(CalculatorConfig(), config.get("calculator_config", {}))
+        dataset_config = cls._update_from_dict(DatasetConfig(), config.get("dataset_config", {}))
 
-    def to_dict(self) -> dict[str, Any]:
-        """Convert configuration to dictionary format"""
-        return {
-            "model_config": asdict(self.model_config),
-            "explainer_config": asdict(self.explainer_config),
-            "calculator_config": asdict(self.calculator_config),
-            "dataset_config": asdict(self.dataset_config),
-        }
+        return cls(model_config=model_config, explainer_config=explainer_config, calculator_config=calculator_config, dataset_config=dataset_config)
+
+    @staticmethod
+    def _update_from_dict(instance, update_dict):
+        """Update a dataclass instance with values from a dictionary."""
+        if not update_dict:
+            return instance
+
+        instance_dict = asdict(instance)
+
+        for k, v in update_dict.items():
+            if k in instance_dict:
+                instance_dict[k] = v
+
+        return type(instance)(**instance_dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert configuration to dictionary format."""
+        return asdict(self)
