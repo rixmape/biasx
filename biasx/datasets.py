@@ -13,7 +13,50 @@ import pyarrow.parquet as pq
 from huggingface_hub import hf_hub_download
 from PIL import Image
 
-from .types import Age, ColorMode, DatasetMetadata, DatasetSource, Gender, ImageData, Race
+from .types import (Age, ColorMode, DatasetMetadata, DatasetSource, Gender,
+                    ImageData, Race)
+
+
+class ImageProcessor:
+    """Builder class for image preprocessing with method chaining."""
+
+    def __init__(self, image: Image.Image):
+        """Initialize with a PIL image."""
+        self.image = image
+        self.array = None
+
+    def convert(self, mode: str) -> "ImageProcessor":
+        """Convert image to specified color mode."""
+        if self.image.mode != mode:
+            self.image = self.image.convert(mode)
+        return self
+
+    def resize(self, width: int, height: int) -> "ImageProcessor":
+        """Resize image to specified dimensions."""
+        if (self.image.width, self.image.height) != (width, height):
+            self.image = self.image.resize((width, height))
+        return self
+
+    def to_array(self, dtype=np.float32, normalize: bool = True) -> "ImageProcessor":
+        """Convert image to numpy array with optional normalization."""
+        self.array = np.array(self.image, dtype=dtype)
+        if normalize:
+            self.array = self.array / 255.0
+        return self
+
+    def expand_dims(self, axis: int = -1) -> "ImageProcessor":
+        """Add a dimension to the array."""
+        if self.array is not None:
+            self.array = np.expand_dims(self.array, axis=axis)
+        return self
+
+    def get_array(self) -> np.ndarray:
+        """Get the processed numpy array."""
+        return self.array
+
+    def get_image(self) -> Image.Image:
+        """Get the processed PIL image."""
+        return self.image
 
 
 class FaceDataset:
@@ -91,19 +134,15 @@ class FaceDataset:
         return df
 
     def _preprocess_image(self, image: Image.Image) -> np.ndarray:
-        """Preprocess an image for model input."""
-        if image.mode != self.color_mode.value:
-            image = image.convert(self.color_mode.value)
+        """Preprocess an image for model input using method chaining."""
+        processor = ImageProcessor(image)
 
-        if (image.width, image.height) != (self.image_width, self.image_height):
-            image = image.resize((self.image_width, self.image_height))
-
-        img_array = np.array(image, dtype=np.float32) / 255.0
+        processor.convert(self.color_mode.value).resize(self.image_width, self.image_height).to_array()
 
         if self.color_mode == ColorMode.GRAYSCALE and not self.single_channel:
-            img_array = np.expand_dims(img_array, axis=-1)
+            processor.expand_dims(axis=-1)
 
-        return img_array
+        return processor.get_array()
 
     def __len__(self) -> int:
         """Return the number of images in the dataset."""
