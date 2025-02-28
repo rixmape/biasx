@@ -21,7 +21,16 @@ from tf_keras_vis.gradcam_plus_plus import GradcamPlusPlus
 from tf_keras_vis.scorecam import Scorecam
 
 from .models import ClassificationModel
-from .types import Box, CAMMethod, DistanceMetric, FacialFeature, Gender, ThresholdMethod
+from .types import (
+    Box,
+    CAMMethod,
+    DistanceMetric,
+    FacialFeature,
+    Gender,
+    LandmarkerMetadata,
+    LandmarkerSource,
+    ThresholdMethod,
+)
 
 
 class FacialLandmarker:
@@ -29,21 +38,48 @@ class FacialLandmarker:
 
     MAX_FACES = 1
 
-    def __init__(self):
-        """Initialize the facial landmark detector."""
-        model_path = self._download_model()
+    def __init__(self, source: str = LandmarkerSource.MEDIAPIPE):
+        self.source = source
+
+        self.landmarker_info = self._load_landmarker_metadata(source)
+        self.model_path = self._download_model()
         self.landmark_mapping = self._load_landmark_mapping()
-        options = FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=model_path), num_faces=self.MAX_FACES)
+
+        options = FaceLandmarkerOptions(
+            base_options=BaseOptions(model_asset_path=self.model_path),
+            num_faces=self.MAX_FACES,
+        )
         self.detector = FaceLandmarker.create_from_options(options)
 
+    def _load_landmarker_metadata(self, source: LandmarkerSource) -> LandmarkerMetadata:
+        """Load landmarker metadata from configuration file."""
+        config_path = self._get_config_path()
+
+        with open(config_path, "r") as f:
+            config = json.load(f)
+
+        if source.value not in config:
+            raise ValueError(f"Landmarker source {source.value} not found in configuration")
+
+        return LandmarkerMetadata(**config[source.value])
+
+    def _get_config_path(self) -> str:
+        """Get the path to the landmarker configuration file."""
+        module_dir = pathlib.Path(__file__).parent
+        config_path = module_dir / "data" / "landmarker_config.json"
+
+        if not config_path.exists():
+            raise FileNotFoundError(f"Landmarker configuration file not found at {config_path}")
+
+        return str(config_path)
+
     def _download_model(self) -> str:
-        """Download the MediaPipe facial landmark model from HuggingFace."""
-        model_filename = "mediapipe_landmarker.task"
-        repo_id = "rixmape/biasx-models"
-
-        model_path = hf_hub_download(repo_id=repo_id, filename=model_filename, repo_type="model")
-
-        return model_path
+        """Download the facial landmark model from HuggingFace."""
+        return hf_hub_download(
+            repo_id=self.landmarker_info.repo_id,
+            filename=self.landmarker_info.filename,
+            repo_type=self.landmarker_info.repo_type,
+        )
 
     def _load_landmark_mapping(self) -> dict:
         """Load facial landmark mapping from JSON configuration file."""
@@ -58,11 +94,8 @@ class FacialLandmarker:
 
         landmark_mapping = {}
         for feature_name, indices in mapping_data.items():
-            try:
-                feature_enum = FacialFeature(feature_name)
-                landmark_mapping[feature_enum] = indices
-            except ValueError:
-                continue
+            feature_enum = FacialFeature(feature_name)
+            landmark_mapping[feature_enum] = indices
 
         return landmark_mapping
 
@@ -178,6 +211,7 @@ class VisualExplainer:
 
     def __init__(
         self,
+        landmarker_source: LandmarkerSource = LandmarkerSource.MEDIAPIPE,
         cam_method: CAMMethod = CAMMethod.GRADCAM_PLUS_PLUS,
         cutoff_percentile: int = 90,
         threshold_method: ThresholdMethod = ThresholdMethod.OTSU,
@@ -185,7 +219,7 @@ class VisualExplainer:
         distance_metric: DistanceMetric = DistanceMetric.EUCLIDEAN,
     ):
         """Initialize the visual explainer."""
-        self.landmarker = FacialLandmarker()
+        self.landmarker = FacialLandmarker(landmarker_source)
 
         self.activation_mapper = ClassActivationMapper(
             cam_method=cam_method,

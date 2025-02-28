@@ -25,7 +25,7 @@ class BiasAnalyzer:
         self.explainer = VisualExplainer(**vars(self.config.explainer_config))
         self.calculator = BiasCalculator(**vars(self.config.calculator_config))
 
-    def analyze_image(self, image_data) -> Optional[Explanation]:
+    def analyze_image(self, image_data) -> Explanation:
         """Analyze a single image through the pipeline."""
         predicted_gender, confidence = self.model.predict(image_data.preprocessed_image)
 

@@ -6,7 +6,8 @@ Handles loading, merging, and validation of configuration settings.
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict
 
-from .types import CAMMethod, ColorMode, DatasetSource, DistanceMetric, ThresholdMethod
+from .types import (CAMMethod, ColorMode, DatasetSource, DistanceMetric,
+                    LandmarkerSource, ThresholdMethod)
 
 
 @dataclass
@@ -21,6 +22,7 @@ class ModelConfig:
 class ExplainerConfig:
     """Configuration for the visual explainer."""
 
+    landmarker_source: LandmarkerSource = LandmarkerSource.MEDIAPIPE
     cam_method: CAMMethod = CAMMethod.GRADCAM_PLUS_PLUS
     cutoff_percentile: int = 90
     threshold_method: ThresholdMethod = ThresholdMethod.OTSU
@@ -84,24 +86,25 @@ class Config:
     @staticmethod
     def _create_explainer_config(config_dict: Dict[str, Any]) -> ExplainerConfig:
         """Create ExplainerConfig from dictionary with enum conversion."""
-        cam_method = config_dict.get("cam_method")
-        if isinstance(cam_method, str):
-            cam_method = CAMMethod(cam_method)
+        landmarker_source_val = config_dict.get("landmarker_source", LandmarkerSource.MEDIAPIPE.value)
+        landmarker_source = LandmarkerSource(landmarker_source_val)
 
-        threshold_method = config_dict.get("threshold_method")
-        if isinstance(threshold_method, str):
-            threshold_method = ThresholdMethod(threshold_method)
+        cam_method_val = config_dict.get("cam_method", CAMMethod.GRADCAM_PLUS_PLUS.value)
+        cam_method = CAMMethod(cam_method_val)
 
-        distance_metric = config_dict.get("distance_metric")
-        if isinstance(distance_metric, str):
-            distance_metric = DistanceMetric(distance_metric)
+        threshold_method_val = config_dict.get("threshold_method", ThresholdMethod.OTSU.value)
+        threshold_method = ThresholdMethod(threshold_method_val)
+
+        distance_metric_val = config_dict.get("distance_metric", DistanceMetric.EUCLIDEAN.value)
+        distance_metric = DistanceMetric(distance_metric_val)
 
         return ExplainerConfig(
-            cam_method=cam_method or CAMMethod.GRADCAM_PLUS_PLUS,
+            landmarker_source=landmarker_source,
+            cam_method=cam_method,
             cutoff_percentile=config_dict.get("cutoff_percentile", 90),
-            threshold_method=threshold_method or ThresholdMethod.OTSU,
+            threshold_method=threshold_method,
             overlap_threshold=config_dict.get("overlap_threshold", 0.2),
-            distance_metric=distance_metric or DistanceMetric.EUCLIDEAN,
+            distance_metric=distance_metric,
         )
 
     @staticmethod

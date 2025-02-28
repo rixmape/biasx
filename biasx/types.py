@@ -63,6 +63,12 @@ class DatasetSource(enum.Enum):
     FAIRFACE = "fairface"
 
 
+class LandmarkerSource(enum.Enum):
+    """Available facial landmark detection models."""
+
+    MEDIAPIPE = "mediapipe"
+
+
 class ColorMode(enum.Enum):
     """Image color modes."""
 
@@ -127,6 +133,15 @@ class DatasetMetadata:
     gender_col: str
     age_col: str
     race_col: str
+
+
+@dataclass
+class LandmarkerMetadata:
+    """Metadata for a facial landmark detection model."""
+
+    repo_id: str
+    filename: str
+    repo_type: str
 
 
 @dataclass

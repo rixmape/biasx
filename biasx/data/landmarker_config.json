@@ -1,0 +1,7 @@
+{
+    "mediapipe": {
+        "repo_id": "rixmape/biasx-models",
+        "filename": "mediapipe_landmarker.task",
+        "repo_type": "model"
+    }
+}

@@ -41,6 +41,7 @@ class FaceDataset:
         self.seed = seed
 
         self.dataset_info = self._load_dataset_metadata(source)
+        self.dataset_path = self._download_dataset()
         self.dataframe = self._load_dataframe()
 
     def _load_dataset_metadata(self, source: DatasetSource) -> DatasetMetadata:
@@ -53,17 +54,7 @@ class FaceDataset:
         if source.value not in config:
             raise ValueError(f"Dataset source {source.value} not found in configuration")
 
-        metadata = config[source.value]
-        return DatasetMetadata(
-            repo_id=metadata["repo_id"],
-            filename=metadata["filename"],
-            repo_type=metadata["repo_type"],
-            image_id_col=metadata["image_id_col"],
-            image_col=metadata["image_col"],
-            gender_col=metadata["gender_col"],
-            age_col=metadata["age_col"],
-            race_col=metadata["race_col"],
-        )
+        return DatasetMetadata(**config[source.value])
 
     def _get_config_path(self) -> str:
         """Get the path to the dataset configuration file."""
@@ -75,15 +66,17 @@ class FaceDataset:
 
         return str(config_path)
 
-    def _load_dataframe(self):
-        """Download and load the dataset as a pandas DataFrame."""
-        parquet_path = hf_hub_download(
+    def _download_dataset(self) -> str:
+        """Download the dataset from HuggingFace."""
+        return hf_hub_download(
             repo_id=self.dataset_info.repo_id,
             filename=self.dataset_info.filename,
             repo_type=self.dataset_info.repo_type,
         )
 
-        table = pq.read_table(parquet_path)
+    def _load_dataframe(self):
+        """Download and load the dataset as a pandas DataFrame."""
+        table = pq.read_table(self.dataset_path)
         df = table.to_pandas()
 
         if self.max_samples > 0:
