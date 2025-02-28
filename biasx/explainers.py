@@ -1,117 +1,52 @@
-"""
-Explanation module for BiasX.
-Provides classes for generating and processing visual explanations of model decisions.
-"""
+"""Provides classes for generating and processing visual explanations of model decisions."""
 
-import enum
 import json
-import pathlib
-from typing import Any, Callable
+from typing import List, Tuple
 
 import mediapipe as mp
 import numpy as np
 import tensorflow as tf
-import tf_keras_vis
-from huggingface_hub import hf_hub_download
 from mediapipe.tasks.python.core.base_options import BaseOptions
 from mediapipe.tasks.python.vision.face_landmarker import FaceLandmarker, FaceLandmarkerOptions
 from PIL import Image
 from scipy.spatial.distance import cdist
-from skimage.filters import threshold_otsu, threshold_sauvola, threshold_triangle
 from skimage.measure import label, regionprops
-from tf_keras_vis.gradcam import Gradcam
-from tf_keras_vis.gradcam_plus_plus import GradcamPlusPlus
-from tf_keras_vis.scorecam import Scorecam
 
-from .models import ClassificationModel
-from .types import Box, FacialFeature, Gender, LandmarkerMetadata, LandmarkerSource
-
-
-class CAMMethod(enum.Enum):
-    """Class activation mapping methods."""
-
-    GRADCAM = "gradcam"
-    GRADCAM_PLUS_PLUS = "gradcam++"
-    SCORECAM = "scorecam"
-
-    def get_implementation(self) -> tf_keras_vis.ModelVisualization:
-        """Get the implementation class for this CAM method."""
-        implementations = {
-            CAMMethod.GRADCAM: Gradcam,
-            CAMMethod.GRADCAM_PLUS_PLUS: GradcamPlusPlus,
-            CAMMethod.SCORECAM: Scorecam,
-        }
-        return implementations[self]
+from .config import configurable
+from .models import Model
+from .types import Box, CAMMethod, DistanceMetric, FacialFeature, Gender, LandmarkerMetadata, LandmarkerSource, ThresholdMethod
+from .utils import download_resource, get_module_data_path, load_json_config
 
 
-class ThresholdMethod(enum.Enum):
-    """Thresholding methods for activation map processing."""
-
-    OTSU = "otsu"
-    SAUVOLA = "sauvola"
-    TRIANGLE = "triangle"
-
-    def get_implementation(self) -> Callable[[np.ndarray], Any]:
-        """Get the implementation function for this threshold method."""
-        implementations = {
-            ThresholdMethod.OTSU: threshold_otsu,
-            ThresholdMethod.SAUVOLA: threshold_sauvola,
-            ThresholdMethod.TRIANGLE: threshold_triangle,
-        }
-        return implementations[self]
-
-
-class DistanceMetric(enum.Enum):
-    """Distance metrics for comparing spatial coordinates."""
-
-    CITYBLOCK = "cityblock"
-    COSINE = "cosine"
-    EUCLIDEAN = "euclidean"
-
-
+@configurable("landmarker")
 class FacialLandmarker:
     """Detects facial landmarks using MediaPipe."""
 
-    MAX_FACES = 1
-
-    def __init__(self, source: str = LandmarkerSource.MEDIAPIPE):
+    def __init__(self, source: LandmarkerSource, max_faces: int, **kwargs):
+        """Initialize the facial landmark detector."""
         self.source = source
-
-        self.landmarker_info = self._load_landmarker_metadata(source)
+        self.landmarker_info = self._load_landmarker_metadata()
         self.model_path = self._download_model()
         self.landmark_mapping = self._load_landmark_mapping()
 
         options = FaceLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=self.model_path),
-            num_faces=self.MAX_FACES,
+            num_faces=max_faces,
         )
         self.detector = FaceLandmarker.create_from_options(options)
 
-    def _load_landmarker_metadata(self, source: LandmarkerSource) -> LandmarkerMetadata:
+    def _load_landmarker_metadata(self) -> LandmarkerMetadata:
         """Load landmarker metadata from configuration file."""
-        config_path = self._get_config_path()
+        config = load_json_config(__file__, "landmarker_config.json")
 
-        with open(config_path, "r") as f:
-            config = json.load(f)
+        if self.source.value not in config:
+            raise ValueError(f"Landmarker source {self.source.value} not found in configuration")
 
-        if source.value not in config:
-            raise ValueError(f"Landmarker source {source.value} not found in configuration")
-
-        return LandmarkerMetadata(**config[source.value])
-
-    def _get_config_path(self) -> str:
-        """Get the path to the landmarker configuration file."""
-        module_dir = pathlib.Path(__file__).parent
-        config_path = module_dir / "data" / "landmarker_config.json"
-
-        if not config_path.exists():
-            raise FileNotFoundError(f"Landmarker configuration file not found at {config_path}")
-
-        return str(config_path)
+        return LandmarkerMetadata(**config[self.source.value])
 
     def _download_model(self) -> str:
         """Download the facial landmark model from HuggingFace."""
-        return hf_hub_download(
+        return download_resource(
             repo_id=self.landmarker_info.repo_id,
             filename=self.landmarker_info.filename,
             repo_type=self.landmarker_info.repo_type,
@@ -119,13 +54,9 @@ class FacialLandmarker:
 
     def _load_landmark_mapping(self) -> dict:
         """Load facial landmark mapping from JSON configuration file."""
-        module_dir = pathlib.Path(__file__).parent
-        mapping_path = module_dir / "data" / "landmark_mapping.json"
+        mapping_path = get_module_data_path(__file__, "landmark_mapping.json")
 
-        if not mapping_path.exists():
-            raise FileNotFoundError(f"Landmark mapping file not found at {mapping_path}")
-
-        with open(mapping_path, "r") as f:
+        with open(str(mapping_path), "r") as f:
             mapping_data = json.load(f)
 
         landmark_mapping = {}
@@ -135,7 +66,7 @@ class FacialLandmarker:
 
         return landmark_mapping
 
-    def detect(self, image: Image) -> list[Box]:
+    def detect(self, image: Image.Image) -> List[Box]:
         """Detect facial landmarks in an image."""
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=np.array(image))
         result = self.detector.detect(mp_image)
@@ -144,10 +75,7 @@ class FacialLandmarker:
             return []
 
         image_width, image_height = image.size
-        points = [
-            (int(round(point.x * image_width)), int(round(point.y * image_height)))
-            for point in result.face_landmarks[0]
-        ]
+        points = [(int(round(point.x * image_width)), int(round(point.y * image_height))) for point in result.face_landmarks[0]]
 
         boxes = []
         for feature, indices in self.landmark_mapping.items():
@@ -164,15 +92,11 @@ class FacialLandmarker:
         return boxes
 
 
+@configurable("explainer")
 class ClassActivationMapper:
     """Generates and processes class activation maps."""
 
-    def __init__(
-        self,
-        cam_method: CAMMethod = CAMMethod.GRADCAM_PLUS_PLUS,
-        cutoff_percentile: int = 90,
-        threshold_method: ThresholdMethod = ThresholdMethod.OTSU,
-    ):
+    def __init__(self, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod, **kwargs):
         """Initialize the activation map generator."""
         self.cam_method = cam_method.get_implementation()
         self.cutoff_percentile = cutoff_percentile
@@ -191,7 +115,7 @@ class ClassActivationMapper:
 
         return heatmap
 
-    def process_heatmap(self, heatmap: np.ndarray) -> list[Box]:
+    def process_heatmap(self, heatmap: np.ndarray) -> List[Box]:
         """Process heatmap into bounding boxes of activated regions."""
         filtered_heatmap = heatmap.copy()
         filtered_heatmap[filtered_heatmap < np.percentile(filtered_heatmap, self.cutoff_percentile)] = 0
@@ -230,27 +154,14 @@ class ClassActivationMapper:
         return image
 
 
-class VisualExplainer:
+@configurable("explainer")
+class Explainer:
     """Coordinates generation of visual explanations for model decisions."""
 
-    def __init__(
-        self,
-        landmarker_source: LandmarkerSource = LandmarkerSource.MEDIAPIPE,
-        cam_method: CAMMethod = CAMMethod.GRADCAM_PLUS_PLUS,
-        cutoff_percentile: int = 90,
-        threshold_method: ThresholdMethod = ThresholdMethod.OTSU,
-        overlap_threshold: float = 0.2,
-        distance_metric: DistanceMetric = DistanceMetric.EUCLIDEAN,
-    ):
+    def __init__(self, landmarker_source: LandmarkerSource, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod, overlap_threshold: float, distance_metric: DistanceMetric, **kwargs):
         """Initialize the visual explainer."""
-        self.landmarker = FacialLandmarker(landmarker_source)
-
-        self.activation_mapper = ClassActivationMapper(
-            cam_method=cam_method,
-            cutoff_percentile=cutoff_percentile,
-            threshold_method=threshold_method,
-        )
-
+        self.landmarker = FacialLandmarker(source=landmarker_source)
+        self.activation_mapper = ClassActivationMapper(cam_method=cam_method, cutoff_percentile=cutoff_percentile, threshold_method=threshold_method)
         self.overlap_threshold = overlap_threshold
         self.distance_metric = distance_metric.value
 
@@ -258,9 +169,9 @@ class VisualExplainer:
         self,
         pil_image: Image.Image,
         preprocessed_image: np.ndarray,
-        model: ClassificationModel,
+        model: Model,
         target_class: Gender,
-    ) -> tuple[np.ndarray, list[Box], list[Box]]:
+    ) -> Tuple[np.ndarray, List[Box], List[Box]]:
         """Generate visual explanation for a single image."""
         activation_map = self.activation_mapper.generate_heatmap(model.model, preprocessed_image, target_class)
         activation_boxes = self.activation_mapper.process_heatmap(activation_map)
@@ -269,7 +180,7 @@ class VisualExplainer:
 
         return activation_map, labeled_boxes, landmark_boxes
 
-    def _match_landmarks(self, activation_boxes: list[Box], landmark_boxes: list[Box]) -> list[Box]:
+    def _match_landmarks(self, activation_boxes: List[Box], landmark_boxes: List[Box]) -> List[Box]:
         """Match activation regions with facial landmarks."""
         if not activation_boxes or not landmark_boxes:
             return activation_boxes

@@ -1,6 +1,7 @@
 """Bias calculation module for BiasX."""
 
 from collections import defaultdict
+from typing import DefaultDict, Dict, List, Tuple
 
 import numpy as np
 from sklearn.metrics import confusion_matrix
@@ -12,7 +13,7 @@ class ConfusionMetrics:
     """Helper class for computing confusion matrix metrics."""
 
     @staticmethod
-    def get_confusion_matrix(y_true: list[int], y_pred: list[int]) -> tuple[np.int64, np.int64, np.int64, np.int64]:
+    def get_confusion_matrix(y_true: List[int], y_pred: List[int]) -> Tuple[np.int64, np.int64, np.int64, np.int64]:
         """Get confusion matrix elements (TN, FP, FN, TP)."""
         tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
         return tn, fp, fn, tp
@@ -28,15 +29,15 @@ class ConfusionMetrics:
         return fp / (tn + fp) if (tn + fp) > 0 else 0.0
 
 
-class BiasCalculator:
+class Calculator:
     """Calculates metrics related to bias in facial classification models."""
 
-    def __init__(self, precision: int = 3):
+    def __init__(self, precision: int):
         """Initialize the bias calculator."""
         self.precision = precision
         self.metrics = ConfusionMetrics()
 
-    def calculate_feature_biases(self, explanations: list[Explanation]) -> dict[FacialFeature, FeatureAnalysis]:
+    def calculate_feature_biases(self, explanations: List[Explanation]) -> Dict[FacialFeature, FeatureAnalysis]:
         """Calculate bias metrics for each facial feature."""
         feature_analyses = {}
         feature_map = self._get_feature_activation_map(explanations)
@@ -60,17 +61,20 @@ class BiasCalculator:
 
     def calculate_disparities(
         self,
-        feature_analyses: dict[FacialFeature, FeatureAnalysis],
-        explanations: list[Explanation],
+        feature_analyses: Dict[FacialFeature, FeatureAnalysis],
+        explanations: List[Explanation],
     ) -> DisparityScores:
         """Calculate overall disparity scores based on feature analyses and model performance."""
+        if not feature_analyses:
+            return DisparityScores()
+
         bias_scores = [analysis.bias_score for analysis in feature_analyses.values()]
         biasx_score = round(sum(bias_scores) / len(bias_scores), self.precision)
         equalized_odds_score = self._calculate_equalized_odds_score(explanations)
 
         return DisparityScores(biasx=biasx_score, equalized_odds=equalized_odds_score)
 
-    def _calculate_equalized_odds_score(self, explanations: list[Explanation]) -> float:
+    def _calculate_equalized_odds_score(self, explanations: List[Explanation]) -> float:
         """Calculate the equalized odds score."""
         y_true_female, y_pred_female = self._get_gender_predictions(explanations, Gender.FEMALE)
         y_true_male, y_pred_male = self._get_gender_predictions(explanations, Gender.MALE)
@@ -89,7 +93,7 @@ class BiasCalculator:
 
         return round(max(tpr_disparity, fpr_disparity), self.precision)
 
-    def _get_gender_predictions(self, explanations: list[Explanation], gender: Gender) -> tuple[list[int], list[int]]:
+    def _get_gender_predictions(self, explanations: List[Explanation], gender: Gender) -> Tuple[List[int], List[int]]:
         """Extract binary predictions and ground truth for a specific gender."""
         y_true = []
         y_pred = []
@@ -104,7 +108,7 @@ class BiasCalculator:
 
         return y_true, y_pred
 
-    def _get_feature_activation_map(self, explanations: list[Explanation]) -> dict[FacialFeature, dict[Gender, int]]:
+    def _get_feature_activation_map(self, explanations: List[Explanation]) -> DefaultDict[FacialFeature, Dict[Gender, int]]:
         """Create mapping of features to activation counts by gender."""
         feature_map = defaultdict(lambda: {Gender.MALE: 0, Gender.FEMALE: 0})
 
@@ -123,7 +127,7 @@ class BiasCalculator:
 
         return feature_map
 
-    def _calculate_feature_probs(self, explanations: list[Explanation], feature: FacialFeature) -> dict[Gender, float]:
+    def _calculate_feature_probs(self, explanations: List[Explanation], feature: FacialFeature) -> Dict[Gender, float]:
         """Calculate probability of feature activation in misclassifications by gender."""
         misclassified_counts = {Gender.MALE: 0, Gender.FEMALE: 0}
 

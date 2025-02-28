@@ -1,20 +1,15 @@
-"""
-Dataset management module for BiasX.
-Handles loading and processing image datasets, and managing analysis results.
-"""
+"""Handles loading and processing image datasets, and managing analysis results."""
 
-import json
-import pathlib
 from io import BytesIO
 from typing import Iterator
 
 import numpy as np
 import pyarrow.parquet as pq
-from huggingface_hub import hf_hub_download
 from PIL import Image
 
-from .types import (Age, ColorMode, DatasetMetadata, DatasetSource, Gender,
-                    ImageData, Race)
+from .config import configurable
+from .types import Age, ColorMode, DatasetMetadata, DatasetSource, Gender, ImageData, Race
+from .utils import download_resource, load_json_config
 
 
 class ImageProcessor:
@@ -59,19 +54,21 @@ class ImageProcessor:
         return self.image
 
 
-class FaceDataset:
+@configurable("dataset")
+class Dataset:
     """Manages facial image datasets and preprocessing for model input."""
 
     def __init__(
         self,
-        source: DatasetSource = DatasetSource.UTKFACE,
-        image_width: int = 224,
-        image_height: int = 224,
-        color_mode: ColorMode = ColorMode.GRAYSCALE,
-        single_channel: bool = False,
-        max_samples: int = 100,
-        shuffle: bool = True,
-        seed: int = 69,
+        source: DatasetSource,
+        image_width: int,
+        image_height: int,
+        color_mode: ColorMode,
+        single_channel: bool,
+        max_samples: int,
+        shuffle: bool,
+        seed: int,
+        **kwargs,
     ):
         """Initialize the dataset with preprocessing parameters."""
         self.source = source
@@ -83,35 +80,22 @@ class FaceDataset:
         self.shuffle = shuffle
         self.seed = seed
 
-        self.dataset_info = self._load_dataset_metadata(source)
+        self.dataset_info = self._load_dataset_metadata()
         self.dataset_path = self._download_dataset()
         self.dataframe = self._load_dataframe()
 
-    def _load_dataset_metadata(self, source: DatasetSource) -> DatasetMetadata:
+    def _load_dataset_metadata(self) -> DatasetMetadata:
         """Load dataset metadata from configuration file."""
-        config_path = self._get_config_path()
+        config = load_json_config(__file__, "dataset_config.json")
 
-        with open(config_path, "r") as f:
-            config = json.load(f)
+        if self.source.value not in config:
+            raise ValueError(f"Dataset source {self.source.value} not found in configuration")
 
-        if source.value not in config:
-            raise ValueError(f"Dataset source {source.value} not found in configuration")
-
-        return DatasetMetadata(**config[source.value])
-
-    def _get_config_path(self) -> str:
-        """Get the path to the dataset configuration file."""
-        module_dir = pathlib.Path(__file__).parent
-        config_path = module_dir / "data" / "dataset_config.json"
-
-        if not config_path.exists():
-            raise FileNotFoundError(f"Dataset configuration file not found at {config_path}")
-
-        return str(config_path)
+        return DatasetMetadata(**config[self.source.value])
 
     def _download_dataset(self) -> str:
         """Download the dataset from HuggingFace."""
-        return hf_hub_download(
+        return download_resource(
             repo_id=self.dataset_info.repo_id,
             filename=self.dataset_info.filename,
             repo_type=self.dataset_info.repo_type,
@@ -123,11 +107,7 @@ class FaceDataset:
         df = table.to_pandas()
 
         if self.max_samples > 0:
-            df = (
-                df.sample(min(self.max_samples, len(df)), random_state=self.seed)
-                if self.shuffle
-                else df.head(self.max_samples)
-            )
+            df = df.sample(min(self.max_samples, len(df)), random_state=self.seed) if self.shuffle else df.head(self.max_samples)
         elif self.shuffle:
             df = df.sample(frac=1, random_state=self.seed)
 

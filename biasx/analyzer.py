@@ -1,29 +1,35 @@
-"""
-Analysis orchestration module for the BiasX library.
-Coordinates the bias analysis pipeline and manages result aggregation.
-"""
+"""Coordinates the bias analysis pipeline and manages result aggregation."""
 
-from .calculators import BiasCalculator
-from .config import Config
-from .datasets import FaceDataset
-from .explainers import VisualExplainer
-from .models import ClassificationModel
-from .types import AnalysisResult, Explanation
+from typing import Dict, List, Union
+
+from .calculators import Calculator
+from .config import Config, configurable
+from .datasets import Dataset
+from .explainers import Explainer
+from .models import Model
+from .types import AnalysisResult, Explanation, ImageData
 
 
+@configurable("analyzer")
 class BiasAnalyzer:
     """Orchestrates the bias analysis pipeline."""
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Union[Config, Dict, None] = None, **kwargs):
         """Initialize analyzer components from configuration."""
-        self.config = config if isinstance(config, Config) else Config.create(config)
+        if config is None:
+            config = {}
 
-        self.model = ClassificationModel(**vars(self.config.model_config))
-        self.dataset = FaceDataset(**vars(self.config.dataset_config))
-        self.explainer = VisualExplainer(**vars(self.config.explainer_config))
-        self.calculator = BiasCalculator(**vars(self.config.calculator_config))
+        if isinstance(config, dict):
+            self.config = Config.create(config)
+        else:
+            self.config = config
 
-    def analyze_image(self, image_data) -> Explanation:
+        self.model = Model(**self.config.model)
+        self.dataset = Dataset(**self.config.dataset)
+        self.explainer = Explainer(**self.config.explainer)
+        self.calculator = Calculator(**self.config.calculator)
+
+    def analyze_image(self, image_data: ImageData) -> Explanation:
         """Analyze a single image through the pipeline."""
         predicted_gender, confidence = self.model.predict(image_data.preprocessed_image)
 
@@ -47,7 +53,8 @@ class BiasAnalyzer:
 
     def analyze(self) -> AnalysisResult:
         """Run the full analysis pipeline on the dataset."""
-        explanations = []
+        explanations: List[Explanation] = []
+
         for image_data in self.dataset:
             explanation = self.analyze_image(image_data)
             if explanation:
@@ -64,3 +71,9 @@ class BiasAnalyzer:
             feature_analyses=feature_analyses,
             disparity_scores=disparity_scores,
         )
+
+    @classmethod
+    def from_file(cls, config_file_path: str) -> "BiasAnalyzer":
+        """Create a BiasAnalyzer from a configuration file."""
+        config = Config.from_file(config_file_path)
+        return cls(config=config)

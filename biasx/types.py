@@ -1,14 +1,16 @@
-"""
-Core type definitions for the BiasX library.
-Provides enumerations and dataclasses that define the data structures used throughout the library.
-"""
+"""Provides enumerations and dataclasses that define the data structures used throughout the library."""
 
 import enum
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Any, Callable, Optional
 
 import numpy as np
+import tf_keras_vis
 from PIL import Image
+from skimage.filters import threshold_otsu, threshold_sauvola, threshold_triangle
+from tf_keras_vis.gradcam import Gradcam
+from tf_keras_vis.gradcam_plus_plus import GradcamPlusPlus
+from tf_keras_vis.scorecam import Scorecam
 
 
 class Gender(enum.IntEnum):
@@ -74,6 +76,48 @@ class ColorMode(enum.Enum):
 
     GRAYSCALE = "L"
     RGB = "RGB"
+
+
+class CAMMethod(enum.Enum):
+    """Class activation mapping methods."""
+
+    GRADCAM = "gradcam"
+    GRADCAM_PLUS_PLUS = "gradcam++"
+    SCORECAM = "scorecam"
+
+    def get_implementation(self) -> tf_keras_vis.ModelVisualization:
+        """Get the implementation class for this CAM method."""
+        implementations = {
+            CAMMethod.GRADCAM: Gradcam,
+            CAMMethod.GRADCAM_PLUS_PLUS: GradcamPlusPlus,
+            CAMMethod.SCORECAM: Scorecam,
+        }
+        return implementations[self]
+
+
+class ThresholdMethod(enum.Enum):
+    """Thresholding methods for activation map processing."""
+
+    OTSU = "otsu"
+    SAUVOLA = "sauvola"
+    TRIANGLE = "triangle"
+
+    def get_implementation(self) -> Callable[[np.ndarray], Any]:
+        """Get the implementation function for this threshold method."""
+        implementations = {
+            ThresholdMethod.OTSU: threshold_otsu,
+            ThresholdMethod.SAUVOLA: threshold_sauvola,
+            ThresholdMethod.TRIANGLE: threshold_triangle,
+        }
+        return implementations[self]
+
+
+class DistanceMetric(enum.Enum):
+    """Distance metrics for comparing spatial coordinates."""
+
+    CITYBLOCK = "cityblock"
+    COSINE = "cosine"
+    EUCLIDEAN = "euclidean"
 
 
 @dataclass
