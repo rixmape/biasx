@@ -76,30 +76,6 @@ class ColorMode(enum.Enum):
     RGB = "RGB"
 
 
-class CAMMethod(enum.Enum):
-    """Class activation mapping methods."""
-
-    GRADCAM = "gradcam"
-    GRADCAM_PLUS_PLUS = "gradcam++"
-    SCORECAM = "scorecam"
-
-
-class ThresholdMethod(enum.Enum):
-    """Thresholding methods for activation map processing."""
-
-    OTSU = "otsu"
-    SAUVOLA = "sauvola"
-    TRIANGLE = "triangle"
-
-
-class DistanceMetric(enum.Enum):
-    """Distance metrics for comparing spatial coordinates."""
-
-    CITYBLOCK = "cityblock"
-    COSINE = "cosine"
-    EUCLIDEAN = "euclidean"
-
-
 @dataclass
 class Box:
     """Represents a bounding box with an optional feature label."""

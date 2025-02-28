@@ -6,8 +6,8 @@ Handles loading, merging, and validation of configuration settings.
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict
 
-from .types import (CAMMethod, ColorMode, DatasetSource, DistanceMetric,
-                    LandmarkerSource, ThresholdMethod)
+from .explainers import CAMMethod, DistanceMetric, ThresholdMethod
+from .types import ColorMode, DatasetSource, LandmarkerSource
 
 
 @dataclass

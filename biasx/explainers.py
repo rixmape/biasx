@@ -3,12 +3,15 @@ Explanation module for BiasX.
 Provides classes for generating and processing visual explanations of model decisions.
 """
 
+import enum
 import json
 import pathlib
+from typing import Any, Callable
 
 import mediapipe as mp
 import numpy as np
 import tensorflow as tf
+import tf_keras_vis
 from huggingface_hub import hf_hub_download
 from mediapipe.tasks.python.core.base_options import BaseOptions
 from mediapipe.tasks.python.vision.face_landmarker import FaceLandmarker, FaceLandmarkerOptions
@@ -21,16 +24,49 @@ from tf_keras_vis.gradcam_plus_plus import GradcamPlusPlus
 from tf_keras_vis.scorecam import Scorecam
 
 from .models import ClassificationModel
-from .types import (
-    Box,
-    CAMMethod,
-    DistanceMetric,
-    FacialFeature,
-    Gender,
-    LandmarkerMetadata,
-    LandmarkerSource,
-    ThresholdMethod,
-)
+from .types import Box, FacialFeature, Gender, LandmarkerMetadata, LandmarkerSource
+
+
+class CAMMethod(enum.Enum):
+    """Class activation mapping methods."""
+
+    GRADCAM = "gradcam"
+    GRADCAM_PLUS_PLUS = "gradcam++"
+    SCORECAM = "scorecam"
+
+    def get_implementation(self) -> tf_keras_vis.ModelVisualization:
+        """Get the implementation class for this CAM method."""
+        implementations = {
+            CAMMethod.GRADCAM: Gradcam,
+            CAMMethod.GRADCAM_PLUS_PLUS: GradcamPlusPlus,
+            CAMMethod.SCORECAM: Scorecam,
+        }
+        return implementations[self]
+
+
+class ThresholdMethod(enum.Enum):
+    """Thresholding methods for activation map processing."""
+
+    OTSU = "otsu"
+    SAUVOLA = "sauvola"
+    TRIANGLE = "triangle"
+
+    def get_implementation(self) -> Callable[[np.ndarray], Any]:
+        """Get the implementation function for this threshold method."""
+        implementations = {
+            ThresholdMethod.OTSU: threshold_otsu,
+            ThresholdMethod.SAUVOLA: threshold_sauvola,
+            ThresholdMethod.TRIANGLE: threshold_triangle,
+        }
+        return implementations[self]
+
+
+class DistanceMetric(enum.Enum):
+    """Distance metrics for comparing spatial coordinates."""
+
+    CITYBLOCK = "cityblock"
+    COSINE = "cosine"
+    EUCLIDEAN = "euclidean"
 
 
 class FacialLandmarker:
@@ -131,18 +167,6 @@ class FacialLandmarker:
 class ClassActivationMapper:
     """Generates and processes class activation maps."""
 
-    CAM_METHODS = {
-        CAMMethod.GRADCAM: Gradcam,
-        CAMMethod.GRADCAM_PLUS_PLUS: GradcamPlusPlus,
-        CAMMethod.SCORECAM: Scorecam,
-    }
-
-    THRESHOLD_METHODS = {
-        ThresholdMethod.OTSU: threshold_otsu,
-        ThresholdMethod.SAUVOLA: threshold_sauvola,
-        ThresholdMethod.TRIANGLE: threshold_triangle,
-    }
-
     def __init__(
         self,
         cam_method: CAMMethod = CAMMethod.GRADCAM_PLUS_PLUS,
@@ -150,9 +174,9 @@ class ClassActivationMapper:
         threshold_method: ThresholdMethod = ThresholdMethod.OTSU,
     ):
         """Initialize the activation map generator."""
-        self.cam_method = self.CAM_METHODS[cam_method]
+        self.cam_method = cam_method.get_implementation()
         self.cutoff_percentile = cutoff_percentile
-        self.threshold_method = self.THRESHOLD_METHODS[threshold_method]
+        self.threshold_method = threshold_method.get_implementation()
 
     def generate_heatmap(
         self,

@@ -3,8 +3,6 @@ Analysis orchestration module for the BiasX library.
 Coordinates the bias analysis pipeline and manages result aggregation.
 """
 
-from typing import Optional
-
 from .calculators import BiasCalculator
 from .config import Config
 from .datasets import FaceDataset
