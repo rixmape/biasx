@@ -1,32 +1,147 @@
-import numpy as np
+"""Bias calculation module for BiasX."""
 
-from .types import Explanation
+from collections import defaultdict
+
+import numpy as np
+from sklearn.metrics import confusion_matrix
+
+from .types import DisparityScores, Explanation, FacialFeature, FeatureAnalysis, Gender
+
+
+class ConfusionMetrics:
+    """Helper class for computing confusion matrix metrics."""
+
+    @staticmethod
+    def get_confusion_matrix(y_true: list[int], y_pred: list[int]) -> tuple[np.int64, np.int64, np.int64, np.int64]:
+        """Get confusion matrix elements (TN, FP, FN, TP)."""
+        tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+        return tn, fp, fn, tp
+
+    @staticmethod
+    def tpr(tn: np.int64, fp: np.int64, fn: np.int64, tp: np.int64) -> float:
+        """Calculate true positive rate (sensitivity/recall)."""
+        return tp / (tp + fn) if (tp + fn) > 0 else 0.0
+
+    @staticmethod
+    def fpr(tn: np.int64, fp: np.int64, fn: np.int64, tp: np.int64) -> float:
+        """Calculate false positive rate."""
+        return fp / (tn + fp) if (tn + fp) > 0 else 0.0
 
 
 class BiasCalculator:
-    """Computes bias metrics from analysis results."""
+    """Calculates metrics related to bias in facial classification models."""
 
-    def __init__(self, ndigits: int):
+    def __init__(self, precision: int = 3):
         """Initialize the bias calculator."""
-        self.ndigits = ndigits
+        self.precision = precision
+        self.metrics = ConfusionMetrics()
 
-    def compute_feature_probabilities(self, results: list[Explanation], feature: str) -> dict[int, float]:
-        """Compute feature activation probabilities per class."""
-        misclassified = [r for r in results if r.predicted_gender != r.true_gender]
-        return {
-            gender: (
-                round(sum(1 for r in g_results for box in r.activation_boxes if box.feature == feature) / len(g_results), self.ndigits)
-                if (g_results := [r for r in misclassified if r.true_gender == gender])
-                else 0.0
+    def calculate_feature_biases(self, explanations: list[Explanation]) -> dict[FacialFeature, FeatureAnalysis]:
+        """Calculate bias metrics for each facial feature."""
+        feature_analyses = {}
+        feature_map = self._get_feature_activation_map(explanations)
+
+        for feature in feature_map:
+            if feature is None:
+                continue
+
+            probs = self._calculate_feature_probs(explanations, feature)
+
+            bias_score = round(abs(probs[Gender.MALE] - probs[Gender.FEMALE]), self.precision)
+
+            feature_analyses[feature] = FeatureAnalysis(
+                feature=feature,
+                bias_score=bias_score,
+                male_probability=probs[Gender.MALE],
+                female_probability=probs[Gender.FEMALE],
             )
-            for gender in (0, 1)
-        }
 
-    def compute_feature_bias(self, results: list[Explanation], feature: str) -> float:
-        """Compute bias score for a specific feature."""
-        probs = self.compute_feature_probabilities(results, feature)
-        return round(abs(probs[1] - probs[0]), self.ndigits)
+        return feature_analyses
 
-    def compute_overall_bias(self, results: list[Explanation], features: list[str]) -> float:
-        """Compute overall bias score across all features."""
-        return round(np.mean([self.compute_feature_bias(results, feature) for feature in features]), self.ndigits)
+    def calculate_disparities(
+        self,
+        feature_analyses: dict[FacialFeature, FeatureAnalysis],
+        explanations: list[Explanation],
+    ) -> DisparityScores:
+        """Calculate overall disparity scores based on feature analyses and model performance."""
+        bias_scores = [analysis.bias_score for analysis in feature_analyses.values()]
+        biasx_score = round(sum(bias_scores) / len(bias_scores), self.precision)
+        equalized_odds_score = self._calculate_equalized_odds_score(explanations)
+
+        return DisparityScores(biasx=biasx_score, equalized_odds=equalized_odds_score)
+
+    def _calculate_equalized_odds_score(self, explanations: list[Explanation]) -> float:
+        """Calculate the equalized odds score."""
+        y_true_female, y_pred_female = self._get_gender_predictions(explanations, Gender.FEMALE)
+        y_true_male, y_pred_male = self._get_gender_predictions(explanations, Gender.MALE)
+
+        cm_female = self.metrics.get_confusion_matrix(y_true_female, y_pred_female)
+        cm_male = self.metrics.get_confusion_matrix(y_true_male, y_pred_male)
+
+        tpr_female = self.metrics.tpr(*cm_female)
+        fpr_female = self.metrics.fpr(*cm_female)
+
+        tpr_male = self.metrics.tpr(*cm_male)
+        fpr_male = self.metrics.fpr(*cm_male)
+
+        tpr_disparity = abs(tpr_female - tpr_male)
+        fpr_disparity = abs(fpr_female - fpr_male)
+
+        return round(max(tpr_disparity, fpr_disparity), self.precision)
+
+    def _get_gender_predictions(self, explanations: list[Explanation], gender: Gender) -> tuple[list[int], list[int]]:
+        """Extract binary predictions and ground truth for a specific gender."""
+        y_true = []
+        y_pred = []
+
+        for explanation in explanations:
+            if explanation.image_data.gender == gender:
+                y_true.append(1)
+                y_pred.append(1 if explanation.predicted_gender == gender else 0)
+            else:
+                y_true.append(0)
+                y_pred.append(1 if explanation.predicted_gender == gender else 0)
+
+        return y_true, y_pred
+
+    def _get_feature_activation_map(self, explanations: list[Explanation]) -> dict[FacialFeature, dict[Gender, int]]:
+        """Create mapping of features to activation counts by gender."""
+        feature_map = defaultdict(lambda: {Gender.MALE: 0, Gender.FEMALE: 0})
+
+        for explanation in explanations:
+            true_gender = explanation.image_data.gender
+            predicted_gender = explanation.predicted_gender
+
+            if true_gender != predicted_gender:
+                seen_features = set()
+
+                for box in explanation.activation_boxes:
+                    feature = box.feature
+                    if feature and feature not in seen_features:
+                        feature_map[feature][true_gender] += 1
+                        seen_features.add(feature)
+
+        return feature_map
+
+    def _calculate_feature_probs(self, explanations: list[Explanation], feature: FacialFeature) -> dict[Gender, float]:
+        """Calculate probability of feature activation in misclassifications by gender."""
+        misclassified_counts = {Gender.MALE: 0, Gender.FEMALE: 0}
+
+        for explanation in explanations:
+            true_gender = explanation.image_data.gender
+            predicted_gender = explanation.predicted_gender
+
+            if true_gender != predicted_gender:
+                misclassified_counts[true_gender] += 1
+
+        feature_map = self._get_feature_activation_map(explanations)
+        feature_counts = feature_map.get(feature, {})
+
+        probs = {}
+        for gender in [Gender.MALE, Gender.FEMALE]:
+            if misclassified_counts[gender] == 0:
+                probs[gender] = 0.0
+            else:
+                probs[gender] = round(feature_counts.get(gender, 0) / misclassified_counts[gender], self.precision)
+
+        return probs

@@ -1,44 +1,33 @@
-import keras
-import numpy as np
-from PIL import Image
+"""
+Model handling module for BiasX.
+Provides classes for model inference.
+"""
 
-from .types import ColorMode
+import numpy as np
+import tensorflow as tf
+
+from .types import Gender
 
 
 class ClassificationModel:
-    """Handles loading and inference of the face classification model."""
+    """Handles loading and inference for facial classification models."""
 
     def __init__(
         self,
-        model_path: str,
-        image_width: int,
-        image_height: int,
-        color_mode: ColorMode,
-        single_channel: bool,
-        inverted_classes: bool,
+        path: str,
+        inverted_classes: bool = False,
     ):
         """Initialize the classification model."""
-        self.model = keras.models.load_model(model_path)
-        self.image_width = image_width
-        self.image_height = image_height
-        self.color_mode = color_mode
-        self.single_channel = single_channel
+        self.model = tf.keras.models.load_model(path)
         self.inverted_classes = inverted_classes
 
-    def preprocess_image(self, image_path: str) -> np.ndarray:
-        """Preprocess a single image for model input."""
-        image = Image.open(image_path).convert(self.color_mode).resize((self.image_width, self.image_height))
-        image_array = np.array(image, dtype=np.float32) / 255.0
-        return np.expand_dims(image_array, axis=-1) if self.color_mode == "L" and not self.single_channel else image_array
-
-    def predict(self, image: np.ndarray) -> tuple[int, float]:
-        """Make single prediction with confidence score."""
-        batch = np.expand_dims(image, axis=0)
+    def predict(self, preprocessed_image: np.ndarray) -> tuple[Gender, float]:
+        """Make prediction from a preprocessed image."""
+        batch = np.expand_dims(preprocessed_image, axis=0)
         output = self.model.predict(batch, verbose=0)
-
-        probs = keras.activations.softmax(output)[0]
+        probs = tf.nn.softmax(output)[0] if len(output.shape) > 1 else output[0]
         pred_idx = int(np.argmax(probs))
         confidence = float(probs[pred_idx])
-        pred_class = pred_idx if not self.inverted_classes else 1 - pred_idx
+        pred_class = Gender(pred_idx if not self.inverted_classes else 1 - pred_idx)
 
         return pred_class, confidence

@@ -1,55 +1,66 @@
-from typing import Optional, Union
-
-from biasx.explainers import VisualExplainer
+"""
+Analysis orchestration module for the BiasX library.
+Coordinates the bias analysis pipeline and manages result aggregation.
+"""
 
 from .calculators import BiasCalculator
 from .config import Config
-from .datasets import AnalysisDataset, FaceDataset
+from .datasets import FaceDataset
+from .explainers import VisualExplainer
 from .models import ClassificationModel
-from .types import Explanation
+from .types import AnalysisResult, Explanation
 
 
 class BiasAnalyzer:
     """Orchestrates the bias analysis pipeline."""
 
-    def __init__(self, config: Union[str, dict, Config]):
-        """Initialize analyzer with configuration"""
+    def __init__(self, config: Config):
+        """Initialize analyzer components from configuration."""
         self.config = config if isinstance(config, Config) else Config.create(config)
 
-        self.model = ClassificationModel(model_path=self.config.model_path, **self.config.model_config)
-        self.dataset = FaceDataset(dataset_path=self.config.dataset_path, **self.config.dataset_config)
-        self.explainer = VisualExplainer(**self.config.explainer_config)
-        self.calculator = BiasCalculator(**self.config.calculator_config)
+        self.model = ClassificationModel(**vars(self.config.model_config))
+        self.dataset = FaceDataset(**vars(self.config.dataset_config))
+        self.explainer = VisualExplainer(**vars(self.config.explainer_config))
+        self.calculator = BiasCalculator(**vars(self.config.calculator_config))
 
-    def analyze_image(self, image_path: str, true_gender: int) -> Optional[Explanation]:
-        """Analyze a single image and generate an explanation."""
-        image = self.model.preprocess_image(image_path)
-        predicted_gender, prediction_confidence = self.model.predict(image)
+    def analyze_image(self, image_data) -> Explanation:
+        """Analyze a single image through the pipeline."""
+        predicted_gender, confidence = self.model.predict(image_data.preprocessed_image)
 
-        activation_boxes, landmark_boxes, activation_map_path = self.explainer.explain_image(image_path=image_path, model=self.model, true_gender=true_gender)
+        activation_map, activation_boxes, landmark_boxes = self.explainer.explain_image(
+            pil_image=image_data.pil_image,
+            preprocessed_image=image_data.preprocessed_image,
+            model=self.model,
+            target_class=predicted_gender,
+        )
 
-        return Explanation(
-            image_path=image_path,
-            true_gender=true_gender,
+        explanation = Explanation(
+            image_data=image_data,
             predicted_gender=predicted_gender,
-            prediction_confidence=prediction_confidence,
-            activation_map_path=activation_map_path,
+            prediction_confidence=confidence,
+            activation_map=activation_map,
             activation_boxes=activation_boxes,
             landmark_boxes=landmark_boxes,
         )
 
-    def analyze(self, output_path: Optional[str] = None) -> AnalysisDataset:
-        """Analyze a dataset of facial images and compute bias metrics."""
-        results = AnalysisDataset()
-        results.explanations = [result for image_path, true_gender in self.dataset if (result := self.analyze_image(image_path, true_gender))]
-        features = self.explainer.landmarker.mapping.get_features()
-        results.set_bias_metrics(
-            bias_score=self.calculator.compute_overall_bias(results.explanations, features),
-            feature_scores={feature: self.calculator.compute_feature_bias(results.explanations, feature) for feature in features},
-            feature_probabilities={feature: self.calculator.compute_feature_probabilities(results.explanations, feature) for feature in features},
+        return explanation
+
+    def analyze(self) -> AnalysisResult:
+        """Run the full analysis pipeline on the dataset."""
+        explanations = []
+        for image_data in self.dataset:
+            explanation = self.analyze_image(image_data)
+            if explanation:
+                explanations.append(explanation)
+
+        if not explanations:
+            return AnalysisResult()
+
+        feature_analyses = self.calculator.calculate_feature_biases(explanations)
+        disparity_scores = self.calculator.calculate_disparities(feature_analyses, explanations)
+
+        return AnalysisResult(
+            explanations=explanations,
+            feature_analyses=feature_analyses,
+            disparity_scores=disparity_scores,
         )
-
-        if output_path:
-            results.save(output_path)
-
-        return results

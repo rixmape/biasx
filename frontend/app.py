@@ -3,7 +3,7 @@ from typing import Any
 import gradio as gr
 
 from biasx.types import FacialFeature, Gender
-from frontend.utils import CONFIG_SCHEMA, create_analysis_function, create_component, create_default_config
+from utils import CONFIG_SCHEMA, create_analysis_function, create_component, create_default_config
 
 
 def create_interface() -> gr.Blocks:
