@@ -1,45 +1,33 @@
-from typing import Optional
+"""
+Model handling module for BiasX.
+Provides classes for model inference.
+"""
 
-import keras
 import numpy as np
-from PIL import Image
+import tensorflow as tf
+
+from .types import Gender
 
 
 class ClassificationModel:
-    """Handles loading and inference of the face classification model."""
+    """Handles loading and inference for facial classification models."""
 
     def __init__(
         self,
-        model_path: str,
-        target_size: tuple[int, int],
-        color_mode: Optional[str] = "L",
-        single_channel: Optional[bool] = False,
+        path: str,
+        inverted_classes: bool = False,
     ):
-        """
-        Initialize the classification model.
+        """Initialize the classification model."""
+        self.model = tf.keras.models.load_model(path)
+        self.inverted_classes = inverted_classes
 
-        Args:
-            model_path: Path to saved model file
-            color_mode: Color mode for input images. See PIL.Image.convert() for options.
-            target_size: Size to resize input images to
+    def predict(self, preprocessed_image: np.ndarray) -> tuple[Gender, float]:
+        """Make prediction from a preprocessed image."""
+        batch = np.expand_dims(preprocessed_image, axis=0)
+        output = self.model.predict(batch, verbose=0)
+        probs = tf.nn.softmax(output)[0] if len(output.shape) > 1 else output[0]
+        pred_idx = int(np.argmax(probs))
+        confidence = float(probs[pred_idx])
+        pred_class = Gender(pred_idx if not self.inverted_classes else 1 - pred_idx)
 
-        """
-        self.model = keras.models.load_model(model_path)
-        self.target_size = target_size
-        self.color_mode = color_mode
-        self.single_channel = single_channel
-
-    def preprocess_image(self, image_path: str) -> np.ndarray:
-        """Preprocess a single image for model input."""
-        with Image.open(image_path) as image:
-            image = image.convert(self.color_mode)
-            image = image.resize(self.target_size)
-            image = np.array(image, dtype=np.float32) / 255.0
-            if self.color_mode == "L" and not self.single_channel:
-                image = np.expand_dims(image, axis=-1)
-            return image
-
-    def predict(self, image: np.ndarray) -> int:
-        """Generate prediction for a single preprocessed image."""
-        prediction = self.model.predict(np.expand_dims(image, axis=0), verbose=0)
-        return int(np.argmax(prediction, axis=1)[0])
+        return pred_class, confidence

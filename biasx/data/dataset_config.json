@@ -1,0 +1,22 @@
+{
+    "utkface": {
+        "repo_id": "rixmape/utkface",
+        "filename": "data/train-00000-of-00001.parquet",
+        "repo_type": "dataset",
+        "image_id_col": "image_id",
+        "image_col": "image",
+        "gender_col": "gender",
+        "age_col": "age",
+        "race_col": "race"
+    },
+    "fairface": {
+        "repo_id": "rixmape/fairface",
+        "filename": "data/train-00000-of-00001.parquet",
+        "repo_type": "dataset",
+        "image_id_col": "image_id",
+        "image_col": "image",
+        "gender_col": "gender",
+        "age_col": "age",
+        "race_col": "race"
+    }
+}
