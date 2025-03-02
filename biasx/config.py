@@ -12,6 +12,7 @@ C = TypeVar("C")
 DEFAULTS = {
     "model": {
         "inverted_classes": False,
+        "batch_size": 32,
     },
     "explainer": {
         "landmarker_source": "mediapipe",
@@ -21,6 +22,7 @@ DEFAULTS = {
         "overlap_threshold": 0.2,
         "distance_metric": "euclidean",
         "max_faces": 1,
+        "batch_size": 32,
     },
     "dataset": {
         "source": "utkface",
@@ -31,9 +33,13 @@ DEFAULTS = {
         "max_samples": 100,
         "shuffle": True,
         "seed": 69,
+        "batch_size": 32,
     },
     "calculator": {
         "precision": 3,
+    },
+    "analyzer": {
+        "batch_size": 32,
     },
 }
 
@@ -94,6 +100,7 @@ class Config:
         self.explainer = self._prepare_section("explainer")
         self.dataset = self._prepare_section("dataset")
         self.calculator = self._prepare_section("calculator")
+        self.analyzer = self._prepare_section("analyzer")
 
     def _prepare_section(self, section_name: str) -> Dict[str, Any]:
         """Prepare a configuration section with defaults and enum conversion."""
@@ -126,7 +133,7 @@ class Config:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary format."""
-        return {"model": self.model, "explainer": self.explainer, "dataset": self.dataset, "calculator": self.calculator}
+        return {"model": self.model, "explainer": self.explainer, "dataset": self.dataset, "calculator": self.calculator, "analyzer": self.analyzer}
 
     def save(self, file_path: str) -> None:
         """Save configuration to a JSON file."""

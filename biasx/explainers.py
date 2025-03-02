@@ -1,7 +1,7 @@
 """Provides classes for generating and processing visual explanations of model decisions."""
 
 import json
-from typing import List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import mediapipe as mp
 import numpy as np
@@ -50,30 +50,38 @@ class FacialLandmarker:
             feature_enum = FacialFeature(feature_name)
             self.landmark_mapping[feature_enum] = indices
 
-    def detect(self, image: Image.Image) -> List[Box]:
-        """Detect facial landmarks in an image."""
-        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=np.array(image))
-        result = self.detector.detect(mp_image)
+    def detect(self, images: Union[Image.Image, List[Image.Image]]) -> List[List[Box]]:
+        """Detect facial landmarks in images."""
+        if isinstance(images, Image.Image):
+            images = [images]
 
-        if not result.face_landmarks:
-            return []
+        results = []
+        for image in images:
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=np.array(image))
+            result = self.detector.detect(mp_image)
 
-        image_width, image_height = image.size
-        points = [(int(round(point.x * image_width)), int(round(point.y * image_height))) for point in result.face_landmarks[0]]
+            if not result.face_landmarks:
+                results.append([])
+                continue
 
-        boxes = []
-        for feature, indices in self.landmark_mapping.items():
-            feature_points = [points[i] for i in indices]
-            box = Box(
-                min_x=min(x for x, _ in feature_points),
-                min_y=min(y for _, y in feature_points),
-                max_x=max(x for x, _ in feature_points),
-                max_y=max(y for _, y in feature_points),
-                feature=feature,
-            )
-            boxes.append(box)
+            image_width, image_height = image.size
+            points = [(int(round(point.x * image_width)), int(round(point.y * image_height))) for point in result.face_landmarks[0]]
 
-        return boxes
+            boxes = []
+            for feature, indices in self.landmark_mapping.items():
+                feature_points = [points[i] for i in indices]
+                box = Box(
+                    min_x=min(x for x, _ in feature_points),
+                    min_y=min(y for _, y in feature_points),
+                    max_x=max(x for x, _ in feature_points),
+                    max_y=max(y for _, y in feature_points),
+                    feature=feature,
+                )
+                boxes.append(box)
+
+            results.append(boxes)
+
+        return results
 
 
 class ClassActivationMapper:
@@ -85,22 +93,56 @@ class ClassActivationMapper:
         self.cutoff_percentile = cutoff_percentile
         self.threshold_method = threshold_method.get_implementation()
 
-    def generate_heatmap(self, model: tf.keras.Model, preprocessed_image: np.ndarray, target_class: Gender) -> np.ndarray:
-        """Generate class activation map for a preprocessed image."""
+    def generate_heatmap(self, model: tf.keras.Model, preprocessed_images: Union[np.ndarray, List[np.ndarray]], target_classes: Union[Gender, List[Gender]]) -> List[np.ndarray]:
+        """Generate class activation maps for preprocessed images."""
         visualizer = self.cam_method(model, model_modifier=self._modify_model, clone=True)
-        image = self._prepare_image_for_cam(preprocessed_image)
-        heatmap = visualizer(lambda output: self._score_function(output, target_class), image, penultimate_layer=-1)[0]
-        return heatmap
 
-    def process_heatmap(self, heatmap: np.ndarray) -> List[Box]:
-        """Process heatmap into bounding boxes of activated regions."""
-        filtered_heatmap = heatmap.copy()
-        filtered_heatmap[filtered_heatmap < np.percentile(filtered_heatmap, self.cutoff_percentile)] = 0
+        if isinstance(preprocessed_images, list):
+            if not preprocessed_images:
+                return []
 
-        binary = filtered_heatmap > self.threshold_method(filtered_heatmap)
-        regions = regionprops(label(binary))
+            processed_batch = []
+            for img in preprocessed_images:
+                if img.ndim == 2:
+                    img = np.expand_dims(img, axis=-1)
+                processed_batch.append(img)
 
-        return [Box(min_x=region.bbox[1], min_y=region.bbox[0], max_x=region.bbox[3], max_y=region.bbox[2]) for region in regions]
+            images = np.stack(processed_batch)
+        else:
+            images = preprocessed_images
+            if images.ndim == 2:
+                images = np.expand_dims(images, axis=-1)
+            if images.ndim == 3:
+                images = np.expand_dims(images, axis=0)
+
+        if isinstance(target_classes, Gender):
+            target_classes = [target_classes] * len(images)
+
+        heatmaps = []
+        for i, image in enumerate(images):
+            prepared_image = np.expand_dims(image, axis=0) if image.ndim == 3 else image
+            heatmap = visualizer(lambda output: self._score_function(output, target_classes[i]), prepared_image, penultimate_layer=-1)[0]
+            heatmaps.append(heatmap)
+
+        return heatmaps
+
+    def process_heatmap(self, heatmaps: Union[np.ndarray, List[np.ndarray]]) -> List[List[Box]]:
+        """Process heatmaps into bounding boxes of activated regions."""
+        if isinstance(heatmaps, np.ndarray):
+            heatmaps = [heatmaps]
+
+        results = []
+        for heatmap in heatmaps:
+            filtered_heatmap = heatmap.copy()
+            filtered_heatmap[filtered_heatmap < np.percentile(filtered_heatmap, self.cutoff_percentile)] = 0
+
+            binary = filtered_heatmap > self.threshold_method(filtered_heatmap)
+            regions = regionprops(label(binary))
+
+            boxes = [Box(min_x=region.bbox[1], min_y=region.bbox[0], max_x=region.bbox[3], max_y=region.bbox[2]) for region in regions]
+            results.append(boxes)
+
+        return results
 
     @staticmethod
     def _modify_model(model: tf.keras.Model) -> None:
@@ -126,21 +168,30 @@ class ClassActivationMapper:
 class Explainer:
     """Coordinates generation of visual explanations for model decisions."""
 
-    def __init__(self, landmarker_source: LandmarkerSource, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod, overlap_threshold: float, distance_metric: DistanceMetric, max_faces: int, **kwargs):
+    def __init__(self, landmarker_source: LandmarkerSource, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod, overlap_threshold: float, distance_metric: DistanceMetric, max_faces: int, batch_size: int, **kwargs):
         """Initialize the visual explainer."""
         self.landmarker = FacialLandmarker(source=landmarker_source, max_faces=max_faces)
         self.activation_mapper = ClassActivationMapper(cam_method=cam_method, cutoff_percentile=cutoff_percentile, threshold_method=threshold_method)
         self.overlap_threshold = overlap_threshold
         self.distance_metric = distance_metric.value
+        self.batch_size = batch_size
+
+    def explain_batch(self, pil_images: List[Image.Image], preprocessed_images: List[np.ndarray], model: Model, target_classes: List[Gender]) -> Tuple[List[np.ndarray], List[List[Box]], List[List[Box]]]:
+        """Generate visual explanations for a batch of images."""
+        if not pil_images:
+            return [], [], []
+
+        activation_maps = self.activation_mapper.generate_heatmap(model.model, preprocessed_images, target_classes)
+        activation_boxes = self.activation_mapper.process_heatmap(activation_maps)
+        landmark_boxes = self.landmarker.detect(pil_images)
+        labeled_boxes = [self._match_landmarks(a_boxes, l_boxes) for a_boxes, l_boxes in zip(activation_boxes, landmark_boxes)]
+
+        return activation_maps, labeled_boxes, landmark_boxes
 
     def explain_image(self, pil_image: Image.Image, preprocessed_image: np.ndarray, model: Model, target_class: Gender) -> Tuple[np.ndarray, List[Box], List[Box]]:
         """Generate visual explanation for a single image."""
-        activation_map = self.activation_mapper.generate_heatmap(model.model, preprocessed_image, target_class)
-        activation_boxes = self.activation_mapper.process_heatmap(activation_map)
-        landmark_boxes = self.landmarker.detect(pil_image)
-        labeled_boxes = self._match_landmarks(activation_boxes, landmark_boxes)
-
-        return activation_map, labeled_boxes, landmark_boxes
+        activation_maps, labeled_boxes, landmark_boxes = self.explain_batch([pil_image], [preprocessed_image], model, [target_class])
+        return activation_maps[0], labeled_boxes[0], landmark_boxes[0]
 
     def _match_landmarks(self, activation_boxes: List[Box], landmark_boxes: List[Box]) -> List[Box]:
         """Match activation regions with facial landmarks."""
