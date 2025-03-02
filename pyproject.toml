@@ -24,4 +24,4 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ui = ["gradio", "plotly"]
+ui = ["gradio", "plotly", "streamlit"]
