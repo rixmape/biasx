@@ -2,6 +2,8 @@
 
 from typing import Dict, List, Union
 
+import numpy as np
+
 from .calculators import Calculator
 from .config import Config, configurable
 from .datasets import Dataset
@@ -31,8 +33,13 @@ class BiasAnalyzer:
         if not image_data_batch:
             return []
 
-        preprocessed_images = [img.preprocessed_image for img in image_data_batch]
-        pil_images = [img.pil_image for img in image_data_batch]
+        batch_size = len(image_data_batch)
+        if batch_size == 1:
+            preprocessed_images = [image_data_batch[0].preprocessed_image]
+            pil_images = [image_data_batch[0].pil_image]
+        else:
+            preprocessed_images = np.stack([img.preprocessed_image for img in image_data_batch])
+            pil_images = [img.pil_image for img in image_data_batch]
 
         predictions = self.model.predict(preprocessed_images)
         predicted_genders = [pred[0] for pred in predictions]
@@ -45,39 +52,48 @@ class BiasAnalyzer:
             target_classes=predicted_genders,
         )
 
-        return [
-            Explanation(
-                image_data=image_data,
-                predicted_gender=predicted_gender,
-                prediction_confidence=confidence,
-                activation_map=activation_map,
-                activation_boxes=act_boxes,
-                landmark_boxes=land_boxes,
+        explanations = []
+        for i in range(batch_size):
+            explanation = Explanation(
+                image_data=image_data_batch[i],
+                predicted_gender=predicted_genders[i],
+                prediction_confidence=confidences[i],
+                activation_map=activation_maps[i],
+                activation_boxes=activation_boxes[i],
+                landmark_boxes=landmark_boxes[i],
             )
-            for image_data, predicted_gender, confidence, activation_map, act_boxes, land_boxes in zip(image_data_batch, predicted_genders, confidences, activation_maps, activation_boxes, landmark_boxes)
-        ]
+            explanations.append(explanation)
 
-    def analyze_image(self, image_data: ImageData) -> Explanation:
-        """Analyze a single image through the pipeline."""
-        explanations = self.analyze_batch([image_data])
-        return explanations[0] if explanations else None
+        return explanations
 
     def analyze(self) -> AnalysisResult:
         """Run the full analysis pipeline on the dataset."""
-        all_explanations = []
+        batch_count = 0
+        explanations_buffer = []
+        total_explanations = []
+
+        buffer_size = max(100, self.batch_size * 2)
 
         for batch in self.dataset:
             batch_explanations = self.analyze_batch(batch)
-            all_explanations.extend(batch_explanations)
+            explanations_buffer.extend(batch_explanations)
+            batch_count += 1
 
-        if not all_explanations:
+            if len(explanations_buffer) >= buffer_size:
+                total_explanations.extend(explanations_buffer)
+                explanations_buffer = []
+
+        if explanations_buffer:
+            total_explanations.extend(explanations_buffer)
+
+        if not total_explanations:
             return AnalysisResult()
 
-        feature_analyses = self.calculator.calculate_feature_biases(all_explanations)
-        disparity_scores = self.calculator.calculate_disparities(feature_analyses, all_explanations)
+        feature_analyses = self.calculator.calculate_feature_biases(total_explanations)
+        disparity_scores = self.calculator.calculate_disparities(feature_analyses, total_explanations)
 
         return AnalysisResult(
-            explanations=all_explanations,
+            explanations=total_explanations,
             feature_analyses=feature_analyses,
             disparity_scores=disparity_scores,
         )

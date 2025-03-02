@@ -1,7 +1,7 @@
 """Provides classes for generating and processing visual explanations of model decisions."""
 
 import json
-from typing import Dict, List, Tuple, Union
+from typing import List, Tuple, Union
 
 import mediapipe as mp
 import numpy as np
@@ -97,44 +97,32 @@ class ClassActivationMapper:
         """Generate class activation maps for preprocessed images."""
         visualizer = self.cam_method(model, model_modifier=self._modify_model, clone=True)
 
-        if isinstance(preprocessed_images, list):
-            if not preprocessed_images:
-                return []
+        if not isinstance(preprocessed_images, np.ndarray) and len(preprocessed_images) == 0:
+            return []
 
-            processed_batch = []
-            for img in preprocessed_images:
-                if img.ndim == 2:
-                    img = np.expand_dims(img, axis=-1)
-                processed_batch.append(img)
-
-            images = np.stack(processed_batch)
-        else:
-            images = preprocessed_images
-            if images.ndim == 2:
-                images = np.expand_dims(images, axis=-1)
-            if images.ndim == 3:
-                images = np.expand_dims(images, axis=0)
+        images = self._prepare_images_for_cam(preprocessed_images)
 
         if isinstance(target_classes, Gender):
             target_classes = [target_classes] * len(images)
 
         heatmaps = []
-        for i, image in enumerate(images):
-            prepared_image = np.expand_dims(image, axis=0) if image.ndim == 3 else image
-            heatmap = visualizer(lambda output: self._score_function(output, target_classes[i]), prepared_image, penultimate_layer=-1)[0]
+        for i, target_class in enumerate(target_classes):
+            score_function = lambda output: output[0][target_class]
+            image_batch = np.expand_dims(images[i], axis=0) if images[i].ndim == 3 else images[i]
+            heatmap = visualizer(score_function, image_batch, penultimate_layer=-1)[0]
             heatmaps.append(heatmap)
 
         return heatmaps
 
     def process_heatmap(self, heatmaps: Union[np.ndarray, List[np.ndarray]]) -> List[List[Box]]:
         """Process heatmaps into bounding boxes of activated regions."""
-        if isinstance(heatmaps, np.ndarray):
+        if isinstance(heatmaps, np.ndarray) and heatmaps.ndim <= 2:
             heatmaps = [heatmaps]
 
         results = []
         for heatmap in heatmaps:
-            filtered_heatmap = heatmap.copy()
-            filtered_heatmap[filtered_heatmap < np.percentile(filtered_heatmap, self.cutoff_percentile)] = 0
+            threshold_value = np.percentile(heatmap, self.cutoff_percentile)
+            filtered_heatmap = np.where(heatmap < threshold_value, 0, heatmap)
 
             binary = filtered_heatmap > self.threshold_method(filtered_heatmap)
             regions = regionprops(label(binary))
@@ -144,24 +132,26 @@ class ClassActivationMapper:
 
         return results
 
+    def _prepare_images_for_cam(self, images: Union[np.ndarray, List[np.ndarray]]) -> np.ndarray:
+        """Prepare image array for CAM processing."""
+        if isinstance(images, list):
+            processed_batch = []
+            for img in images:
+                if img.ndim == 2:
+                    img = np.expand_dims(img, axis=-1)
+                processed_batch.append(img)
+            return np.stack(processed_batch)
+
+        if images.ndim == 2:
+            images = np.expand_dims(images, axis=-1)
+        if images.ndim == 3:
+            images = np.expand_dims(images, axis=0)
+        return images
+
     @staticmethod
     def _modify_model(model: tf.keras.Model) -> None:
         """Modify model for activation map generation."""
         model.layers[-1].activation = tf.keras.activations.linear
-
-    @staticmethod
-    def _score_function(output: tf.Tensor, target_class: Gender) -> tf.Tensor:
-        """Score function for class activation mapping."""
-        return output[0][target_class]
-
-    @staticmethod
-    def _prepare_image_for_cam(image: np.ndarray) -> np.ndarray:
-        """Prepare image array for CAM processing."""
-        if image.ndim == 2:
-            image = np.expand_dims(image, axis=-1)
-        if image.ndim == 3:
-            image = np.expand_dims(image, axis=0)
-        return image
 
 
 @configurable("explainer")
@@ -184,30 +174,29 @@ class Explainer:
         activation_maps = self.activation_mapper.generate_heatmap(model.model, preprocessed_images, target_classes)
         activation_boxes = self.activation_mapper.process_heatmap(activation_maps)
         landmark_boxes = self.landmarker.detect(pil_images)
-        labeled_boxes = [self._match_landmarks(a_boxes, l_boxes) for a_boxes, l_boxes in zip(activation_boxes, landmark_boxes)]
+
+        labeled_boxes = []
+        for a_boxes, l_boxes in zip(activation_boxes, landmark_boxes):
+            if not a_boxes or not l_boxes:
+                labeled_boxes.append(a_boxes)
+                continue
+
+            a_centers = np.array([box.center for box in a_boxes])
+            l_centers = np.array([box.center for box in l_boxes])
+            distances = cdist(a_centers, l_centers, metric=self.distance_metric)
+
+            nearest_indices = np.argmin(distances, axis=1)
+
+            for i, (a_box, nearest_idx) in enumerate(zip(a_boxes, nearest_indices)):
+                l_box = l_boxes[nearest_idx]
+
+                overlap_width = max(0, min(a_box.max_x, l_box.max_x) - max(a_box.min_x, l_box.min_x))
+                overlap_height = max(0, min(a_box.max_y, l_box.max_y) - max(a_box.min_y, l_box.min_y))
+                overlap_area = overlap_width * overlap_height
+
+                if overlap_area / a_box.area >= self.overlap_threshold:
+                    a_box.feature = l_box.feature
+
+            labeled_boxes.append(a_boxes)
 
         return activation_maps, labeled_boxes, landmark_boxes
-
-    def explain_image(self, pil_image: Image.Image, preprocessed_image: np.ndarray, model: Model, target_class: Gender) -> Tuple[np.ndarray, List[Box], List[Box]]:
-        """Generate visual explanation for a single image."""
-        activation_maps, labeled_boxes, landmark_boxes = self.explain_batch([pil_image], [preprocessed_image], model, [target_class])
-        return activation_maps[0], labeled_boxes[0], landmark_boxes[0]
-
-    def _match_landmarks(self, activation_boxes: List[Box], landmark_boxes: List[Box]) -> List[Box]:
-        """Match activation regions with facial landmarks."""
-        if not activation_boxes or not landmark_boxes:
-            return activation_boxes
-
-        matched_boxes = []
-        for a_box in activation_boxes:
-            nearest = min(landmark_boxes, key=lambda l: cdist([l.center], [a_box.center], metric=self.distance_metric)[0][0])
-            overlap_width = max(0, min(a_box.max_x, nearest.max_x) - max(a_box.min_x, nearest.min_x))
-            overlap_height = max(0, min(a_box.max_y, nearest.max_y) - max(a_box.min_y, nearest.min_y))
-            overlap_area = overlap_width * overlap_height
-
-            if overlap_area / a_box.area >= self.overlap_threshold:
-                a_box.feature = nearest.feature
-
-            matched_boxes.append(a_box)
-
-        return matched_boxes
