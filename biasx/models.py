@@ -13,30 +13,41 @@ from .types import Gender
 class Model:
     """Handles loading and inference for facial classification models."""
 
-    def __init__(self, path: str, inverted_classes: bool, **kwargs):
+    def __init__(self, path: str, inverted_classes: bool = False, **kwargs):
         """Initialize the classification model."""
         self.model = tf.keras.models.load_model(path)
         self.inverted_classes = inverted_classes
         self._metadata = None
 
+    def _prepare_input(self, preprocessed_image: np.ndarray) -> np.ndarray:
+        """Prepare image for model input."""
+        return np.expand_dims(preprocessed_image, axis=0) if preprocessed_image.ndim < 4 else preprocessed_image
+
+    def _get_probabilities(self, image: np.ndarray) -> np.ndarray:
+        """Get probability distribution from model output."""
+        output = self.model.predict(image, verbose=0)
+        return tf.nn.softmax(output)[0] if len(output.shape) > 1 else output[0]
+
+    def _map_class_index(self, index: int) -> int:
+        """Map class index accounting for inverted classes."""
+        return index if not self.inverted_classes else 1 - index
+
     def predict(self, preprocessed_image: np.ndarray) -> Tuple[Gender, float]:
         """Make prediction from a preprocessed image."""
-        batch = np.expand_dims(preprocessed_image, axis=0)
-        output = self.model.predict(batch, verbose=0)
-        probs = tf.nn.softmax(output)[0] if len(output.shape) > 1 else output[0]
+        batch = self._prepare_input(preprocessed_image)
+        probs = self._get_probabilities(batch)
         pred_idx = int(np.argmax(probs))
         confidence = float(probs[pred_idx])
-        pred_class = Gender(pred_idx if not self.inverted_classes else 1 - pred_idx)
+        pred_class = Gender(self._map_class_index(pred_idx))
 
         return pred_class, confidence
 
     def get_class_probabilities(self, preprocessed_image: np.ndarray) -> Dict[Gender, float]:
         """Get probability distribution across all classes."""
-        batch = np.expand_dims(preprocessed_image, axis=0)
-        output = self.model.predict(batch, verbose=0)
-        probs = tf.nn.softmax(output)[0] if len(output.shape) > 1 else output[0]
+        batch = self._prepare_input(preprocessed_image)
+        probs = self._get_probabilities(batch)
 
-        return {Gender(i if not self.inverted_classes else 1 - i): float(prob) for i, prob in enumerate(probs)}
+        return {Gender(self._map_class_index(i)): float(prob) for i, prob in enumerate(probs)}
 
     @property
     def metadata(self) -> Dict[str, Any]:

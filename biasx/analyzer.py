@@ -1,6 +1,6 @@
 """Coordinates the bias analysis pipeline and manages result aggregation."""
 
-from typing import Dict, List, Union
+from typing import Dict, Union
 
 from .calculators import Calculator
 from .config import Config, configurable
@@ -19,11 +19,7 @@ class BiasAnalyzer:
         if config is None:
             config = {}
 
-        if isinstance(config, dict):
-            self.config = Config.create(config)
-        else:
-            self.config = config
-
+        self.config = config if isinstance(config, Config) else Config.create(config)
         self.model = Model(**self.config.model)
         self.dataset = Dataset(**self.config.dataset)
         self.explainer = Explainer(**self.config.explainer)
@@ -40,7 +36,7 @@ class BiasAnalyzer:
             target_class=predicted_gender,
         )
 
-        explanation = Explanation(
+        return Explanation(
             image_data=image_data,
             predicted_gender=predicted_gender,
             prediction_confidence=confidence,
@@ -49,16 +45,9 @@ class BiasAnalyzer:
             landmark_boxes=landmark_boxes,
         )
 
-        return explanation
-
     def analyze(self) -> AnalysisResult:
         """Run the full analysis pipeline on the dataset."""
-        explanations: List[Explanation] = []
-
-        for image_data in self.dataset:
-            explanation = self.analyze_image(image_data)
-            if explanation:
-                explanations.append(explanation)
+        explanations = [exp for exp in (self.analyze_image(img_data) for img_data in self.dataset) if exp]
 
         if not explanations:
             return AnalysisResult()
@@ -75,5 +64,4 @@ class BiasAnalyzer:
     @classmethod
     def from_file(cls, config_file_path: str) -> "BiasAnalyzer":
         """Create a BiasAnalyzer from a configuration file."""
-        config = Config.from_file(config_file_path)
-        return cls(config=config)
+        return cls(config=Config.from_file(config_file_path))

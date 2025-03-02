@@ -5,7 +5,6 @@ from functools import wraps
 from typing import Any, Callable, Dict, Optional, Type, TypeVar
 
 from .types import CAMMethod, ColorMode, DatasetSource, DistanceMetric, LandmarkerSource, ThresholdMethod
-from .utils import parse_enum
 
 T = TypeVar("T")
 C = TypeVar("C")
@@ -15,18 +14,19 @@ DEFAULTS = {
         "inverted_classes": False,
     },
     "explainer": {
-        "landmarker_source": LandmarkerSource.MEDIAPIPE,
-        "cam_method": CAMMethod.GRADCAM_PLUS_PLUS,
+        "landmarker_source": "mediapipe",
+        "cam_method": "gradcam++",
         "cutoff_percentile": 90,
-        "threshold_method": ThresholdMethod.OTSU,
+        "threshold_method": "otsu",
         "overlap_threshold": 0.2,
-        "distance_metric": DistanceMetric.EUCLIDEAN,
+        "distance_metric": "euclidean",
+        "max_faces": 1,
     },
     "dataset": {
-        "source": DatasetSource.UTKFACE,
+        "source": "utkface",
         "image_width": 224,
         "image_height": 224,
-        "color_mode": ColorMode.GRAYSCALE,
+        "color_mode": "L",
         "single_channel": False,
         "max_samples": 100,
         "shuffle": True,
@@ -35,13 +35,9 @@ DEFAULTS = {
     "calculator": {
         "precision": 3,
     },
-    "landmarker": {
-        "max_faces": 1,
-        "source": LandmarkerSource.MEDIAPIPE,
-    },
 }
 
-ENUM_TYPES = {
+ENUM_MAPPING = {
     "landmarker_source": LandmarkerSource,
     "cam_method": CAMMethod,
     "threshold_method": ThresholdMethod,
@@ -52,6 +48,8 @@ ENUM_TYPES = {
 
 
 def configurable(component_name: Optional[str] = None) -> Callable:
+    """Decorator to apply configuration with defaults to a class."""
+
     def decorator(cls: Type[C]) -> Type[C]:
         orig_init = cls.__init__
 
@@ -59,13 +57,18 @@ def configurable(component_name: Optional[str] = None) -> Callable:
         def new_init(self, *args, **kwargs):
             section = component_name or cls.__name__.lower()
 
-            config = DEFAULTS.get(section, {}).copy()
-            config.update({k: v for k, v in kwargs.items() if v is not None})
+            config = {**DEFAULTS.get(section, {}), **{k: v for k, v in kwargs.items() if v is not None}}
 
-            for key in list(config.keys()):
-                if key in ENUM_TYPES:
-                    default_value = DEFAULTS.get(section, {}).get(key)
-                    config[key] = parse_enum(config[key], ENUM_TYPES[key], default_value)
+            for key, value in list(config.items()):
+                if key in ENUM_MAPPING and isinstance(value, str):
+                    try:
+                        enum_class = ENUM_MAPPING[key]
+                        config[key] = enum_class(value)
+                    except (ValueError, KeyError):
+                        try:
+                            config[key] = enum_class[value]
+                        except KeyError:
+                            pass  # Keep original value if conversion fails
 
             orig_init(self, *args, **config)
 
@@ -82,9 +85,8 @@ class Config:
         """Initialize configuration from a dictionary."""
         self.config_dict = config_dict
 
-        if isinstance(config_dict, dict) and not isinstance(config_dict, Config):
-            if "model" not in config_dict or "path" not in config_dict.get("model", {}):
-                raise ValueError("model.path is required")
+        if not isinstance(config_dict, dict) or "model" not in config_dict or "path" not in config_dict.get("model", {}):
+            raise ValueError("model.path is required in configuration")
 
         self.model_path = config_dict.get("model", {}).get("path")
 
@@ -93,18 +95,22 @@ class Config:
         self.dataset = self._prepare_section("dataset")
         self.calculator = self._prepare_section("calculator")
 
-    def _prepare_section(self, config_key: str) -> Dict[str, Any]:
+    def _prepare_section(self, section_name: str) -> Dict[str, Any]:
         """Prepare a configuration section with defaults and enum conversion."""
-        section = DEFAULTS.get(config_key, {}).copy()
+        config = {**DEFAULTS.get(section_name, {}), **self.config_dict.get(section_name, {})}
 
-        user_config = self.config_dict.get(config_key, {})
-        section.update({k: v for k, v in user_config.items() if v is not None})
+        for key, value in list(config.items()):
+            if key in ENUM_MAPPING and isinstance(value, str):
+                enum_class = ENUM_MAPPING[key]
+                try:
+                    config[key] = enum_class(value)
+                except (ValueError, KeyError):
+                    try:
+                        config[key] = enum_class[value]
+                    except KeyError:
+                        pass  # Keep original value if conversion fails
 
-        for key, value in list(section.items()):
-            if key in ENUM_TYPES and value is not None:
-                section[key] = parse_enum(value, ENUM_TYPES[key])
-
-        return section
+        return config
 
     @classmethod
     def create(cls, config_dict: Dict[str, Any]) -> "Config":
@@ -120,12 +126,7 @@ class Config:
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary format."""
-        return {
-            "model": self.model,
-            "explainer": self.explainer,
-            "dataset": self.dataset,
-            "calculator": self.calculator,
-        }
+        return {"model": self.model, "explainer": self.explainer, "dataset": self.dataset, "calculator": self.calculator}
 
     def save(self, file_path: str) -> None:
         """Save configuration to a JSON file."""

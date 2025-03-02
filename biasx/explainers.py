@@ -14,57 +14,41 @@ from skimage.measure import label, regionprops
 
 from .config import configurable
 from .models import Model
-from .types import Box, CAMMethod, DistanceMetric, FacialFeature, Gender, LandmarkerMetadata, LandmarkerSource, ThresholdMethod
-from .utils import download_resource, get_module_data_path, load_json_config
+from .types import Box, CAMMethod, DistanceMetric, FacialFeature, Gender, LandmarkerSource, ResourceMetadata, ThresholdMethod
+from .utils import get_file_path, get_json_config, get_resource_path
 
 
-@configurable("landmarker")
 class FacialLandmarker:
     """Detects facial landmarks using MediaPipe."""
 
-    def __init__(self, source: LandmarkerSource, max_faces: int, **kwargs):
+    def __init__(self, source: LandmarkerSource, max_faces: int):
         """Initialize the facial landmark detector."""
         self.source = source
-        self.landmarker_info = self._load_landmarker_metadata()
-        self.model_path = self._download_model()
-        self.landmark_mapping = self._load_landmark_mapping()
+        self.max_faces = max_faces
+        self._load_resources()
 
-        options = FaceLandmarkerOptions(
-            base_options=BaseOptions(model_asset_path=self.model_path),
-            num_faces=max_faces,
-        )
+        options = FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=self.model_path), num_faces=self.max_faces)
         self.detector = FaceLandmarker.create_from_options(options)
 
-    def _load_landmarker_metadata(self) -> LandmarkerMetadata:
-        """Load landmarker metadata from configuration file."""
-        config = load_json_config(__file__, "landmarker_config.json")
+    def _load_resources(self) -> None:
+        """Load landmarker resources from configuration."""
+        config = get_json_config(__file__, "landmarker_config.json")
 
         if self.source.value not in config:
             raise ValueError(f"Landmarker source {self.source.value} not found in configuration")
 
-        return LandmarkerMetadata(**config[self.source.value])
+        metadata_dict = config[self.source.value]
+        self.landmarker_info = ResourceMetadata(**metadata_dict)
+        self.model_path = get_resource_path(repo_id=self.landmarker_info.repo_id, filename=self.landmarker_info.filename, repo_type=self.landmarker_info.repo_type)
 
-    def _download_model(self) -> str:
-        """Download the facial landmark model from HuggingFace."""
-        return download_resource(
-            repo_id=self.landmarker_info.repo_id,
-            filename=self.landmarker_info.filename,
-            repo_type=self.landmarker_info.repo_type,
-        )
-
-    def _load_landmark_mapping(self) -> dict:
-        """Load facial landmark mapping from JSON configuration file."""
-        mapping_path = get_module_data_path(__file__, "landmark_mapping.json")
-
-        with open(str(mapping_path), "r") as f:
+        mapping_path = get_file_path(__file__, "data/landmark_mapping.json")
+        with open(mapping_path, "r") as f:
             mapping_data = json.load(f)
 
-        landmark_mapping = {}
+        self.landmark_mapping = {}
         for feature_name, indices in mapping_data.items():
             feature_enum = FacialFeature(feature_name)
-            landmark_mapping[feature_enum] = indices
-
-        return landmark_mapping
+            self.landmark_mapping[feature_enum] = indices
 
     def detect(self, image: Image.Image) -> List[Box]:
         """Detect facial landmarks in an image."""
@@ -92,27 +76,20 @@ class FacialLandmarker:
         return boxes
 
 
-@configurable("explainer")
 class ClassActivationMapper:
     """Generates and processes class activation maps."""
 
-    def __init__(self, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod, **kwargs):
+    def __init__(self, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod):
         """Initialize the activation map generator."""
         self.cam_method = cam_method.get_implementation()
         self.cutoff_percentile = cutoff_percentile
         self.threshold_method = threshold_method.get_implementation()
 
-    def generate_heatmap(
-        self,
-        model: tf.keras.Model,
-        preprocessed_image: np.ndarray,
-        target_class: Gender,
-    ) -> np.ndarray:
+    def generate_heatmap(self, model: tf.keras.Model, preprocessed_image: np.ndarray, target_class: Gender) -> np.ndarray:
         """Generate class activation map for a preprocessed image."""
         visualizer = self.cam_method(model, model_modifier=self._modify_model, clone=True)
         image = self._prepare_image_for_cam(preprocessed_image)
         heatmap = visualizer(lambda output: self._score_function(output, target_class), image, penultimate_layer=-1)[0]
-
         return heatmap
 
     def process_heatmap(self, heatmap: np.ndarray) -> List[Box]:
@@ -121,16 +98,9 @@ class ClassActivationMapper:
         filtered_heatmap[filtered_heatmap < np.percentile(filtered_heatmap, self.cutoff_percentile)] = 0
 
         binary = filtered_heatmap > self.threshold_method(filtered_heatmap)
-
         regions = regionprops(label(binary))
 
-        boxes = []
-        for region in regions:
-            min_row, min_col, max_row, max_col = region.bbox
-            box = Box(min_x=min_col, min_y=min_row, max_x=max_col, max_y=max_row)
-            boxes.append(box)
-
-        return boxes
+        return [Box(min_x=region.bbox[1], min_y=region.bbox[0], max_x=region.bbox[3], max_y=region.bbox[2]) for region in regions]
 
     @staticmethod
     def _modify_model(model: tf.keras.Model) -> None:
@@ -147,10 +117,8 @@ class ClassActivationMapper:
         """Prepare image array for CAM processing."""
         if image.ndim == 2:
             image = np.expand_dims(image, axis=-1)
-
         if image.ndim == 3:
             image = np.expand_dims(image, axis=0)
-
         return image
 
 
@@ -158,20 +126,14 @@ class ClassActivationMapper:
 class Explainer:
     """Coordinates generation of visual explanations for model decisions."""
 
-    def __init__(self, landmarker_source: LandmarkerSource, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod, overlap_threshold: float, distance_metric: DistanceMetric, **kwargs):
+    def __init__(self, landmarker_source: LandmarkerSource, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod, overlap_threshold: float, distance_metric: DistanceMetric, max_faces: int, **kwargs):
         """Initialize the visual explainer."""
-        self.landmarker = FacialLandmarker(source=landmarker_source)
+        self.landmarker = FacialLandmarker(source=landmarker_source, max_faces=max_faces)
         self.activation_mapper = ClassActivationMapper(cam_method=cam_method, cutoff_percentile=cutoff_percentile, threshold_method=threshold_method)
         self.overlap_threshold = overlap_threshold
         self.distance_metric = distance_metric.value
 
-    def explain_image(
-        self,
-        pil_image: Image.Image,
-        preprocessed_image: np.ndarray,
-        model: Model,
-        target_class: Gender,
-    ) -> Tuple[np.ndarray, List[Box], List[Box]]:
+    def explain_image(self, pil_image: Image.Image, preprocessed_image: np.ndarray, model: Model, target_class: Gender) -> Tuple[np.ndarray, List[Box], List[Box]]:
         """Generate visual explanation for a single image."""
         activation_map = self.activation_mapper.generate_heatmap(model.model, preprocessed_image, target_class)
         activation_boxes = self.activation_mapper.process_heatmap(activation_map)
@@ -187,11 +149,7 @@ class Explainer:
 
         matched_boxes = []
         for a_box in activation_boxes:
-            nearest = min(
-                landmark_boxes,
-                key=lambda l: cdist([l.center], [a_box.center], metric=self.distance_metric)[0][0],
-            )
-
+            nearest = min(landmark_boxes, key=lambda l: cdist([l.center], [a_box.center], metric=self.distance_metric)[0][0])
             overlap_width = max(0, min(a_box.max_x, nearest.max_x) - max(a_box.min_x, nearest.min_x))
             overlap_height = max(0, min(a_box.max_y, nearest.max_y) - max(a_box.min_y, nearest.min_y))
             overlap_area = overlap_width * overlap_height
