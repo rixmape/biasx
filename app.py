@@ -1,115 +1,99 @@
 import streamlit as st
 import tempfile
-from biasx import BiasAnalyzer, BiasCalculator, ClassificationModel, FaceDataset, VisualExplainer
 import json
 import pandas as pd
 
-if "select_all" not in st.session_state:
-    st.session_state.select_all = False
+st.set_page_config(layout="centered")
 
 if "model_path" not in st.session_state:
     st.session_state.model_path = ""
 
+if "select_all" not in st.session_state:
+    st.session_state.select_all = False
+
+if "enable_shuffle" not in st.session_state:
+    st.session_state.enable_shuffle = True
+
+if "select_all" not in st.session_state:
+    st.session_state.select_all = True
+
+if "invert_label" not in st.session_state:
+    st.session_state.invert_label = False
+
+if "configuration" not in st.session_state:
+    st.session_state.configuration = True
+
+
  
 
-def streamlit():
-    st.title(":rainbow[BiasX ⚖]")
+def configuration_page():
+    # Model Configuration
+    with st.container(border=True):
+        st.markdown("### Model Configuration")
+        model_upload, model_config = st.columns(2)
+        with model_upload:
+            uploaded_file = model_upload.file_uploader("", type=["h5", "keras"], key="uploaded_model", label_visibility="collapsed")
+        
+        with model_config.container(border=True):
+            c1, c2 = st.columns(2)
+            width = c1.number_input("Image Width", key="input_image_width", value=224)
+            height = c2.number_input("Image Height", key="input_image_height", value=224)
+            color_mode = c1.pills("Color Mode", ["Grayscale", "RGB"], key="color_mode", selection_mode="single")
+            channel = c2.pills("Color Mode", ["Single", "Triple"], key="channel", selection_mode="single")
+            invert_label = st.toggle("Invert Label?", value=st.session_state.invert_label)
 
-    st.container(height=18, border=False)  # Spacer
-    st.subheader(":one: Upload your model")
+        if uploaded_file is not None:
+            # Create a temporary file to store the uploaded model
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".h5") as temp_file:
+                temp_file.write(uploaded_file.read())  # Save the uploaded file
+                temp_path = temp_file.name  # Get the path of the temp file
 
-    uploaded_file = st.file_uploader("", type=["h5", "keras"], key="uploaded_model", label_visibility="collapsed")
-
-    if uploaded_file is not None:
-        # Create a temporary file to store the uploaded model
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".h5") as temp_file:
-            temp_file.write(uploaded_file.read())  # Save the uploaded file
-            temp_path = temp_file.name  # Get the path of the temp file
-
-        st.session_state.model_path = temp_path
-
-    st.container(height=18, border=False)
-    st.subheader(":two: Configure the pipeline")
-    st.write(" ")
-
-
-    model, spacer, dataset = st.columns([1, 0.09, 1])
-
-    model_container = model.container()  # Create a container inside col1
-    model_container.markdown("##### > Model Configuration <")
-    c1, c2 = model_container.columns(2)
-    width = c1.number_input("Image Width", key="input_image_width", value=224)
-    height = c2.number_input("Image Height", key="input_image_height", value=224)
+            st.session_state.model_path = temp_path
     
-    # TODO: Add Option for channels | Can be selection
-    model_container.write("-------------------- Work in Progress --------------------")
-    model_container.toggle("Single Channel", key="single_channel", value=False)
-    model_container.toggle("Triple Channel (Grayscale)", key="triple_channel_grayscale", value=False)
-    model_container.toggle("Triple Channel (RGB)", key="single_channel_rgb", value=False)
-    model_container.write("^--------------------------------------------------------------^")
+    # Other Configuration
+    with st.container():
+        explainer, other = st.columns(2)
+        
+        with explainer.container(border=True):
+            st.markdown("### Explainer Configuration")
+            max_face = st.number_input("Maximum Number of Face to detect", key="max_face", value=1)
 
-    spacer.empty() 
-
-    dataset_container = dataset.container()  # Create a container inside col2
-    dataset_container.markdown("##### > Dataset Configuration <")
-    dataset_container.radio("Test Data", ["UTKFace"], key="dataset", index=0, horizontal=True)
-    sample_size = dataset_container.number_input("Sample Size", key="sample_size", value=0, disabled=st.session_state.select_all)
-    c1, c2 = dataset_container.columns(2)
-    c1.toggle("All Image", value=st.session_state.select_all, key="select_all")
-    c2.toggle("Shuffle", key="shuffle", value=True)
-    dataset_container.number_input("Seed", key="seed", value=69)
-
-    st.container(height=18, border=False)
-    st.subheader(":three: Analyze the model")
-
-
-    if st.button("Start Analysis", key="start_analysis"):
-        with st.spinner("Analyzing..", show_time=True):
+            with st.container(border=True):
+                cam_method = st.pills("Class Activation Map Method", ["GradCam", "GradCam++", "ScoreCam"], key="cam_method", selection_mode="single")
+                cam_threshold = st.number_input("Class Activation Map Threshold", key="cam_threshold", value=1)
+                threshold_method = st.pills("Thresholding Method", ["otsu", "method_name", "method_name"], key="threshold_method", selection_mode="single")
             
-            model_path = st.session_state.model_path
-            sample_size = -1 if st.session_state.select_all else st.session_state.sample_size
-            dataset_chosen = "dataset/UTKFace" if st.session_state.dataset == "UTKFace" else "More"
-            target_size = (width, height)
-            shuffle_val = st.session_state.shuffle
-            seed_val = st.session_state.seed
+            with st.container(border=True):
+                min_overlap = st.number_input("Minimum Overlap Ratio", key="overlap_ratio", value=1)
+                distant_metric = st.pills("Distant Metric", ["Euclidean", "method"], key="distant_metric", selection_mode="single")
+        
+        with other.container():
+            with st.container(border=True):
+                st.markdown("### Dataset Configuration")
+                threshold_method = st.pills("Dataset Selection", ["UTKFace", "FairFace"], key="dataset_selection", selection_mode="multi")
+                c1, c2 = st.columns(2)
+                sample_size = c1.number_input("Sample Size", key="sample_size", value=1, disabled=st.session_state.select_all)
+                use_all_data = c1.toggle("Select All Data?", key = "select_all")
+                shuffle_seed = c2.number_input("Seed", key="seed", value=69, disabled = not st.session_state.enable_shuffle)
+                enable_shuffle = c2.toggle("Enable Shuffle?", key="enable_shuffle")
 
-            bias_analysis(model_path, target_size, dataset_chosen, sample_size, shuffle_val, seed_val)
+            with st.container(border=True):
+                st.markdown("### Calculator")
+                decimal_place = st.number_input("Number of Decimal Place", key="decimal_place", value=1)
+            
+            if st.button("Start Analysis", type="primary", use_container_width=True):
+                st.session_state.configuration = False
+                st.rerun()
+    
+def visualization_page():
+    if st.button("Go Back", type="primary", use_container_width=True):
+                st.session_state.configuration = True
+                st.rerun()
 
-def bias_analysis(model_path, target_size, dataset_chosen, sample_size, shuffle_val, seed_val):
-    # TODO: Add Options for Channels
-    model = ClassificationModel(model_path=model_path, target_size=target_size, single_channel=True)
-    explainer = VisualExplainer(landmark_model_path="models/face_landmarker.task", landmark_map_path="models/landmark_map.json")
-    calculator = BiasCalculator()
-    analyzer = BiasAnalyzer(model=model, explainer=explainer, calculator=calculator)
-
-    dataset = FaceDataset(dataset_path=dataset_chosen, max_samples=sample_size, shuffle=shuffle_val, seed=seed_val)
-    analysis = analyzer.analyze(dataset=dataset, return_explanations=False)
-
-    analysis.save("output/bias_analysis.json")
-
-    view_analysis(analysis)
-
-
-def view_analysis(analysis):
-    feature_scores = analysis.feature_scores
-    feature_probabilities = analysis.feature_probabilities
-    bias_score = analysis.bias_score
-
-   # Convert feature probabilities to DataFrame
-    df_feature_probabilities = pd.DataFrame.from_dict(feature_probabilities, orient="index")
-
-    # Add a new column for feature scores
-    df_feature_probabilities["Feature Score"] = df_feature_probabilities.index.map(feature_scores)
-
-    # Reset index to have 'Feature' as a column instead of index
-    df_feature_probabilities.reset_index(inplace=True)
-    df_feature_probabilities.rename(columns={"index": "Feature"}, inplace=True)
-
-    # Display in Streamlit
-    st.markdown(f"#### Bias Score = {bias_score}")
-
-    st.markdown("#### Feature Probabilities with Feature Scores")
-    st.table(df_feature_probabilities)
+    
 
 if __name__ == "__main__":
-    streamlit()
+    if st.session_state.configuration:
+        configuration_page()
+    else:
+        visualization_page()
