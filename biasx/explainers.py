@@ -21,13 +21,12 @@ from .utils import get_file_path, get_json_config, get_resource_path
 class FacialLandmarker:
     """Detects facial landmarks using MediaPipe."""
 
-    def __init__(self, source: LandmarkerSource, max_faces: int):
+    def __init__(self, source: LandmarkerSource):
         """Initialize the facial landmark detector."""
         self.source = source
-        self.max_faces = max_faces
         self._load_resources()
 
-        options = FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=self.model_path), num_faces=self.max_faces)
+        options = FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=self.model_path))
         self.detector = FaceLandmarker.create_from_options(options)
 
     def _load_resources(self) -> None:
@@ -158,9 +157,9 @@ class ClassActivationMapper:
 class Explainer:
     """Coordinates generation of visual explanations for model decisions."""
 
-    def __init__(self, landmarker_source: LandmarkerSource, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod, overlap_threshold: float, distance_metric: DistanceMetric, max_faces: int, batch_size: int, **kwargs):
+    def __init__(self, landmarker_source: LandmarkerSource, cam_method: CAMMethod, cutoff_percentile: int, threshold_method: ThresholdMethod, overlap_threshold: float, distance_metric: DistanceMetric, batch_size: int, **kwargs):
         """Initialize the visual explainer."""
-        self.landmarker = FacialLandmarker(source=landmarker_source, max_faces=max_faces)
+        self.landmarker = FacialLandmarker(source=landmarker_source)
         self.activation_mapper = ClassActivationMapper(cam_method=cam_method, cutoff_percentile=cutoff_percentile, threshold_method=threshold_method)
         self.overlap_threshold = overlap_threshold
         self.distance_metric = distance_metric.value

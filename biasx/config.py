@@ -21,7 +21,6 @@ DEFAULTS = {
         "threshold_method": "otsu",
         "overlap_threshold": 0.2,
         "distance_metric": "euclidean",
-        "max_faces": 1,
         "batch_size": 32,
     },
     "dataset": {
