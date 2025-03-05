@@ -1,14 +1,16 @@
-"""
-Core type definitions for the BiasX library.
-Provides enumerations and dataclasses that define the data structures used throughout the library.
-"""
+"""Provides enumerations and dataclasses that define the data structures used throughout the library."""
 
 import enum
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
+import tf_keras_vis
 from PIL import Image
+from skimage.filters import threshold_otsu, threshold_sauvola, threshold_triangle
+from tf_keras_vis.gradcam import Gradcam
+from tf_keras_vis.gradcam_plus_plus import GradcamPlusPlus
+from tf_keras_vis.scorecam import Scorecam
 
 
 class Gender(enum.IntEnum):
@@ -76,6 +78,49 @@ class ColorMode(enum.Enum):
     RGB = "RGB"
 
 
+class CAMMethod(enum.Enum):
+    """Class activation mapping methods."""
+
+    GRADCAM = "gradcam"
+    GRADCAM_PLUS_PLUS = "gradcam++"
+    SCORECAM = "scorecam"
+
+    def get_implementation(self) -> tf_keras_vis.ModelVisualization:
+        """Get the implementation class for this CAM method."""
+        implementations = {
+            "gradcam": Gradcam,
+            "gradcam++": GradcamPlusPlus,
+            "scorecam": Scorecam,
+        }
+        return implementations[self.value]
+
+
+class ThresholdMethod(enum.Enum):
+    """Thresholding methods for activation map processing."""
+
+    OTSU = "otsu"
+    SAUVOLA = "sauvola"
+    TRIANGLE = "triangle"
+
+
+    def get_implementation(self) -> Callable[[np.ndarray], Any]:
+        """Get the implementation function for this threshold method."""
+        implementations = {
+            "otsu": threshold_otsu,
+            "sauvola": threshold_sauvola,
+            "triangle": threshold_triangle,
+        }
+        return implementations[self.value]
+
+
+class DistanceMetric(enum.Enum):
+    """Distance metrics for comparing spatial coordinates."""
+
+    CITYBLOCK = "cityblock"
+    COSINE = "cosine"
+    EUCLIDEAN = "euclidean"
+
+
 @dataclass
 class Box:
     """Represents a bounding box with an optional feature label."""
@@ -87,7 +132,7 @@ class Box:
     feature: Optional[FacialFeature] = None
 
     @property
-    def center(self) -> tuple[float, float]:
+    def center(self) -> Tuple[float, float]:
         """Compute center coordinates of the box."""
         return ((self.min_x + self.max_x) / 2, (self.min_y + self.max_y) / 2)
 
@@ -98,26 +143,18 @@ class Box:
 
 
 @dataclass
-class DatasetMetadata:
-    """Metadata for a face dataset."""
+class ResourceMetadata:
+    """Metadata for a resource from HuggingFace Hub."""
 
     repo_id: str
     filename: str
-    repo_type: str
-    image_id_col: str
-    image_col: str
-    gender_col: str
-    age_col: str
-    race_col: str
+    repo_type: str = "dataset"
 
-
-@dataclass
-class LandmarkerMetadata:
-    """Metadata for a facial landmark detection model."""
-
-    repo_id: str
-    filename: str
-    repo_type: str
+    image_id_col: str = ""
+    image_col: str = ""
+    gender_col: str = ""
+    age_col: str = ""
+    race_col: str = ""
 
 
 @dataclass
@@ -142,8 +179,8 @@ class Explanation:
     predicted_gender: Gender
     prediction_confidence: float
     activation_map: np.ndarray
-    activation_boxes: list[Box]
-    landmark_boxes: list[Box]
+    activation_boxes: List[Box]
+    landmark_boxes: List[Box]
 
 
 @dataclass
@@ -168,6 +205,6 @@ class DisparityScores:
 class AnalysisResult:
     """Complete results of a bias analysis run."""
 
-    explanations: list[Explanation] = field(default_factory=list)
-    feature_analyses: dict[FacialFeature, FeatureAnalysis] = field(default_factory=dict)
+    explanations: List[Explanation] = field(default_factory=list)
+    feature_analyses: Dict[FacialFeature, FeatureAnalysis] = field(default_factory=dict)
     disparity_scores: DisparityScores = field(default_factory=DisparityScores)

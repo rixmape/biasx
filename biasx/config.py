@@ -1,144 +1,140 @@
-"""
-Configuration module for the BiasX library.
-Handles loading, merging, and validation of configuration settings.
-"""
+"""Handles loading, merging, and validation of configuration settings."""
 
-from dataclasses import asdict, dataclass, field
-from typing import Any, Dict
+import json
+from functools import wraps
+from typing import Any, Callable, Dict, Optional, Type, TypeVar
 
-from .explainers import CAMMethod, DistanceMetric, ThresholdMethod
-from .types import ColorMode, DatasetSource, LandmarkerSource
+from .types import CAMMethod, ColorMode, DatasetSource, DistanceMetric, LandmarkerSource, ThresholdMethod
+
+T = TypeVar("T")
+C = TypeVar("C")
+
+DEFAULTS = {
+    "model": {
+        "inverted_classes": False,
+        "batch_size": 32,
+    },
+    "explainer": {
+        "landmarker_source": "mediapipe",
+        "cam_method": "gradcam++",
+        "cutoff_percentile": 90,
+        "threshold_method": "otsu",
+        "overlap_threshold": 0.2,
+        "distance_metric": "euclidean",
+        "batch_size": 32,
+    },
+    "dataset": {
+        "source": "utkface",
+        "image_width": 224,
+        "image_height": 224,
+        "color_mode": "L",
+        "single_channel": False,
+        "max_samples": 100,
+        "shuffle": True,
+        "seed": 69,
+        "batch_size": 32,
+    },
+    "calculator": {
+        "precision": 3,
+    },
+    "analyzer": {
+        "batch_size": 32,
+    },
+}
+
+ENUM_MAPPING = {
+    "landmarker_source": LandmarkerSource,
+    "cam_method": CAMMethod,
+    "threshold_method": ThresholdMethod,
+    "distance_metric": DistanceMetric,
+    "source": DatasetSource,
+    "color_mode": ColorMode,
+}
 
 
-@dataclass
-class ModelConfig:
-    """Configuration for the classification model."""
+def configurable(component_name: Optional[str] = None) -> Callable:
+    """Decorator to apply configuration with defaults to a class."""
 
-    path: str
-    inverted_classes: bool = False
+    def decorator(cls: Type[C]) -> Type[C]:
+        orig_init = cls.__init__
 
+        @wraps(orig_init)
+        def new_init(self, *args, **kwargs):
+            section = component_name or cls.__name__.lower()
 
-@dataclass
-class ExplainerConfig:
-    """Configuration for the visual explainer."""
+            config = {**DEFAULTS.get(section, {}), **{k: v for k, v in kwargs.items() if v is not None}}
 
-    landmarker_source: LandmarkerSource = LandmarkerSource.MEDIAPIPE
-    cam_method: CAMMethod = CAMMethod.GRADCAM_PLUS_PLUS
-    cutoff_percentile: int = 90
-    threshold_method: ThresholdMethod = ThresholdMethod.OTSU
-    overlap_threshold: float = 0.2
-    distance_metric: DistanceMetric = DistanceMetric.EUCLIDEAN
+            for key, value in list(config.items()):
+                if key in ENUM_MAPPING and isinstance(value, str):
+                    try:
+                        enum_class = ENUM_MAPPING[key]
+                        config[key] = enum_class(value)
+                    except (ValueError, KeyError):
+                        try:
+                            config[key] = enum_class[value]
+                        except KeyError:
+                            pass  # Keep original value if conversion fails
 
+            orig_init(self, *args, **config)
 
-@dataclass
-class DatasetConfig:
-    """Configuration for the dataset loader."""
+        cls.__init__ = new_init
+        return cls
 
-    source: DatasetSource = DatasetSource.UTKFACE
-    image_width: int = 224
-    image_height: int = 224
-    color_mode: ColorMode = ColorMode.GRAYSCALE
-    single_channel: bool = False
-    max_samples: int = 100
-    shuffle: bool = True
-    seed: int = 69
+    return decorator
 
 
-@dataclass
-class CalculatorConfig:
-    """Configuration for the bias calculator."""
-
-    precision: int = 3
-
-
-@dataclass
 class Config:
     """Main configuration class for the bias analysis pipeline."""
 
-    model_config: ModelConfig
-    explainer_config: ExplainerConfig
-    dataset_config: DatasetConfig = field(default_factory=DatasetConfig)
-    calculator_config: CalculatorConfig = field(default_factory=CalculatorConfig)
+    def __init__(self, config_dict: Dict[str, Any]):
+        """Initialize configuration from a dictionary."""
+        self.config_dict = config_dict
+
+        if not isinstance(config_dict, dict) or "model" not in config_dict or "path" not in config_dict.get("model", {}):
+            raise ValueError("model.path is required in configuration")
+
+        self.model_path = config_dict.get("model", {}).get("path")
+
+        self.model = self._prepare_section("model")
+        self.explainer = self._prepare_section("explainer")
+        self.dataset = self._prepare_section("dataset")
+        self.calculator = self._prepare_section("calculator")
+        self.analyzer = self._prepare_section("analyzer")
+
+    def _prepare_section(self, section_name: str) -> Dict[str, Any]:
+        """Prepare a configuration section with defaults and enum conversion."""
+        config = {**DEFAULTS.get(section_name, {}), **self.config_dict.get(section_name, {})}
+
+        for key, value in list(config.items()):
+            if key in ENUM_MAPPING and isinstance(value, str):
+                enum_class = ENUM_MAPPING[key]
+                try:
+                    config[key] = enum_class(value)
+                except (ValueError, KeyError):
+                    try:
+                        config[key] = enum_class[value]
+                    except KeyError:
+                        pass  # Keep original value if conversion fails
+
+        return config
 
     @classmethod
     def create(cls, config_dict: Dict[str, Any]) -> "Config":
-        """Create configuration from dict, merging with defaults."""
-        if "model_config" not in config_dict or "path" not in config_dict["model_config"]:
-            raise ValueError("model_config.path is required")
+        """Create configuration from dict."""
+        return cls(config_dict)
 
-        model_config = cls._create_model_config(config_dict.get("model_config", {}))
-        explainer_config = cls._create_explainer_config(config_dict.get("explainer_config", {}))
-        dataset_config = cls._create_dataset_config(config_dict.get("dataset_config", {}))
-        calculator_config = cls._create_calculator_config(config_dict.get("calculator_config", {}))
-
-        return cls(
-            model_config=model_config,
-            explainer_config=explainer_config,
-            dataset_config=dataset_config,
-            calculator_config=calculator_config,
-        )
-
-    @staticmethod
-    def _create_model_config(config_dict: Dict[str, Any]) -> ModelConfig:
-        """Create ModelConfig from dictionary."""
-        return ModelConfig(path=config_dict["path"], inverted_classes=config_dict.get("inverted_classes", False))
-
-    @staticmethod
-    def _create_explainer_config(config_dict: Dict[str, Any]) -> ExplainerConfig:
-        """Create ExplainerConfig from dictionary with enum conversion."""
-        landmarker_source_val = config_dict.get("landmarker_source", LandmarkerSource.MEDIAPIPE.value)
-        landmarker_source = LandmarkerSource(landmarker_source_val)
-
-        cam_method_val = config_dict.get("cam_method", CAMMethod.GRADCAM_PLUS_PLUS.value)
-        cam_method = CAMMethod(cam_method_val)
-
-        threshold_method_val = config_dict.get("threshold_method", ThresholdMethod.OTSU.value)
-        threshold_method = ThresholdMethod(threshold_method_val)
-
-        distance_metric_val = config_dict.get("distance_metric", DistanceMetric.EUCLIDEAN.value)
-        distance_metric = DistanceMetric(distance_metric_val)
-
-        return ExplainerConfig(
-            landmarker_source=landmarker_source,
-            cam_method=cam_method,
-            cutoff_percentile=config_dict.get("cutoff_percentile", 90),
-            threshold_method=threshold_method,
-            overlap_threshold=config_dict.get("overlap_threshold", 0.2),
-            distance_metric=distance_metric,
-        )
-
-    @staticmethod
-    def _create_dataset_config(config_dict: Dict[str, Any]) -> DatasetConfig:
-        """Create DatasetConfig from dictionary with enum conversion."""
-        source = config_dict.get("source")
-        if isinstance(source, str):
-            source = DatasetSource(source)
-
-        color_mode = config_dict.get("color_mode")
-        if isinstance(color_mode, str):
-            color_mode = ColorMode(color_mode)
-
-        return DatasetConfig(
-            source=source or DatasetSource.UTKFACE,
-            image_width=config_dict.get("image_width", 224),
-            image_height=config_dict.get("image_height", 224),
-            color_mode=color_mode or ColorMode.GRAYSCALE,
-            single_channel=config_dict.get("single_channel", False),
-            max_samples=config_dict.get("max_samples", 100),
-            shuffle=config_dict.get("shuffle", True),
-            seed=config_dict.get("seed", 69),
-        )
-
-    @staticmethod
-    def _create_calculator_config(config_dict: Dict[str, Any]) -> CalculatorConfig:
-        """Create CalculatorConfig from dictionary."""
-        return CalculatorConfig(precision=config_dict.get("precision", 3))
+    @classmethod
+    def from_file(cls, file_path: str) -> "Config":
+        """Create configuration from a JSON file."""
+        with open(file_path, "r") as f:
+            config_dict = json.load(f)
+        return cls.create(config_dict)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary format."""
-        return {
-            "model_config": asdict(self.model_config),
-            "explainer_config": asdict(self.explainer_config),
-            "dataset_config": asdict(self.dataset_config),
-            "calculator_config": asdict(self.calculator_config),
-        }
+        return {"model": self.model, "explainer": self.explainer, "dataset": self.dataset, "calculator": self.calculator, "analyzer": self.analyzer}
+
+    def save(self, file_path: str) -> None:
+        """Save configuration to a JSON file."""
+        with open(file_path, "w") as f:
+            json.dump(self.to_dict(), f, indent=2)
