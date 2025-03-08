@@ -8,6 +8,10 @@ import plotly.graph_objects as go
 import plotly.express as px
 from collections import Counter
 from biasx.config import Config
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import roc_curve, auc
 
 
 if "layout" not in st.session_state:
@@ -34,10 +38,15 @@ if "configuration" not in st.session_state:
     st.session_state.configuration = True
 
 if 'page' not in st.session_state:
-    st.session_state.page = [0, 9]
+    st.session_state.page = [0, 15]
 
 if "result" not in st.session_state:
-    st.session_state.result = None
+    st.session_state.result =  {
+        'feature_analyses': None,
+        'disparity_score': None,
+        'confusion_matrix': None,
+        'image_data': None,
+        'figures': None}
 
 # Default configuration values
 if 'config' not in st.session_state:
@@ -68,16 +77,6 @@ if 'config' not in st.session_state:
             "batch_size": 32,
         }
     }
-
-@st.cache_data
-def save_uploaded_model(uploaded_file):
-    """Save uploaded model to temporary file and return path."""
-    if uploaded_file is None:
-        return None
-        
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.keras') as tmp_file:
-        tmp_file.write(uploaded_file.getvalue())
-        return tmp_file.name
     
 def biasx(config):
     analyzer = BiasAnalyzer(config)
@@ -101,55 +100,76 @@ def biasx(config):
 
     data_dict = {}
     for i, explanation in enumerate(analysis.explanations):
-        true_gender = explanation.image_data.gender.name.lower()  # Convert Enum to string
-        predicted_gender = explanation.predicted_gender.name.lower()  # Convert Enum to string
+        true_gender = explanation.image_data.gender.numerator  # Convert Enum to string
+        predicted_gender = explanation.predicted_gender.numerator  # Convert Enum to string
 
         data_dict[i] = {
             "true_gender": true_gender,
             "predicted_gender": predicted_gender
         }
-
-    # Define the categories
-    labels = ["male", "female"]
-
-    # Count occurrences using tuple keys (true_gender, predicted_gender)
-    conf_counts = Counter((entry["true_gender"], entry["predicted_gender"]) for entry in data_dict.values())
-
-    # Construct the confusion matrix using label indexing
-    confusion_matrix = [
-        [conf_counts[("male", "male")], conf_counts[("male", "female")]],
-        [conf_counts[("female", "male")], conf_counts[("female", "female")]]
-    ]
     
+    figures = generate_figures(analysis)
+
     return {
         'feature_analyses': feature_analysis_dict,
+        'classification': data_dict,
         'disparity_score': disparity_scores,
-        'confusion_matrix': confusion_matrix
+        'image_data': analysis.explanations,
+        'figures': figures
     }
 
-def create_confusion_matrix(confusion_matrix_data):
-    """Create confusion matrix visualization with better size."""
-    labels = ['Male', 'Female']
-    fig = px.imshow(confusion_matrix_data, 
+def create_confusion_matrix(data_dict):
+    y_true = [entry["true_gender"] for entry in data_dict.values()]
+    y_pred = [entry["predicted_gender"] for entry in data_dict.values()]
+
+    cm = confusion_matrix(y_true, y_pred)
+
+    # Define labels (0 = Male, 1 = Female)
+    labels = ["Male", "Female"] if st.session_state.config["model"]["inverted_classes"] else ["Female", "Male"]
+    fig = px.imshow(cm, 
                     x=labels, y=labels, 
                     color_continuous_scale='blues',
                     labels=dict(x="Predicted", y="True", color="Count"),
                     title="Confusion Matrix",
-                    text_auto=True)
+                    text_auto=True)  # Show values inside heatmap cells
 
-    # Increase figure size and adjust layout
     fig.update_layout(
         autosize=False,
-        width=600,  # Increase width
-        height=500,  # Increase height
-        margin=dict(l=50, r=50, t=50, b=50),  # Reduce extra space
-        font=dict(size=14)  # Increase font size for readability
+        height= 400,  
+        title_font=dict(size=20),  
+        xaxis_title_font=dict(size=14),
+        yaxis_title_font=dict(size=14), 
+        font=dict(size=14)  
     )
-    
-    return fig
+
+    return fig  
+
+def create_roc_curve(data_dict):
+    y_true = [entry["true_gender"] for entry in data_dict.values()]
+    y_scores = [entry["predicted_gender"] for entry in data_dict.values()]  # Assuming probabilities exist
+
+    fpr, tpr, _ = roc_curve(y_true, y_scores)
+    roc_auc = auc(fpr, tpr)
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=fpr, y=tpr, mode="lines", name=f"AUC = {roc_auc:.2f}", line=dict(color="orange")))
+    fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode="lines", name="Random Guess", line=dict(dash="dash", color="gray")))
+
+    fig.update_layout(
+        title="ROC Curve",
+        title_font=dict(size=20), 
+        xaxis_title="False Positive Rate",
+        yaxis_title="True Positive Rate",
+        xaxis_title_font=dict(size=14),  
+        yaxis_title_font=dict(size=14), 
+        font=dict(size=14),  
+        autosize=False,
+        height=400 
+    )
+
+    return fig  
 
 def create_radar_chart(feature_analyses):
-    """Create a zoomed-in radar chart for feature bias scores."""
     categories = list(feature_analyses.keys())
     values = [feature_analyses[feature]['bias_score'] for feature in categories]
 
@@ -163,7 +183,7 @@ def create_radar_chart(feature_analyses):
         fill='toself',
         name='Bias Score',
         line=dict(color='blue', width=2),
-        marker=dict(size=6, symbol='circle')
+        marker=dict(size=10, symbol='circle')
     ))
 
     fig.update_layout(
@@ -171,12 +191,15 @@ def create_radar_chart(feature_analyses):
             radialaxis=dict(visible=True, range=zoom_range)
         ),
         showlegend=False,
+        autosize = False,
+        height = 500,
+        title = "Radial Chart",
+        title_font=dict(size=20)
     )
 
     return fig
 
 def create_feature_probability_chart(feature_analyses):
-    """Create grouped bar chart of feature probabilities by gender."""
     data = []
     for feature in feature_analyses:
         data.append({
@@ -189,6 +212,13 @@ def create_feature_probability_chart(feature_analyses):
     fig = px.bar(df, x='Feature', y=['Male Probability', 'Female Probability'], 
                  barmode='group', title='Feature Activation Probability by Gender')
     
+    fig.update_layout(
+        autosize = False,
+        height = 500,
+        title = "Feature Activation Probability by Gender",
+        title_font=dict(size=20)
+    )
+
     return fig
 
 def display_configuration_page():
@@ -279,7 +309,7 @@ def display_visualization_page():
             with st.container(border=True):
                 probability_chart = create_feature_probability_chart(st.session_state.result['feature_analyses'])
                 st.plotly_chart(probability_chart, use_container_width=True, use_containner_height=True)
-                st.markdown("**Interpretation:** Bars show how often each feature is activated during misclassifications. Large differences between male and female probabilities indicate potential bias.")
+                st.markdown("**Interpretation:** Bars show how often each feature is activated during misclassifications. Large differences between male and female probabilities indicate potential bias. <br>.", unsafe_allow_html=True)
 
     # Model Performance
     with tab2.container(border=True):
@@ -287,11 +317,14 @@ def display_visualization_page():
         c1, c2 = st.columns([1,2])
         with c1.container(border=False):
             with st.container(border=True):
-                confusion_matrix = create_confusion_matrix(st.session_state.result['confusion_matrix'])
+                confusion_matrix = create_confusion_matrix(st.session_state.result["classification"])
                 st.plotly_chart(confusion_matrix, use_container_width=True)
+                st.markdown("**Interpretation:** The confusion matrix shows prediction patterns across genders. Ideally, the diagonal values should be similar, indicating balanced performance.")
                 
-        with c2.container(border=False):
-            placeholder()
+        with c2.container(border=True):
+            roc_curve = create_roc_curve(st.session_state.result["classification"])
+            st.plotly_chart(roc_curve, use_container_width=True)
+            st.markdown("**Interpretation:** The ROC curve shows the tradeoff between true positive rate and false positive rate. A curve closer to the top-left corner indicates better performance.<br> .", unsafe_allow_html=True)
 
         c1, c2 = st.columns(2)
         with c1.container(border=False):
@@ -302,14 +335,14 @@ def display_visualization_page():
 
     # Image Analysis Tab
     with tab3.container(border=True):
-        c1, c2 = st.columns([1,2])
+        c1, c2 = st.columns([1,3])
 
         # Filter for image overlay and other settings
         with c1.container(border=True):
             st.markdown("### Filters")
 
         # show images
-        with c2.container(height=780):
+        with c2.container():
             st.markdown("### Sample Images")
             image_generator()
 
@@ -318,29 +351,67 @@ def display_visualization_page():
                 st.session_state.configuration = True
                 st.rerun()
 
+def generate_figures(analysis):
+    figures = []  # Temporary list to store figures
+
+    for i, data in enumerate(analysis.explanations):
+        if i >= 30:  # Limit to 30 images
+            break
+
+        image = data.image_data.preprocessed_image
+        activation = data.activation_map
+
+        # Create figure
+        fig, ax = plt.subplots()
+        ax.imshow(image, cmap="gray")  # Display grayscale image
+        ax.imshow(activation, cmap="jet", alpha=0.5)  # Overlay activation map
+        ax.axis("off")  # Hide axis
+
+        figures.append(fig)  # Store in temporary list
+    
+    return figures
+
+def generate_figure(image, activation):
+    fig, ax = plt.subplots()
+    ax.imshow(image, cmap="gray")  # Display grayscale image
+    ax.imshow(activation, cmap="jet", alpha=0.5)  # Overlay activation map
+    ax.axis("off")  # Hide axis
+
+    return fig
+
+
+
 # Sample Image Viewer Tab
 def image_generator():
     start = st.session_state.page[0]
     end = st.session_state.page[1]
 
-    images = [f"image{i}" for i in range(1, 31)]
+    figures = st.session_state.result["figures"]
 
-    c1, c2, c3 = st.columns(3)
-    for i, image in enumerate(images[start:end]):
-        col = i % 3
+    c1, c2, c3, c4, c5 = st.columns(5)
+    for i, fig in enumerate(figures[start:end]):
+        col = i % 5
         match col:
             case 0:
                 with c1:
-                    with st.container(height=200, border=True):
-                        st.markdown(image)
+                    with st.container(border=True):
+                        st.pyplot(fig)
             case 1:
                 with c2:
-                    with st.container(height=200, border=True):
-                        st.markdown(image)
+                    with st.container(border=True):
+                        st.pyplot(fig)
             case 2:
                 with c3:
-                    with st.container(height=200, border=True):
-                        st.markdown(image)
+                    with st.container(border=True):
+                        st.pyplot(fig)
+            case 3:
+                with c4:
+                    with st.container(border=True):
+                        st.pyplot(fig)
+            case 4:
+                with c5:
+                    with st.container(border=True):
+                        st.pyplot(fig)
 
 
     p1, p2 = st.columns(2)
@@ -350,15 +421,15 @@ def image_generator():
         else:
             if st.button("Back", use_container_width=True):
                 st.session_state.page[1] = st.session_state.page[0]
-                st.session_state.page[0] = st.session_state.page[0] - 9
+                st.session_state.page[0] = st.session_state.page[0] - 15
                 st.rerun()
     with p2:
-        if st.session_state.page[1] >= len(images):
+        if st.session_state.page[1] >= len(figures):
             st.button("---", disabled=True, use_container_width=True)
         else:
             if st.button("Next", use_container_width=True):
                 st.session_state.page[0] = st.session_state.page[1]
-                st.session_state.page[1] = st.session_state.page[1] + 9
+                st.session_state.page[1] = st.session_state.page[1] + 15
                 st.rerun()
 
 # Sample Placeholder graph
