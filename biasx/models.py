@@ -13,7 +13,7 @@ from .types import Gender
 class Model:
     """Handles loading and inference for facial classification models."""
 
-    def __init__(self, path: str, inverted_classes: bool = False, batch_size: int = 32, **kwargs):
+    def __init__(self, path: str, inverted_classes: bool, batch_size: int, **kwargs):
         """Initialize the classification model."""
         self.model = tf.keras.models.load_model(path)
         self.inverted_classes = inverted_classes
@@ -69,21 +69,3 @@ class Model:
 
         probs = self._get_probabilities(batch)
         return self._process_predictions(probs)
-
-    def get_class_probabilities(self, preprocessed_images: Union[np.ndarray, List[np.ndarray]]) -> List[Dict[Gender, float]]:
-        """Get probability distributions across all classes for a batch."""
-        batch = self._prepare_input(preprocessed_images)
-        if len(batch) == 0:
-            return []
-
-        probs = self._get_probabilities(batch)
-
-        results = []
-        for sample_probs in probs:
-            class_probs = {}
-            for i, prob in enumerate(sample_probs):
-                gender_class = Gender(i if not self.inverted_classes else 1 - i)
-                class_probs[gender_class] = float(prob)
-            results.append(class_probs)
-
-        return results
