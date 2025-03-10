@@ -113,20 +113,32 @@ class ClassActivationMapper:
 
         return heatmaps
 
-    def process_heatmap(self, heatmaps: Union[np.ndarray, List[np.ndarray]]) -> List[List[Box]]:
+    def process_heatmap(self, heatmaps: Union[np.ndarray, List[np.ndarray]], pil_images: List[Image.Image]) -> List[List[Box]]:
         """Process heatmaps into bounding boxes of activated regions."""
         if isinstance(heatmaps, np.ndarray) and heatmaps.ndim <= 2:
             heatmaps = [heatmaps]
 
         results = []
-        for heatmap in heatmaps:
+        for heatmap, pil_image in zip(heatmaps, pil_images):
             threshold_value = np.percentile(heatmap, self.cutoff_percentile)
             filtered_heatmap = np.where(heatmap < threshold_value, 0, heatmap)
 
             binary = filtered_heatmap > self.threshold_method(filtered_heatmap)
             regions = regionprops(label(binary))
 
-            boxes = [Box(min_x=region.bbox[1], min_y=region.bbox[0], max_x=region.bbox[3], max_y=region.bbox[2]) for region in regions]
+            img_width, img_height = pil_image.size
+            scale_x = img_width / heatmap.shape[1]
+            scale_y = img_height / heatmap.shape[0]
+
+            boxes = [
+                Box(
+                    min_x=int(region.bbox[1] * scale_x),
+                    min_y=int(region.bbox[0] * scale_y),
+                    max_x=int(region.bbox[3] * scale_x),
+                    max_y=int(region.bbox[2] * scale_y),
+                )
+                for region in regions
+            ]
             results.append(boxes)
 
         return results
@@ -171,7 +183,7 @@ class Explainer:
             return [], [], []
 
         activation_maps = self.activation_mapper.generate_heatmap(model.model, preprocessed_images, target_classes)
-        activation_boxes = self.activation_mapper.process_heatmap(activation_maps)
+        activation_boxes = self.activation_mapper.process_heatmap(activation_maps, pil_images)
         landmark_boxes = self.landmarker.detect(pil_images)
 
         labeled_boxes = []
