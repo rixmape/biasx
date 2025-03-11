@@ -12,6 +12,9 @@ from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import precision_recall_curve, auc
+
 
 
 if "layout" not in st.session_state:
@@ -105,7 +108,8 @@ def biasx(config):
 
         data_dict[i] = {
             "true_gender": true_gender,
-            "predicted_gender": predicted_gender
+            "predicted_gender": predicted_gender,
+            "prediction_confidence": explanation.prediction_confidence
         }
     
     figures = generate_figures(analysis)
@@ -124,11 +128,13 @@ def create_confusion_matrix(data_dict):
 
     cm = confusion_matrix(y_true, y_pred)
 
+    custom_colorscale = [[0, "#2B2D42"], [1, "#EDF2F4"]]
+
     # Define labels (0 = Male, 1 = Female)
     labels = ["Male", "Female"] if st.session_state.config["model"]["inverted_classes"] else ["Female", "Male"]
     fig = px.imshow(cm, 
                     x=labels, y=labels, 
-                    color_continuous_scale='blues',
+                    color_continuous_scale=custom_colorscale,
                     labels=dict(x="Predicted", y="True", color="Count"),
                     title="Confusion Matrix",
                     text_auto=True)  # Show values inside heatmap cells
@@ -168,6 +174,79 @@ def create_roc_curve(data_dict):
     )
 
     return fig  
+
+def create_precision_recall_curve(data_dict):
+    y_true = [entry["true_gender"] for entry in data_dict.values()]
+    y_scores = [entry["predicted_gender"] for entry in data_dict.values()]  # Assuming probabilities exist
+
+    precision, recall, _ = precision_recall_curve(y_true, y_scores)
+    pr_auc = auc(recall, precision)  # AUC for Precision-Recall Curve
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=recall, y=precision, mode="lines", 
+                             name=f"AUC = {pr_auc:.2f}", 
+                             line=dict(color="orange"))) 
+
+    fig.add_trace(go.Scatter(x=[0, 1], y=[1, 0], mode="lines", 
+                             name="Baseline", 
+                             line=dict(dash="dash", color="gray")))
+
+    fig.update_layout(
+        title="Precision Recall Curve",
+        title_font=dict(size=20), 
+        xaxis_title="Recall",
+        yaxis_title="Precision",
+        xaxis_title_font=dict(size=14),  
+        yaxis_title_font=dict(size=14), 
+        font=dict(size=14),  
+        autosize=False,
+        height=400
+    )
+
+    return fig  
+
+def create_classwise_performance_chart(data_dict):
+    y_true = [entry["true_gender"] for entry in data_dict.values()]
+    y_pred = [entry["predicted_gender"] for entry in data_dict.values()]
+
+    # Compute precision, recall, and f1-score
+    precision, recall, f1, _ = precision_recall_fscore_support(y_true, y_pred, average=None)
+
+    # Define labels (0 = Male, 1 = Female)
+    labels = ["Male", "Female"] if st.session_state.config["model"]["inverted_classes"] else ["Female", "Male"]
+
+    # Create DataFrame for Plotly
+    metrics_df = pd.DataFrame({
+        "Class": labels * 3,
+        "Metric": ["Precision", "Recall", "F1-score"] * len(labels),
+        "Value": list(precision) + list(recall) + list(f1)
+    })
+
+    # Create a bar chart
+    fig = px.bar(
+        metrics_df,
+        x="Class",
+        y="Value",
+        color="Metric",
+        barmode="group",
+        title="Class-wise Performance Metrics",
+        labels={"Value": "Score", "Class": "Class"},
+        color_discrete_map={"Precision": "#2b2d42", "Recall": "#8d99ae", "F1-score": "#edf2f4"}
+    )
+
+    # Update layout for better readability
+    fig.update_layout(
+        autosize=False,
+        height=400,
+        title_font=dict(size=20),
+        xaxis_title_font=dict(size=14),
+        yaxis_title_font=dict(size=14),
+        font=dict(size=14),
+        yaxis=dict(range=[0, 1])  # Scores range from 0 to 1
+    )
+
+    return fig
+
 
 def create_radar_chart(feature_analyses):
     categories = list(feature_analyses.keys())
@@ -323,17 +402,26 @@ def display_visualization_page():
                 st.plotly_chart(confusion_matrix, use_container_width=True)
                 st.markdown("**Interpretation:** The confusion matrix shows prediction patterns across genders. Ideally, the diagonal values should be similar, indicating balanced performance.")
                 
-        with c2.container(border=True):
-            roc_curve = create_roc_curve(st.session_state.result["classification"])
-            st.plotly_chart(roc_curve, use_container_width=True)
-            st.markdown("**Interpretation:** The ROC curve shows the tradeoff between true positive rate and false positive rate. A curve closer to the top-left corner indicates better performance.<br> .", unsafe_allow_html=True)
+
+        with c2.container(border=False):
+            with st.container(border=True):
+                class_wise = create_classwise_performance_chart(st.session_state.result["classification"])
+                st.plotly_chart(class_wise, use_container_width=True)
+                st.markdown("**Interpretation:** The class-wise metrics show the model’s precision, recall, and F1-score for each gender. Balanced scores indicate fair performance, while large gaps may suggest bias or weaknesses in classification.")
+
 
         c1, c2 = st.columns(2)
         with c1.container(border=False):
-            placeholder()
+            with st.container(border=True):
+                precision_recall_curve = create_precision_recall_curve(st.session_state.result["classification"])
+                st.plotly_chart(precision_recall_curve, use_container_width=True)
+                st.markdown("**Interpretation:** The Precision-Recall curve highlights the tradeoff between precision and recall. A higher curve suggests better performance, especially for imbalanced datasets where they are more meaningful than accuracy.")
 
         with c2.container(border=False):
-            placeholder()
+            with st.container(border=True):
+                roc_curve = create_roc_curve(st.session_state.result["classification"])
+                st.plotly_chart(roc_curve, use_container_width=True)
+                st.markdown("**Interpretation:** The ROC curve shows the tradeoff between true positive rate and false positive rate. A curve closer to the top-left corner indicates better performance.")
 
     # Image Analysis Tab
     with tab3.container(border=True):
