@@ -301,6 +301,8 @@ def display_visualization_page():
         c1, c2 = st.columns([1,2])
         with c1.container(border=False):
             with st.container(border=True):
+                st.markdown(f"# Bias Score: {st.session_state.result["disparity_score"]["biasx"]}")
+            with st.container(border=True):
                 radar_chart = create_radar_chart(st.session_state.result['feature_analyses'])
                 st.plotly_chart(radar_chart, use_container_width=True)
                 st.markdown("**Interpretation:** Features closer to the outer edge of the radar chart have higher bias scores, indicating they more strongly influence gender misclassifications.")
