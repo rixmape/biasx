@@ -170,7 +170,7 @@ def create_roc_curve(data_dict):
         yaxis_title_font=dict(size=14), 
         font=dict(size=14),  
         autosize=False,
-        height=400 
+        height=300 
     )
 
     return fig  
@@ -200,7 +200,7 @@ def create_precision_recall_curve(data_dict):
         yaxis_title_font=dict(size=14), 
         font=dict(size=14),  
         autosize=False,
-        height=400
+        height=300
     )
 
     return fig  
