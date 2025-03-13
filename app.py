@@ -41,7 +41,7 @@ if "configuration" not in st.session_state:
     st.session_state.configuration = True
 
 if 'page' not in st.session_state:
-    st.session_state.page = [0, 15]
+    st.session_state.page = [0, 18]
 
 if "result" not in st.session_state:
     st.session_state.result =  {
@@ -116,16 +116,20 @@ def biasx(config):
 
     return {
         'feature_analyses': feature_analysis_dict,
-        'classification': data_dict,
+        'classification': analysis.explanations,
         'disparity_score': disparity_scores,
         'image_data': analysis.explanations,
         'figures': figures
     }
 
-def create_confusion_matrix(data_dict):
-    y_true = [entry["true_gender"] for entry in data_dict.values()]
-    y_pred = [entry["predicted_gender"] for entry in data_dict.values()]
+def create_confusion_matrix(explanations):
+    # y_true = [entry["true_gender"] for entry in data_dict.values()]
+    # y_pred = [entry["predicted_gender"] for entry in data_dict.values()]
 
+    y_true = np.array([exp.image_data.gender.numerator for exp in explanations])
+    y_pred = np.array([exp.predicted_gender.numerator for exp in explanations])
+
+    
     cm = confusion_matrix(y_true, y_pred)
 
     custom_colorscale = [[0, "#2B2D42"], [1, "#EDF2F4"]]
@@ -138,6 +142,7 @@ def create_confusion_matrix(data_dict):
                     labels=dict(x="Predicted", y="True", color="Count"),
                     title="Confusion Matrix",
                     text_auto=True)  # Show values inside heatmap cells
+                    
 
     fig.update_layout(
         autosize=False,
@@ -150,36 +155,42 @@ def create_confusion_matrix(data_dict):
 
     return fig  
 
-def create_roc_curve(data_dict):
-    y_true = [entry["true_gender"] for entry in data_dict.values()]
-    y_scores = [entry["predicted_gender"] for entry in data_dict.values()]  # Assuming probabilities exist
+def create_roc_curve(explanations):
+    y_true = np.array([exp.image_data.gender.numerator for exp in explanations])
+    y_score = np.array([exp.prediction_confidence for exp in explanations])
 
-    fpr, tpr, _ = roc_curve(y_true, y_scores)
+    fpr, tpr, _ = roc_curve(y_true, y_score)
     roc_auc = auc(fpr, tpr)
+    fpr_inv, tpr_inv, _ = roc_curve(1 - y_true, 1 - y_score)
+    roc_auc_inv = auc(fpr_inv, tpr_inv)
 
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=fpr, y=tpr, mode="lines", name=f"AUC = {roc_auc:.2f}", line=dict(color="orange")))
-    fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode="lines", name="Random Guess", line=dict(dash="dash", color="gray")))
+    fig = go.Figure(
+        [
+            go.Scatter(x=fpr, y=tpr, name=f"Female (AUC = {roc_auc:.3f})", line=dict(color="red", width=2)),
+            go.Scatter(x=fpr_inv, y=tpr_inv, name=f"Male (AUC = {roc_auc_inv:.3f})", line=dict(color="orange", width=2)),
+            go.Scatter(x=[0, 1], y=[0, 1], name="Random", line=dict(color="gray", width=2), showlegend=False),
+        ]
+    )
 
     fig.update_layout(
-        title="ROC Curve",
-        title_font=dict(size=20), 
         xaxis_title="False Positive Rate",
         yaxis_title="True Positive Rate",
-        xaxis_title_font=dict(size=14),  
-        yaxis_title_font=dict(size=14), 
-        font=dict(size=14),  
-        autosize=False,
-        height=300 
+        xaxis_range=[-0.02, 1.02],
+        yaxis_range=[-0.02, 1.02],
+        legend=dict(yanchor="bottom", xanchor="right", x=0.95, y=0.05),
+        height = 300
     )
 
     return fig  
 
-def create_precision_recall_curve(data_dict):
-    y_true = [entry["true_gender"] for entry in data_dict.values()]
-    y_scores = [entry["predicted_gender"] for entry in data_dict.values()]  # Assuming probabilities exist
+def create_precision_recall_curve(explanations):
+    # y_true = [entry["true_gender"] for entry in data_dict.values()]
+    # y_scores = [entry["predicted_gender"] for entry in data_dict.values()]  # Assuming probabilities exist
 
-    precision, recall, _ = precision_recall_curve(y_true, y_scores)
+    y_true = np.array([exp.image_data.gender.numerator for exp in explanations])
+    y_score = np.array([exp.predicted_gender.numerator for exp in explanations])
+
+    precision, recall, _ = precision_recall_curve(y_true, y_score)
     pr_auc = auc(recall, precision)  # AUC for Precision-Recall Curve
 
     fig = go.Figure()
@@ -205,9 +216,12 @@ def create_precision_recall_curve(data_dict):
 
     return fig  
 
-def create_classwise_performance_chart(data_dict):
-    y_true = [entry["true_gender"] for entry in data_dict.values()]
-    y_pred = [entry["predicted_gender"] for entry in data_dict.values()]
+def create_classwise_performance_chart(explanations):
+    # y_true = [entry["true_gender"] for entry in data_dict.values()]
+    # y_pred = [entry["predicted_gender"] for entry in data_dict.values()]
+
+    y_true = np.array([exp.image_data.gender.numerator for exp in explanations])
+    y_pred = np.array([exp.predicted_gender.numerator for exp in explanations])
 
     # Compute precision, recall, and f1-score
     precision, recall, f1, _ = precision_recall_fscore_support(y_true, y_pred, average=None)
@@ -246,7 +260,6 @@ def create_classwise_performance_chart(data_dict):
     )
 
     return fig
-
 
 def create_radar_chart(feature_analyses):
     categories = list(feature_analyses.keys())
@@ -301,7 +314,6 @@ def create_feature_probability_chart(feature_analyses):
     return fig
 
 def display_configuration_page():
-    
     # --- Model Configuration ---
     with st.container(border=True):
         st.markdown("### Model Configuration")
@@ -421,20 +433,33 @@ def display_visualization_page():
             with st.container(border=True):
                 roc_curve = create_roc_curve(st.session_state.result["classification"])
                 st.plotly_chart(roc_curve, use_container_width=True)
-                st.markdown("**Interpretation:** The ROC curve shows the tradeoff between true positive rate and false positive rate. A curve closer to the top-left corner indicates better performance.")
+                st.markdown("**Interpretation:** The ROC curve shows the tradeoff between true positive rate and false positive rate. A curve closer to the top-right corner indicates better performance.")
 
     # Image Analysis Tab
     with tab3.container(border=True):
         c1, c2 = st.columns([1,3])
 
-        # Filter for image overlay and other settings
-        with c1.container(border=True):
-            st.markdown("### Filters")
+        with c1.container():
+            st.markdown("### Image Analysis")
+            st.markdown("""
+            This tab shows individual image analysis with activation maps.
+            Activation maps highlight the regions the model focuses on when making predictions.
+            """)
 
-        # show images
+            def reset_page():
+                st.session_state.page[0] = 0
+                st.session_state.page[1] = 18
+
+            samples = st.session_state.result['image_data']
+            max_samples = len(st.session_state.result["image_data"])
+            display_count = 30
+            sample_index = st.slider("Sample Index", display_count, max_value=max_samples, value=display_count, on_change=reset_page)
+            current_samples = samples[:sample_index]
+
+
         with c2.container():
-            st.markdown("### Sample Images")
-            image_generator()
+            image_generator(current_samples)
+            
 
     if st.button("Go Back", type="primary", use_container_width=True):
                 st.session_state.layout = "centered"
@@ -469,39 +494,70 @@ def generate_figure(image, activation):
 
     return fig
 
+def display_image_with_overlays(image, activation):
+    fig, ax = plt.subplots()
+    ax.imshow(image, cmap="gray")  # Display grayscale image
+    ax.imshow(activation, cmap="jet", alpha=0.5)  # Overlay activation map
+    ax.axis("off")  # Hide axis
 
+    return fig
 
 # Sample Image Viewer Tab
-def image_generator():
+def image_generator(samples):
     start = st.session_state.page[0]
     end = st.session_state.page[1]
 
-    figures = st.session_state.result["figures"]
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
+    for i, sample in enumerate(samples[start:end]):
+        col = i % 6
 
-    c1, c2, c3, c4, c5 = st.columns(5)
-    for i, fig in enumerate(figures[start:end]):
-        col = i % 5
+        image = sample.image_data.preprocessed_image
+        activation = sample.activation_map
+
+        true_gender = sample.image_data.gender.numerator
+        pred_gender = sample.predicted_gender.numerator
+        confidence = sample.prediction_confidence
+
+        fig = generate_figure(image, activation)
+
         match col:
             case 0:
                 with c1:
                     with st.container(border=True):
                         st.pyplot(fig)
+                        st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
+                                    **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
             case 1:
                 with c2:
                     with st.container(border=True):
                         st.pyplot(fig)
+                        st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
+                                    **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
             case 2:
                 with c3:
                     with st.container(border=True):
                         st.pyplot(fig)
+                        st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
+                                    **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
             case 3:
                 with c4:
                     with st.container(border=True):
                         st.pyplot(fig)
+                        st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
+                                    **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
             case 4:
                 with c5:
                     with st.container(border=True):
                         st.pyplot(fig)
+                        st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
+                                    **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
+            case 5:
+                with c6:
+                    with st.container(border=True):
+                        st.pyplot(fig)
+                        st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
+                                    **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
+
 
 
     p1, p2 = st.columns(2)
@@ -514,7 +570,7 @@ def image_generator():
                 st.session_state.page[0] = st.session_state.page[0] - 15
                 st.rerun()
     with p2:
-        if st.session_state.page[1] >= len(figures):
+        if st.session_state.page[1] >= len(samples):
             st.button("---", disabled=True, use_container_width=True)
         else:
             if st.button("Next", use_container_width=True):
