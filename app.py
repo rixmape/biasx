@@ -437,9 +437,9 @@ def display_visualization_page():
 
     # Image Analysis Tab
     with tab3.container(border=True):
-        c1, c2 = st.columns([1,3])
+        filter, images = st.columns([1,3])
 
-        with c1.container():
+        with filter.container():
             st.markdown("### Image Analysis")
             st.markdown("""
             This tab shows individual image analysis with activation maps.
@@ -453,14 +453,42 @@ def display_visualization_page():
             samples = st.session_state.result['image_data']
             max_samples = len(st.session_state.result["image_data"])
             display_count = 30
-            sample_index = st.slider("Sample Index", display_count, max_value=max_samples, value=display_count, on_change=reset_page)
-            current_samples = samples[:sample_index]
-
-
-        with c2.container():
-            image_generator(current_samples)
             
+            with st.container(border=True):
+                sample_index = st.slider("Sample Index", display_count, max_value=max_samples, value=display_count, on_change=reset_page)
+                
+            c1, c2 = st.columns(2)
+            with c1.container(border=True):
+                gender_filter = st.pills("Gender", ["Male", "Female"], key="gender_filter", selection_mode="multi", default=["Male", "Female"], on_change=reset_page)
 
+            with c2.container(border=True):
+                classification = st.pills("Classification", ["Correct", "Incorrect"], key="misclassified_toggle", on_change=reset_page)
+
+            with st.container(border=True):
+                overlay = st.pills("Visual Overlay", ["Heatmap", "Bounding Box"], selection_mode="single")
+
+            current_samples = samples[:sample_index]
+            gender_map = {"Male": 0, "Female": 1}
+            selected_genders = [gender_map[g] for g in gender_filter]  # Convert to numeric values
+
+            # Apply gender filtering
+            filtered_samples = [sample for sample in current_samples if sample.image_data.gender.numerator in selected_genders]
+
+            # Filter if Misclassified
+            if classification == "Incorrect":
+                filtered_samples = [
+                    sample for sample in filtered_samples 
+                    if sample.image_data.gender.numerator != sample.predicted_gender.numerator
+                ]
+            elif classification == "Correct":
+                filtered_samples = [
+                    sample for sample in filtered_samples 
+                    if sample.image_data.gender.numerator == sample.predicted_gender.numerator
+                ]
+                
+        with images.container():
+            image_generator(filtered_samples, overlay)
+            
     if st.button("Go Back", type="primary", use_container_width=True):
                 st.session_state.layout = "centered"
                 st.session_state.configuration = True
@@ -486,10 +514,11 @@ def generate_figures(analysis):
     
     return figures
 
-def generate_figure(image, activation):
+def generate_figure(image, activation, overlay):
     fig, ax = plt.subplots()
     ax.imshow(image, cmap="gray")  # Display grayscale image
-    ax.imshow(activation, cmap="jet", alpha=0.5)  # Overlay activation map
+    if overlay == "Heatmap":
+        ax.imshow(activation, cmap="jet", alpha=0.5)  # Overlay activation map
     ax.axis("off")  # Hide axis
 
     return fig
@@ -503,7 +532,7 @@ def display_image_with_overlays(image, activation):
     return fig
 
 # Sample Image Viewer Tab
-def image_generator(samples):
+def image_generator(samples, overlay):
     start = st.session_state.page[0]
     end = st.session_state.page[1]
 
@@ -518,7 +547,7 @@ def image_generator(samples):
         pred_gender = sample.predicted_gender.numerator
         confidence = sample.prediction_confidence
 
-        fig = generate_figure(image, activation)
+        fig = generate_figure(image, activation, overlay)
 
         match col:
             case 0:
@@ -558,24 +587,22 @@ def image_generator(samples):
                         st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
                                     **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
 
-
-
     p1, p2 = st.columns(2)
     with p1:
         if st.session_state.page[0] == 0:
-            st.button("---", disabled=True, use_container_width=True)
+            st.button("---", key = "disabled_back", disabled=True, use_container_width=True)
         else:
             if st.button("Back", use_container_width=True):
                 st.session_state.page[1] = st.session_state.page[0]
-                st.session_state.page[0] = st.session_state.page[0] - 15
+                st.session_state.page[0] = st.session_state.page[0] - 18
                 st.rerun()
     with p2:
         if st.session_state.page[1] >= len(samples):
-            st.button("---", disabled=True, use_container_width=True)
+            st.button("---", key = "disabled_next", disabled=True, use_container_width=True)
         else:
             if st.button("Next", use_container_width=True):
                 st.session_state.page[0] = st.session_state.page[1]
-                st.session_state.page[1] = st.session_state.page[1] + 15
+                st.session_state.page[1] = st.session_state.page[1] + 18
                 st.rerun()
 
 # Sample Placeholder graph
