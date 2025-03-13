@@ -135,7 +135,7 @@ def create_confusion_matrix(explanations):
     custom_colorscale = [[0, "#2B2D42"], [1, "#EDF2F4"]]
 
     # Define labels (0 = Male, 1 = Female)
-    labels = ["Male", "Female"] if st.session_state.config["model"]["inverted_classes"] else ["Female", "Male"]
+    labels = ["Male", "Female"]
     fig = px.imshow(cm, 
                     x=labels, y=labels, 
                     color_continuous_scale=custom_colorscale,
@@ -459,7 +459,7 @@ def display_visualization_page():
                 
             c1, c2 = st.columns(2)
             with c1.container(border=True):
-                gender_filter = st.pills("Gender", ["Male", "Female"], key="gender_filter", selection_mode="multi", default=["Male", "Female"], on_change=reset_page)
+                gender_filter = st.pills("Gender", ["Male", "Female"], key="gender_filter", selection_mode="single", on_change=reset_page)
 
             with c2.container(border=True):
                 classification = st.pills("Classification", ["Correct", "Incorrect"], key="misclassified_toggle", on_change=reset_page)
@@ -467,13 +467,24 @@ def display_visualization_page():
             with st.container(border=True):
                 overlay = st.pills("Visual Overlay", ["Heatmap", "Bounding Box"], selection_mode="single")
 
-            current_samples = samples[:sample_index]
-            gender_map = {"Male": 0, "Female": 1}
-            selected_genders = [gender_map[g] for g in gender_filter]  # Convert to numeric values
+            filtered_samples = samples[:sample_index]
+            # gender_map = {"Male": 0, "Female": 1}
+            # selected_genders = [gender_map[g] for g in gender_filter]  # Convert to numeric values
 
             # Apply gender filtering
-            filtered_samples = [sample for sample in current_samples if sample.image_data.gender.numerator in selected_genders]
+            # filtered_samples = current_samples if not selected_genders else [s for s in current_samples if s.image_data.gender.numerator in selected_genders]
 
+            if gender_filter == "Male":
+                filtered_samples = [
+                    sample for sample in filtered_samples 
+                    if sample.image_data.gender.numerator == 0
+                ]
+            elif gender_filter == "Female":
+                filtered_samples = [
+                    sample for sample in filtered_samples 
+                    if sample.image_data.gender.numerator == 1
+                ]
+            
             # Filter if Misclassified
             if classification == "Incorrect":
                 filtered_samples = [
