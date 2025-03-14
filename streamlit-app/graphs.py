@@ -7,6 +7,8 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2
+import matplotlib.patches as patches
 
 def create_radar_chart(feature_analyses):
     categories = list(feature_analyses.keys())
@@ -238,11 +240,24 @@ def create_classwise_performance_chart(explanations):
 
     return fig
 
-def image_overlays(image, activation, overlay):
+def image_overlays(image, heatmap, bboxes, overlay):
     fig, ax = plt.subplots()
-    ax.imshow(image, cmap="gray")  # Display grayscale image
-    if overlay == "Heatmap":
-        ax.imshow(activation, cmap="jet", alpha=0.5)  # Overlay activation map
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.resize(image, (200, 200))
+
+    ax.imshow(image)
+    
+    if "Heatmap" in overlay:
+        heatmap = cv2.resize(heatmap, (200, 200))
+        ax.imshow(heatmap, cmap="jet", alpha=0.3)  # Overlay activation map
+
+    if "Bounding Box" in overlay:
+        for box in bboxes:
+            min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
+            rect = patches.Rectangle((min_x, min_y), max_x - min_x, max_y - min_y, 
+                                     linewidth=2, edgecolor="red", facecolor="none")
+            ax.add_patch(rect)
+
     ax.axis("off")  # Hide axis
 
     return fig

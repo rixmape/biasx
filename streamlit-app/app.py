@@ -238,7 +238,7 @@ def display_visualization_page():
                 classification = st.pills("Classification", ["Correct", "Incorrect"], key="misclassified_toggle", on_change=reset_page)
 
             with st.container(border=True):
-                overlay = st.pills("Visual Overlay", ["Heatmap", "Bounding Box"], selection_mode="single")
+                overlay = st.pills("Visual Overlay", ["Heatmap", "Bounding Box"], selection_mode="multi")
 
             filtered_samples = samples[:sample_index]
 
@@ -284,12 +284,13 @@ def image_generator(samples, overlay):
 
         image = sample.image_data.preprocessed_image
         activation = sample.activation_map
+        bboxes = sample.activation_boxes
 
         true_gender = sample.image_data.gender.numerator
         pred_gender = sample.predicted_gender.numerator
         confidence = sample.prediction_confidence
 
-        fig = image_overlays(image, activation, overlay)
+        fig = image_overlays(image, activation, bboxes, overlay)
 
         match col:
             case 0:
