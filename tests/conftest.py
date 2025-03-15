@@ -9,6 +9,12 @@ import pytest
 import numpy as np
 
 
+from PIL import Image
+from unittest.mock import MagicMock, patch
+
+from biasx.config import Config
+from biasx.types import Age, Box, FacialFeature, Gender, ImageData, Race
+
 # ===== Path Handling Fixtures =====
 
 @pytest.fixture(scope="session")
@@ -314,3 +320,133 @@ def create_test_config(tmpdir, **kwargs):
         json.dump(config, f, indent=2)
     
     return str(config_path)
+
+@pytest.fixture
+def temp_file():
+    """Fixture to provide a temporary file path that will be cleaned up after test."""
+    with tempfile.NamedTemporaryFile(delete=False) as temp:
+        temp_path = temp.name
+    yield temp_path
+    if os.path.exists(temp_path):
+        os.unlink(temp_path)
+
+
+@pytest.fixture
+def mock_config():
+    """Fixture to provide a basic mock configuration."""
+    return Config({
+        "model": {
+            "path": "test_model.h5",
+            "inverted_classes": False,
+            "batch_size": 32,
+        },
+        "explainer": {
+            "landmarker_source": "mediapipe",
+            "cam_method": "gradcam++",
+            "cutoff_percentile": 90,
+            "threshold_method": "otsu",
+            "overlap_threshold": 0.2,
+            "distance_metric": "euclidean",
+            "batch_size": 16,
+        },
+        "dataset": {
+            "source": "utkface",
+            "max_samples": 100,
+            "shuffle": True,
+            "seed": 42,
+            "batch_size": 32,
+        }
+    })
+
+
+@pytest.fixture
+def sample_image():
+    """Fixture to provide a sample PIL image."""
+    img = Image.new('L', (48, 48), color=128)
+    return img
+
+
+@pytest.fixture
+def sample_image_array():
+    """Fixture to provide a sample image as numpy array."""
+    return np.ones((48, 48, 1), dtype=np.float32) * 0.5
+
+
+@pytest.fixture
+def mock_image_data():
+    """Fixture to provide a mock ImageData object."""
+    img = Image.new('L', (48, 48), color=128)
+    img_array = np.ones((48, 48, 1), dtype=np.float32) * 0.5
+    
+    return ImageData(
+        image_id="test_image_001",
+        pil_image=img,
+        preprocessed_image=img_array,
+        width=48,
+        height=48,
+        gender=Gender.MALE,
+        age=Age.RANGE_20_29,
+        race=Race.WHITE
+    )
+
+
+@pytest.fixture
+def mock_boxes():
+    """Fixture to provide a list of facial feature boxes."""
+    return [
+        Box(10, 15, 30, 25, feature=FacialFeature.LEFT_EYE),
+        Box(35, 15, 55, 25, feature=FacialFeature.RIGHT_EYE),
+        Box(30, 30, 40, 45, feature=FacialFeature.NOSE),
+        Box(25, 50, 45, 60, feature=FacialFeature.LIPS)
+    ]
+
+
+@pytest.fixture
+def mock_activation_map():
+    """Fixture to provide a mock activation heatmap."""
+    # Create a heatmap with a hotspot
+    heatmap = np.zeros((48, 48), dtype=np.float32)
+    heatmap[15:30, 20:35] = 0.8  # Hotspot area
+    return heatmap
+
+
+@pytest.fixture
+def mock_tf_model():
+    """Fixture to provide a mock TensorFlow model."""
+    mock_model = MagicMock()
+    mock_model.predict.return_value = np.array([[0.3, 0.7]])  # Predict female with 70% confidence
+    return mock_model
+
+
+@pytest.fixture
+def mock_landmarker():
+    """Fixture to provide a mock facial landmarker."""
+    with patch('biasx.explainers.FacialLandmarker') as mock:
+        landmarker = MagicMock()
+        landmarker.detect.return_value = [[
+            Box(10, 15, 30, 25, feature=FacialFeature.LEFT_EYE),
+            Box(35, 15, 55, 25, feature=FacialFeature.RIGHT_EYE),
+            Box(30, 30, 40, 45, feature=FacialFeature.NOSE),
+            Box(25, 50, 45, 60, feature=FacialFeature.LIPS)
+        ]]
+        mock.return_value = landmarker
+        yield mock
+
+
+@pytest.fixture
+def mock_cam():
+    """Fixture to provide a mock class activation mapper."""
+    with patch('biasx.explainers.ClassActivationMapper') as mock:
+        mapper = MagicMock()
+        
+        # Create a heatmap with a hotspot
+        heatmap = np.zeros((48, 48), dtype=np.float32)
+        heatmap[15:30, 20:35] = 0.8  # Hotspot area
+        
+        mapper.generate_heatmap.return_value = [heatmap]
+        mapper.process_heatmap.return_value = [[
+            Box(15, 20, 30, 35)
+        ]]
+        
+        mock.return_value = mapper
+        yield mock
