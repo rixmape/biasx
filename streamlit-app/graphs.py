@@ -137,7 +137,9 @@ def create_confusion_matrix(explanations):
         title_font=dict(size=20),  
         xaxis_title_font=dict(size=14),
         yaxis_title_font=dict(size=14), 
-        font=dict(size=14)
+        yaxis=dict(tickangle=-90),
+        font=dict(size=14),
+        coloraxis_showscale=False,
     )
 
     return fig  

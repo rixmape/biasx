@@ -152,30 +152,32 @@ def display_visualization_page():
         st.markdown("### Feature Analysis")
         c1, c2 = st.columns([1,2])
         with c1.container(border=False):
-            with st.container(border=True):
-                st.markdown(f"# Bias Score: {st.session_state.result.disparity_scores.biasx}")
+            with st.container(border=False):
+                metric1, metric2 = st.columns(2)
+                metric1.metric(f"Bias Score", st.session_state.result.disparity_scores.biasx, border=True)
+                metric2.metric(f"Equalized Odds", st.session_state.result.disparity_scores.equalized_odds, border=True)
             with st.container(border=True):
                 radar_chart = create_radar_chart(feature_analysis)
                 st.plotly_chart(radar_chart, use_container_width=True)
-                st.markdown("**Interpretation:** Features closer to the outer edge of the radar chart have higher bias scores, indicating they more strongly influence gender misclassifications.")
+                st.markdown("Features closer to the outer edge of the radar chart have higher bias scores, indicating they more strongly influence gender misclassifications.")
 
         with c2.container(border=False):
             with st.container(border=True):
                 probability_chart = create_feature_probability_chart(feature_analysis)
                 st.plotly_chart(probability_chart, use_container_width=True, use_containner_height=True)
-                st.markdown("**Interpretation:** Bars show how often each feature is activated during misclassifications. Large differences between male and female probabilities indicate potential bias. <br>.", unsafe_allow_html=True)
+                st.markdown("Bars show how often each feature is activated during misclassifications. Large differences between male and female probabilities indicate potential bias.",)
             
-            with st.container(border=False):
-                male, female = st.columns(2)
-                with male.container(border=True):
-                    st.markdown("#### Male Spacial Heatmap ####")
-                    spacial = create_spatial_heatmap(st.session_state.result.explanations,0)
-                    st.plotly_chart(spacial, use_container_width=True)
+            # with st.container(border=False):
+            #     male, female = st.columns(2)
+            #     with male.container(border=True):
+            #         st.markdown("#### Male Spacial Heatmap ####")
+            #         spacial = create_spatial_heatmap(st.session_state.result.explanations,0)
+            #         st.plotly_chart(spacial, use_container_width=True)
 
-                with female.container(border=True):
-                    st.markdown("#### Female Spacial Heatmap ####")
-                    spacial = create_spatial_heatmap(st.session_state.result.explanations,1)
-                    st.plotly_chart(spacial, use_container_width=True)
+            #     with female.container(border=True):
+            #         st.markdown("#### Female Spacial Heatmap ####")
+            #         spacial = create_spatial_heatmap(st.session_state.result.explanations,1)
+            #         st.plotly_chart(spacial, use_container_width=True)
 
     # Model Performance
     with tab2.container(border=True):
@@ -185,13 +187,13 @@ def display_visualization_page():
             with st.container(border=True):
                 confusion_matrix = create_confusion_matrix(st.session_state.result.explanations)
                 st.plotly_chart(confusion_matrix, use_container_width=True)
-                st.markdown("**Interpretation:** The confusion matrix shows prediction patterns across genders. Ideally, the diagonal values should be similar, indicating balanced performance.")
+                st.markdown("The confusion matrix shows prediction patterns across genders. Ideally, the diagonal values should be similar, indicating balanced performance.")
                 
         with c2.container(border=False):
             with st.container(border=True):
                 class_wise = create_classwise_performance_chart(st.session_state.result.explanations)
                 st.plotly_chart(class_wise, use_container_width=True)
-                st.markdown("**Interpretation:** The class-wise metrics show the model’s precision, recall, and F1-score for each gender. Balanced scores indicate fair performance, while large gaps may suggest bias or weaknesses in classification.")
+                st.markdown("The class-wise metrics show the model’s precision, recall, and F1-score for each gender. Balanced scores indicate fair performance, while large gaps may suggest bias or weaknesses in classification.")
 
 
         c1, c2 = st.columns(2)
@@ -199,13 +201,13 @@ def display_visualization_page():
             with st.container(border=True):
                 precision_recall_curve = create_precision_recall_curve(st.session_state.result.explanations)
                 st.plotly_chart(precision_recall_curve, use_container_width=True)
-                st.markdown("**Interpretation:** The Precision-Recall curve highlights the tradeoff between precision and recall. A higher curve suggests better performance, especially for imbalanced datasets where they are more meaningful than accuracy.")
+                st.markdown("The Precision-Recall curve highlights the tradeoff between precision and recall. A higher curve suggests better performance, especially for imbalanced datasets where they are more meaningful than accuracy.")
 
         with c2.container(border=False):
             with st.container(border=True):
                 roc_curve = create_roc_curve(st.session_state.result.explanations)
                 st.plotly_chart(roc_curve, use_container_width=True)
-                st.markdown("**Interpretation:** The ROC curve shows the tradeoff between true positive rate and false positive rate. A curve closer to the top-right corner indicates better performance.")
+                st.markdown("The ROC curve shows the tradeoff between true positive rate and false positive rate. A curve closer to the top-right corner indicates better performance.")
 
     # Image Analysis Tab
     with tab3.container(border=True):
