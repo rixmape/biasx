@@ -10,7 +10,8 @@ from graphs import (
     create_confusion_matrix,
     create_roc_curve,
     create_precision_recall_curve,
-    image_overlays
+    image_overlays,
+    create_legend
 )
 
 if "layout" not in st.session_state:
@@ -240,7 +241,7 @@ def display_visualization_page():
                 classification = st.pills("Classification", ["Correct", "Incorrect"], key="misclassified_toggle", on_change=reset_page)
 
             with st.container(border=True):
-                overlay = st.pills("Visual Overlay", ["Heatmap", "Bounding Box"], selection_mode="multi")
+                overlay = st.pills("Visual Overlay", ["Landmark Boxes", "Heatmap", "Bounding Boxes"], selection_mode="multi")
 
             filtered_samples = samples[:sample_index]
 
@@ -266,9 +267,16 @@ def display_visualization_page():
                     sample for sample in filtered_samples 
                     if sample.image_data.gender.numerator == sample.predicted_gender.numerator
                 ]
-                
+            
+            landmark_names = ["Left Eye", "Right Eye", "Nose", "Lips", "Left Cheak", "Right Cheak", "Chin", "Forehead", "Left Eyebrow", "Right Eyebrow"]
+            colors = ["#6A5ACD","#27AE60","#3498DB","#1ABC9C","#8E44AD","#F39C12","#16A085","#F1C40F","#5D6D7E","#2980B9"]
+
+            if "Landmark Boxes" in overlay:
+                legend = create_legend(landmark_names, colors)
+                st.plotly_chart(legend, use_container_width=True)
+            
         with images.container():
-            image_generator(filtered_samples, overlay)
+            image_generator(filtered_samples, overlay, colors)
             
     if st.button("Go Back", type="primary", use_container_width=True):
                 st.session_state.layout = "centered"
@@ -276,7 +284,7 @@ def display_visualization_page():
                 st.rerun()
 
 # Sample Image Viewer Tab
-def image_generator(samples, overlay):
+def image_generator(samples, overlay, colors):
     start = st.session_state.page[0]
     end = st.session_state.page[1]
 
@@ -287,12 +295,13 @@ def image_generator(samples, overlay):
         image = sample.image_data.preprocessed_image
         activation = sample.activation_map
         bboxes = sample.activation_boxes
+        landmark_boxes = sample.landmark_boxes
 
         true_gender = sample.image_data.gender.numerator
         pred_gender = sample.predicted_gender.numerator
         confidence = sample.prediction_confidence
 
-        fig = image_overlays(image, activation, bboxes, overlay)
+        fig = image_overlays(image, activation, landmark_boxes, bboxes, overlay, colors)
 
         match col:
             case 0:

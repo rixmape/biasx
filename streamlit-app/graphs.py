@@ -242,7 +242,7 @@ def create_classwise_performance_chart(explanations):
 
     return fig
 
-def image_overlays(image, heatmap, bboxes, overlay):
+def image_overlays(image, heatmap, landmark_boxes, bboxes, overlay, colors):
     fig, ax = plt.subplots()
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = cv2.resize(image, (200, 200))
@@ -252,14 +252,58 @@ def image_overlays(image, heatmap, bboxes, overlay):
     if "Heatmap" in overlay:
         heatmap = cv2.resize(heatmap, (200, 200))
         ax.imshow(heatmap, cmap="jet", alpha=0.3)  # Overlay activation map
-
-    if "Bounding Box" in overlay:
+    
+    if "Landmark Boxes" in overlay:
+        for i, box in enumerate(landmark_boxes):
+            min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
+            color = colors[i % len(colors)]
+            rect = patches.Rectangle((min_x, min_y), max_x - min_x, max_y - min_y, 
+                                     linewidth=3, edgecolor=color, facecolor="none", alpha=0.9)
+            ax.add_patch(rect)
+    
+    if "Bounding Boxes" in overlay:
         for box in bboxes:
             min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
             rect = patches.Rectangle((min_x, min_y), max_x - min_x, max_y - min_y, 
-                                     linewidth=2, edgecolor="red", facecolor="none")
+                                     linewidth=4, edgecolor="red", facecolor="none")
             ax.add_patch(rect)
 
     ax.axis("off")  # Hide axis
 
+
+    return fig
+
+def create_legend(landmark_names, colors):    
+    fig = go.Figure()
+    
+    for i, name in enumerate(landmark_names):
+        color = colors[i % len(colors)]
+        
+        # Add an invisible scatter point with a legend entry
+        fig.add_trace(go.Scatter(
+            x=[0], 
+            y=[0],
+            mode='markers',
+            marker=dict(size=12, color=color),
+            name=name,
+            showlegend=True
+        ))
+    
+    # Hide the axes and make the plot area transparent
+    fig.update_layout(
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False),
+        plot_bgcolor='rgba(0,0,0,0)',
+        height=100,  # Minimal height, just enough for the legend
+        margin=dict(l=0, r=0, t=0, b=0),
+        legend=dict(
+            orientation="h",
+            yanchor="middle",
+            y=0.5,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=11) 
+        ),
+    )
+    
     return fig
