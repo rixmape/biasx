@@ -13,6 +13,10 @@ import pyarrow as pa
 from biasx.types import Gender, Age, ColorMode
 from biasx.datasets import Dataset
 
+from unittest.mock import patch, MagicMock
+
+
+
 
 @pytest.fixture
 def mock_parquet_dataset(tmp_path):
@@ -273,3 +277,98 @@ def test_dataset_shuffling(mock_dataset_config):
     # Non-shuffled should maintain some order
     dataset4_ids = get_batch_image_ids(dataset4)
     assert len(set(dataset4_ids)) == len(dataset4_ids)
+
+
+def test_dataset_source_not_found():
+    """Test that ValueError is raised when dataset source is not found in config."""
+    # Create mock config that doesn't include the requested source
+    mock_config = {"some_other_source": {}}
+    
+    with patch('biasx.datasets.get_json_config', return_value=mock_config):
+        with pytest.raises(ValueError, match="Dataset source .* not found in configuration"):
+            Dataset(
+                source='utkface',  # This source won't be in our mocked config
+                image_width=48,
+                image_height=48,
+                color_mode=ColorMode.GRAYSCALE,
+                single_channel=True,
+                max_samples=10,
+                shuffle=True,
+                seed=42,
+                batch_size=16
+            )
+
+
+def test_empty_batch_preprocessing(mock_dataset_config):
+    """Test preprocessing with an empty batch of images."""
+    dataset = Dataset(
+        source='utkface', 
+        image_width=48, 
+        image_height=48, 
+        color_mode=ColorMode.GRAYSCALE,
+        single_channel=True,
+        max_samples=10,
+        shuffle=True,
+        seed=42,
+        batch_size=5
+    )
+    
+    # Call _preprocess_batch with empty list
+    result = dataset._preprocess_batch([])
+    
+    # Check result is empty with correct dimensions
+    assert isinstance(result, np.ndarray)
+    assert result.shape == (0, 48, 48, 1)
+
+
+def test_grayscale_dimension_handling(mock_dataset_config):
+    """Test grayscale image dimension handling in preprocessing."""
+    dataset = Dataset(
+        source='utkface', 
+        image_width=48, 
+        image_height=48, 
+        color_mode=ColorMode.GRAYSCALE,
+        single_channel=True,
+        max_samples=10,
+        shuffle=False,
+        seed=42,
+        batch_size=5
+    )
+    
+    # Create a grayscale image that will require channel expansion
+    test_image = Image.new('L', (60, 60), color=128)
+    
+    # Process the image
+    result = dataset._preprocess_batch([test_image])
+    
+    # Verify dimensions and channel expansion
+    assert result.shape == (1, 48, 48, 1)
+    
+    # Create multiple grayscale images
+    images = [Image.new('L', (60, 60), color=i*20) for i in range(3)]
+    
+    # Process multiple images
+    result_multi = dataset._preprocess_batch(images)
+    
+    # Verify dimensions for multiple images
+    assert result_multi.shape == (3, 48, 48, 1)
+
+
+def test_max_samples_zero(mock_dataset_config):
+    """Test dataset with max_samples=0 (should use all samples)."""
+    # Create dataset with max_samples=0
+    dataset = Dataset(
+        source='utkface', 
+        image_width=48, 
+        image_height=48, 
+        color_mode=ColorMode.RGB,
+        single_channel=False,
+        max_samples=0,  # Use all samples
+        shuffle=True,   # With shuffling
+        seed=42,
+        batch_size=16
+    )
+    
+    # Verify the entire dataset is used
+    assert len(dataset) == 100  # The mock dataset has 100 samples
+    

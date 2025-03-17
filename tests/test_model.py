@@ -8,6 +8,10 @@ import tensorflow as tf
 
 from biasx.models import Model
 from biasx.types import Gender
+from unittest.mock import patch, MagicMock
+
+import numpy as np
+import pytest
 
 
 def create_test_model(input_shape=(48, 48, 1), num_classes=2):
@@ -232,3 +236,83 @@ def test_empty_input_handling(sample_model_path):
     
     # Verify empty output
     assert len(predictions) == 0
+
+def create_test_model(input_shape=(48, 48, 1), num_classes=2):
+    """Create a minimal test model."""
+    inputs = tf.keras.layers.Input(shape=input_shape)
+    x = tf.keras.layers.Flatten()(inputs)
+    x = tf.keras.layers.Dense(10, activation='relu')(x)
+    outputs = tf.keras.layers.Dense(num_classes, activation='softmax')(x)
+    return tf.keras.Model(inputs=inputs, outputs=outputs)
+
+
+@pytest.fixture
+def sample_model_path():
+    """Create and save a test model."""
+    with tempfile.NamedTemporaryFile(suffix='.h5', delete=False) as temp_file:
+        model = create_test_model()
+        model.save(temp_file.name)
+        yield temp_file.name
+    try:
+        os.unlink(temp_file.name)
+    except Exception:
+        pass
+
+
+def test_get_probabilities_non_softmax_output(sample_model_path):
+    """Test handling of model output that doesn't need softmax application."""
+    model = Model(path=sample_model_path, inverted_classes=False, batch_size=32)
+    
+    # Create a small batch
+    test_batch = np.random.rand(2, 48, 48, 1)
+    
+    # Mock the model's predict method to return a simple output
+    # that will trigger the condition where softmax is not applied
+    # We need to create a single-column output as this will hit the condition
+    # where len(output.shape) > 1 and output.shape[1] > 1 is False
+    mock_output = np.array([[0.7], [0.4]])
+    
+    with patch.object(model.model, 'predict', return_value=mock_output):
+        # Call the method
+        probs = model._get_probabilities(test_batch)
+        
+        # Verify the output is returned as-is without softmax
+        assert np.array_equal(probs, mock_output)
+
+
+def test_prepare_input_direct_ndarray(sample_model_path):
+    """Test preparing input when given a direct ndarray instead of a list."""
+    model = Model(path=sample_model_path, inverted_classes=False, batch_size=32)
+    
+    # Test with a direct ndarray input (not in a list)
+    # This tests line 47 where batch = preprocessed_images is assigned
+    test_img = np.random.rand(48, 48, 1)  # Single 3D image with channel
+    
+    # Call the method directly with the ndarray
+    result = model._prepare_input(test_img)
+    
+    # Should expand to batch dimension
+    assert result.shape == (1, 48, 48, 1)
+    
+    # Try with a 2D image (no channel)
+    test_img_2d = np.random.rand(48, 48)  # Single 2D image without channel
+    
+    # This should hit line 38 for handling a direct ndarray
+    result_2d = model._prepare_input(test_img_2d)
+    
+    # Should add both batch and channel dimensions
+    assert result_2d.shape == (1, 48, 48, 1)
+
+
+def test_get_probabilities_with_empty_batch(sample_model_path):
+    """Test that _get_probabilities correctly handles empty batches."""
+    model = Model(path=sample_model_path, inverted_classes=False, batch_size=32)
+    
+    # Create an empty batch
+    empty_batch = np.empty((0, 48, 48, 1))
+    
+    # Call _get_probabilities with the empty batch
+    result = model._get_probabilities(empty_batch)
+    
+    # Verify result is an empty array with the correct shape
+    assert result.shape == (0, 2)
