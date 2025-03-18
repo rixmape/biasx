@@ -167,18 +167,6 @@ def display_visualization_page():
                 probability_chart = create_feature_probability_chart(feature_analysis)
                 st.plotly_chart(probability_chart, use_container_width=True, use_containner_height=True)
                 st.markdown("Bars show how often each feature is activated during misclassifications. Large differences between male and female probabilities indicate potential bias.",)
-            
-            # with st.container(border=False):
-            #     male, female = st.columns(2)
-            #     with male.container(border=True):
-            #         st.markdown("#### Male Spacial Heatmap ####")
-            #         spacial = create_spatial_heatmap(st.session_state.result.explanations,0)
-            #         st.plotly_chart(spacial, use_container_width=True)
-
-            #     with female.container(border=True):
-            #         st.markdown("#### Female Spacial Heatmap ####")
-            #         spacial = create_spatial_heatmap(st.session_state.result.explanations,1)
-            #         st.plotly_chart(spacial, use_container_width=True)
 
     # Model Performance
     with tab2.container(border=True):
@@ -195,7 +183,6 @@ def display_visualization_page():
                 class_wise = create_classwise_performance_chart(st.session_state.result.explanations)
                 st.plotly_chart(class_wise, use_container_width=True)
                 st.markdown("The class-wise metrics show the model’s precision, recall, and F1-score for each gender. Balanced scores indicate fair performance, while large gaps may suggest bias or weaknesses in classification.")
-
 
         c1, c2 = st.columns(2)
         with c1.container(border=False):
@@ -220,6 +207,18 @@ def display_visualization_page():
             This tab shows individual image analysis with activation maps.
             Activation maps highlight the regions the model focuses on when making predictions.
             """)
+
+            with st.popover("Reveal Spatial Heatmap", use_container_width=True):
+                male, female = st.columns(2)
+                with male.container(border=True):
+                    st.markdown("#### Female Spacial Heatmap ####")
+                    spacial = create_spatial_heatmap(st.session_state.result.explanations,0)
+                    st.plotly_chart(spacial, use_container_width=True)
+
+                with female.container(border=True):
+                    st.markdown("#### Female Spacial Heatmap ####")
+                    spacial = create_spatial_heatmap(st.session_state.result.explanations,1)
+                    st.plotly_chart(spacial, use_container_width=True)
 
             def reset_page():
                 st.session_state.page[0] = 0
