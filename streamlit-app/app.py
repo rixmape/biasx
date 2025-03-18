@@ -1,5 +1,6 @@
 import streamlit as st
 import tempfile
+import os
 from biasx import BiasAnalyzer
 
 from graphs import (
@@ -79,10 +80,13 @@ def display_configuration_page():
             uploaded_file = model_upload.file_uploader("Upload", type=["h5", "keras"], key="uploaded_model", label_visibility="collapsed")
             
             if uploaded_file is not None:
-            # Create a temporary file to store the uploaded model
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".h5") as temp_file:
+                # Determine the correct suffix
+                file_extension = os.path.splitext(uploaded_file.name)[-1].lower()  # Get ".h5" or ".keras"
+
+                # Create a temporary file with the correct extension
+                with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
                     temp_file.write(uploaded_file.read())  # Save the uploaded file
-                    st.session_state.config["model"]["path"]= temp_file.name  # Get the path of the temp file
+                    st.session_state.config["model"]["path"] = temp_file.name  # Store the path
 
         with model_config.container(border=True):
             c1, c2 = st.columns(2)
@@ -211,7 +215,7 @@ def display_visualization_page():
             with st.popover("Reveal Spatial Heatmap", use_container_width=True):
                 male, female = st.columns(2)
                 with male.container(border=True):
-                    st.markdown("#### Female Spacial Heatmap ####")
+                    st.markdown("#### Male Spacial Heatmap ####")
                     spacial = create_spatial_heatmap(st.session_state.result.explanations,0)
                     st.plotly_chart(spacial, use_container_width=True)
 
