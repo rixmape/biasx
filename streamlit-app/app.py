@@ -276,9 +276,9 @@ def image_generator(samples, overlay, colors):
     start = st.session_state.page[0]
     end = st.session_state.page[1]
 
-    c1, c2, c3, c4, c5, c6 = st.columns(6)
+    c = st.columns(6)  # Store columns in a list
     for i, sample in enumerate(samples[start:end]):
-        col = i % 6
+        col = c[i % 6]
 
         image = sample.image_data.preprocessed_image
         activation = sample.activation_map
@@ -291,43 +291,11 @@ def image_generator(samples, overlay, colors):
 
         fig = image_overlays(image, activation, landmark_boxes, bboxes, overlay, colors)
 
-        match col:
-            case 0:
-                with c1:
-                    with st.container(border=True):
-                        st.pyplot(fig)
-                        st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
-                                    **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
-            case 1:
-                with c2:
-                    with st.container(border=True):
-                        st.pyplot(fig)
-                        st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
-                                    **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
-            case 2:
-                with c3:
-                    with st.container(border=True):
-                        st.pyplot(fig)
-                        st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
-                                    **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
-            case 3:
-                with c4:
-                    with st.container(border=True):
-                        st.pyplot(fig)
-                        st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
-                                    **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
-            case 4:
-                with c5:
-                    with st.container(border=True):
-                        st.pyplot(fig)
-                        st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
-                                    **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
-            case 5:
-                with c6:
-                    with st.container(border=True):
-                        st.pyplot(fig)
-                        st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
-                                    **Confidence**: {confidence:.2f}""",unsafe_allow_html=True)
+        with col:
+            with st.container(border=True):
+                st.pyplot(fig)
+                st.markdown(f"""**True**: {true_gender}, **Predicted**: {pred_gender} <br>
+                            **Confidence**: {confidence:.2f}""", unsafe_allow_html=True)
 
     p1, p2 = st.columns(2)
     with p1:
