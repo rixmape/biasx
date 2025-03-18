@@ -243,30 +243,18 @@ def display_visualization_page():
             with st.container(border=True):
                 overlay = st.pills("Visual Overlay", ["Landmark Boxes", "Heatmap", "Bounding Boxes"], selection_mode="multi")
 
-            filtered_samples = samples[:sample_index]
-
-            if gender_filter == "Male":
-                filtered_samples = [
-                    sample for sample in filtered_samples 
-                    if sample.image_data.gender.numerator == 0
-                ]
-            elif gender_filter == "Female":
-                filtered_samples = [
-                    sample for sample in filtered_samples 
-                    if sample.image_data.gender.numerator == 1
-                ]
-            
-            # Filter if Misclassified
-            if classification == "Incorrect":
-                filtered_samples = [
-                    sample for sample in filtered_samples 
-                    if sample.image_data.gender.numerator != sample.predicted_gender.numerator
-                ]
-            elif classification == "Correct":
-                filtered_samples = [
-                    sample for sample in filtered_samples 
-                    if sample.image_data.gender.numerator == sample.predicted_gender.numerator
-                ]
+            # == Filter Images ==
+            if gender_filter is None and classification is None:
+                filtered_samples = samples[:sample_index]
+    
+            filtered_samples =  [
+                sample for sample in samples[:sample_index]
+                if (gender_filter is None or sample.image_data.gender.name == gender_filter.upper()) and
+                (classification is None or (
+                    (classification == "Incorrect" and sample.image_data.gender.numerator != sample.predicted_gender.numerator) or
+                    (classification == "Correct" and sample.image_data.gender.numerator == sample.predicted_gender.numerator)
+                ))
+            ]
             
             landmark_names = ["Left Eye", "Right Eye", "Nose", "Lips", "Left Cheak", "Right Cheak", "Chin", "Forehead", "Left Eyebrow", "Right Eyebrow"]
             colors = ["#6A5ACD","#27AE60","#3498DB","#1ABC9C","#8E44AD","#F39C12","#16A085","#F1C40F","#5D6D7E","#2980B9"]
