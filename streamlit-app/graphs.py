@@ -242,7 +242,7 @@ def create_classwise_performance_chart(explanations):
 
     return fig
 
-def image_overlays(image, heatmap, landmark_boxes, bboxes, overlay, colors):
+def image_overlays(image, heatmap, landmark_boxes, bboxes, overlay, colors, facial_feature):
     fig, ax = plt.subplots()
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = cv2.resize(image, (200, 200))
@@ -255,18 +255,20 @@ def image_overlays(image, heatmap, landmark_boxes, bboxes, overlay, colors):
     
     if "Landmark Boxes" in overlay:
         for i, box in enumerate(landmark_boxes):
-            min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
-            color = colors[i % len(colors)]
-            rect = patches.Rectangle((min_x, min_y), max_x - min_x, max_y - min_y, 
-                                     linewidth=3, edgecolor=color, facecolor="none", alpha=0.9)
-            ax.add_patch(rect)
+            if not facial_feature or (box.feature and box.feature.value in facial_feature):
+                min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
+                color = colors[i % len(colors)]
+                rect = patches.Rectangle((min_x, min_y), max_x - min_x, max_y - min_y, 
+                                        linewidth=3, edgecolor=color, facecolor="none", alpha=0.9)
+                ax.add_patch(rect)
     
     if "Bounding Boxes" in overlay:
         for box in bboxes:
-            min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
-            rect = patches.Rectangle((min_x, min_y), max_x - min_x, max_y - min_y, 
-                                     linewidth=4, edgecolor="red", facecolor="none")
-            ax.add_patch(rect)
+            if not facial_feature or (box.feature and box.feature.value in facial_feature):
+                min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
+                rect = patches.Rectangle((min_x, min_y), max_x - min_x, max_y - min_y, 
+                                        linewidth=4, edgecolor="red", facecolor="none")
+                ax.add_patch(rect)
 
     ax.axis("off")  # Hide axis
 

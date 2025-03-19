@@ -131,6 +131,7 @@ def display_configuration_page():
                 st.session_state.config["dataset"]["seed"] = c2.number_input("Seed", key="seed", value=st.session_state.config["dataset"]["seed"], disabled = not st.session_state.enable_shuffle)
                 st.session_state.config["dataset"]["shuffle"] = c2.toggle("Shuffle?", key="enable_shuffle")
 
+            # --- Start Analysis ---
             if st.button("Start Analysis", type="primary", use_container_width=True):
                 with st.spinner("Analyzing", show_time=True):
                     analyzer = BiasAnalyzer(st.session_state.config)
@@ -143,7 +144,7 @@ def display_configuration_page():
 def display_visualization_page():
     tab1, tab2, tab3 = st.tabs(["Feature Analysis", "Model Performance", "Analysis"])
 
-    # Feature Analysis Tab
+    # --- Feature Analysis Tab ---
     with tab1.container(border=True):
         feature_analysis = {
         feature.name: {
@@ -157,33 +158,38 @@ def display_visualization_page():
         st.markdown("### Feature Analysis")
         c1, c2 = st.columns([1,2])
         with c1.container(border=False):
+            # --- Display Bias Score and Equalized Odd ---
             with st.container(border=False):
                 metric1, metric2 = st.columns(2)
                 metric1.metric(f"Bias Score", st.session_state.result.disparity_scores.biasx, border=True)
                 metric2.metric(f"Equalized Odds", st.session_state.result.disparity_scores.equalized_odds, border=True)
             with st.container(border=True):
+                # --- Display Radar Chart ---
                 radar_chart = create_radar_chart(feature_analysis)
                 st.plotly_chart(radar_chart, use_container_width=True)
                 st.markdown("Features closer to the outer edge of the radar chart have higher bias scores, indicating they more strongly influence gender misclassifications.")
 
         with c2.container(border=False):
             with st.container(border=True):
+                # --- Display Feature Probability Chart ---
                 probability_chart = create_feature_probability_chart(feature_analysis)
                 st.plotly_chart(probability_chart, use_container_width=True, use_containner_height=True)
                 st.markdown("Bars show how often each feature is activated during misclassifications. Large differences between male and female probabilities indicate potential bias.",)
 
-    # Model Performance
+    # --- Model Performance ---
     with tab2.container(border=True):
         st.markdown("### Model Performance")
         c1, c2 = st.columns([1,2])
         with c1.container(border=False):
             with st.container(border=True):
+                # --- Display Confusion Matrix ---
                 confusion_matrix = create_confusion_matrix(st.session_state.result.explanations)
                 st.plotly_chart(confusion_matrix, use_container_width=True)
                 st.markdown("The confusion matrix shows prediction patterns across genders. Ideally, the diagonal values should be similar, indicating balanced performance.")
                 
         with c2.container(border=False):
             with st.container(border=True):
+                # --- Display Prescision, Recall, and F1-Score ---
                 class_wise = create_classwise_performance_chart(st.session_state.result.explanations)
                 st.plotly_chart(class_wise, use_container_width=True)
                 st.markdown("The class-wise metrics show the model’s precision, recall, and F1-score for each gender. Balanced scores indicate fair performance, while large gaps may suggest bias or weaknesses in classification.")
@@ -191,12 +197,14 @@ def display_visualization_page():
         c1, c2 = st.columns(2)
         with c1.container(border=False):
             with st.container(border=True):
+                # --- Display Precision Recall Curve ---
                 precision_recall_curve = create_precision_recall_curve(st.session_state.result.explanations)
                 st.plotly_chart(precision_recall_curve, use_container_width=True)
                 st.markdown("The Precision-Recall curve highlights the tradeoff between precision and recall. A higher curve suggests better performance, especially for imbalanced datasets where they are more meaningful than accuracy.")
 
         with c2.container(border=False):
             with st.container(border=True):
+                # --- Display ROC Curve ---
                 roc_curve = create_roc_curve(st.session_state.result.explanations)
                 st.plotly_chart(roc_curve, use_container_width=True)
                 st.markdown("The ROC curve shows the tradeoff between true positive rate and false positive rate. A curve closer to the top-right corner indicates better performance.")
@@ -212,6 +220,7 @@ def display_visualization_page():
             Activation maps highlight the regions the model focuses on when making predictions.
             """)
 
+            # --- Display Spatial Heatmaps ---
             with st.popover("Reveal Spatial Heatmap", use_container_width=True):
                 male, female = st.columns(2)
                 with male.container(border=True):
@@ -242,11 +251,16 @@ def display_visualization_page():
 
             with c2.container(border=True):
                 classification = st.pills("Classification", ["Correct", "Incorrect"], key="misclassified_toggle", on_change=reset_page)
+        
+            with st.container(border=True):
+                landmark_names = ["left_eye", "right_eye", "nose", "lips", "left_cheek", 
+                                  "right_cheek", "chin", "forehead", "left_eyebrow", "right_eyebrow"]
+                facial_feature = st.pills("Facial Feature", landmark_names, selection_mode="multi", on_change=reset_page)
 
             with st.container(border=True):
                 overlay = st.pills("Visual Overlay", ["Landmark Boxes", "Heatmap", "Bounding Boxes"], selection_mode="multi")
 
-            # == Filter Images ==
+            # --- Filter Images ---
             if gender_filter is None and classification is None:
                 filtered_samples = samples[:sample_index]
     
@@ -256,7 +270,11 @@ def display_visualization_page():
                 (classification is None or (
                     (classification == "Incorrect" and sample.image_data.gender.numerator != sample.predicted_gender.numerator) or
                     (classification == "Correct" and sample.image_data.gender.numerator == sample.predicted_gender.numerator)
-                ))
+                )) and 
+                (facial_feature is None or not facial_feature or all(
+                    any(a.feature is not None and a.feature.value == feature for a in sample.activation_boxes)
+                    for feature in facial_feature
+    ))
             ]
             
             landmark_names = ["Left Eye", "Right Eye", "Nose", "Lips", "Left Cheak", "Right Cheak", "Chin", "Forehead", "Left Eyebrow", "Right Eyebrow"]
@@ -267,7 +285,7 @@ def display_visualization_page():
                 st.plotly_chart(legend, use_container_width=True)
             
         with images.container():
-            image_generator(filtered_samples, overlay, colors)
+            image_generator(filtered_samples, overlay, colors, facial_feature)
             
     if st.button("Go Back", type="primary", use_container_width=True):
                 st.session_state.layout = "centered"
@@ -275,7 +293,7 @@ def display_visualization_page():
                 st.rerun()
 
 # Sample Image Viewer Tab
-def image_generator(samples, overlay, colors):
+def image_generator(samples, overlay, colors, facial_feature):
     start = st.session_state.page[0]
     end = st.session_state.page[1]
 
@@ -292,7 +310,7 @@ def image_generator(samples, overlay, colors):
         pred_gender = sample.predicted_gender.numerator
         confidence = sample.prediction_confidence
 
-        fig = image_overlays(image, activation, landmark_boxes, bboxes, overlay, colors)
+        fig = image_overlays(image, activation, landmark_boxes, bboxes, overlay, colors, facial_feature)
 
         with col:
             with st.container(border=True):
