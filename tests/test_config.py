@@ -1,3 +1,5 @@
+"""Tests for the configuration management system in BiasX."""
+
 import json
 import os
 import tempfile
@@ -11,7 +13,10 @@ from biasx.types import CAMMethod, ColorMode, DatasetSource, DistanceMetric, Lan
 
 
 class TestConfigLoading:
+    """Tests for loading configurations from different sources."""
+    
     def test_config_from_dict(self):
+        """Test creating a Config from a dictionary."""
         config_dict = {
             "model": {
                 "path": "test_model.h5",
@@ -23,6 +28,7 @@ class TestConfigLoading:
         assert config.model["inverted_classes"] is True
         
     def test_config_from_dict_missing_required(self):
+        """Test that Config correctly requires model.path."""
         # Test missing model path
         config_dict = {
             "model": {
@@ -33,16 +39,17 @@ class TestConfigLoading:
             Config(config_dict)
             
     def test_config_from_empty_dict(self):
-        # Test completely empty dict
+        """Test that Config correctly handles empty dictionary."""
         with pytest.raises(ValueError, match="model.path is required"):
             Config({})
             
     def test_config_from_dict_not_dict(self):
-        # Test with non-dict input
+        """Test that Config requires dictionary input."""
         with pytest.raises(ValueError, match="model.path is required"):
             Config("not a dict")
             
     def test_config_from_json_file(self):
+        """Test loading Config from a JSON file."""
         with tempfile.NamedTemporaryFile('w', delete=False) as f:
             json.dump({
                 "model": {
@@ -61,6 +68,7 @@ class TestConfigLoading:
             os.unlink(config_path)
             
     def test_config_from_json_with_mock(self):
+        """Test loading Config from a JSON file using mock."""
         mock_data = """
         {
             "model": {
@@ -75,12 +83,16 @@ class TestConfigLoading:
             assert config.model["inverted_classes"] is True
             
     def test_config_from_json_invalid_file(self):
+        """Test that Config.from_file handles nonexistent files correctly."""
         with pytest.raises(FileNotFoundError):
             Config.from_file("nonexistent_file.json")
             
 
 class TestConfigDefaults:
+    """Tests for default value handling in configuration."""
+    
     def test_config_minimal_with_defaults(self):
+        """Test that default values are applied correctly."""
         config_dict = {
             "model": {
                 "path": "test_model.h5",
@@ -100,6 +112,7 @@ class TestConfigDefaults:
         assert hasattr(config, "analyzer")
         
     def test_config_override_defaults(self):
+        """Test that explicitly provided values override defaults."""
         config_dict = {
             "model": {
                 "path": "test_model.h5",
@@ -121,6 +134,7 @@ class TestConfigDefaults:
         assert config.dataset["max_samples"] == DEFAULTS["dataset"]["max_samples"]
         
     def test_configurable_decorator(self):
+        """Test the configurable decorator functionality."""
         @configurable("test_section")
         class TestClass:
             def __init__(self, required_param, optional_param=None, **kwargs):
@@ -157,6 +171,7 @@ class TestConfigDefaults:
                 del ENUM_MAPPING["enum_key"]
                 
     def test_configurable_decorator_with_enum_conversion(self):
+        """Test enum conversion functionality within the configurable decorator."""
         @configurable("test_section")
         class TestClass:
             def __init__(self, cam_method=None, **kwargs):
@@ -179,7 +194,10 @@ class TestConfigDefaults:
 
 
 class TestConfigValidation:
+    """Tests for configuration validation."""
+    
     def test_config_required_fields(self):
+        """Test required field validation."""
         # Test without model section
         with pytest.raises(ValueError, match="model.path is required"):
             Config({})
@@ -193,6 +211,7 @@ class TestConfigValidation:
         assert config.model_path == "test.h5"
         
     def test_config_enum_conversion(self):
+        """Test enum conversion in config values."""
         config_dict = {
             "model": {
                 "path": "test_model.h5",
@@ -226,6 +245,7 @@ class TestConfigValidation:
         assert config.dataset["color_mode"] == ColorMode.RGB
         
     def test_config_invalid_enum_values(self):
+        """Test handling of invalid enum values."""
         config_dict = {
             "model": {
                 "path": "test_model.h5",
@@ -242,6 +262,7 @@ class TestConfigValidation:
         assert config.explainer["landmarker_source"] == "invalid_source"
         
     def test_config_enum_square_brackets_syntax(self):
+        """Test handling of enum values provided in uppercase format."""
         config_dict = {
             "model": {
                 "path": "test_model.h5",
@@ -261,7 +282,10 @@ class TestConfigValidation:
 
 
 class TestConfigSerialization:
+    """Tests for configuration serialization."""
+    
     def test_config_to_dict(self):
+        """Test converting Config to dictionary."""
         config_dict = {
             "model": {
                 "path": "test_model.h5",
@@ -281,6 +305,7 @@ class TestConfigSerialization:
         assert result["model"]["inverted_classes"] is True
         
     def test_config_save_to_file(self):
+        """Test saving configuration to a file."""
         config_dict = {
             "model": {
                 "path": "test_model.h5",

@@ -1,4 +1,5 @@
-# tests/test_dataset.py
+"""Tests for the dataset loading and processing functionality in BiasX."""
+
 import io
 import os
 from typing import List
@@ -14,8 +15,6 @@ from biasx.types import Gender, Age, ColorMode
 from biasx.datasets import Dataset
 
 from unittest.mock import patch, MagicMock
-
-
 
 
 @pytest.fixture
@@ -37,9 +36,9 @@ def mock_parquet_dataset(tmp_path):
         img.save(img_byte_arr, format='PNG')
         return {"bytes": img_byte_arr.getvalue()}
 
-    # Create a pandas DataFrame with more mock data
+    # Create a pandas DataFrame with mock data
     data = {
-        'image_id': [f'img_{i}' for i in range(100)],  # Increased to 100
+        'image_id': [f'img_{i}' for i in range(100)],
         'image': [create_mock_image(i % 2, (i // 2) % 8) for i in range(100)],
         'gender': [i % 2 for i in range(100)],
         'age': [(i // 2) % 8 for i in range(100)],
@@ -105,10 +104,10 @@ def test_dataset_initialization(mock_dataset_config):
     """
     Test basic dataset initialization.
     
-    Verifies that:
-    - Dataset can be created
+    Verifies:
+    - Dataset object can be created
     - Correct number of samples are loaded
-    - Default configurations are applied
+    - Default configurations are applied correctly
     """
     dataset = Dataset(
         source='utkface', 
@@ -123,7 +122,7 @@ def test_dataset_initialization(mock_dataset_config):
     )
     
     # Verify dataset properties
-    assert len(dataset) == 50
+    assert len(dataset) == 50  # max_samples parameter was applied
     assert dataset.batch_size == 16
     assert dataset.color_mode == ColorMode.GRAYSCALE
 
@@ -132,10 +131,10 @@ def test_dataset_batch_generation(mock_dataset_config):
     """
     Test batch generation from the dataset.
     
-    Verifies that:
+    Verifies:
     - Batches are generated correctly
     - Batch size is consistent
-    - Image preprocessing works
+    - Image preprocessing works as expected
     """
     dataset = Dataset(
         source='utkface', 
@@ -230,7 +229,7 @@ def test_dataset_shuffling(mock_dataset_config):
     - Shuffling works with different seeds
     - Non-shuffled dataset maintains order
     """
-    # Shuffled dataset
+    # Shuffled dataset with seed 42
     dataset1 = Dataset(
         source='utkface', 
         max_samples=100,
@@ -265,16 +264,16 @@ def test_dataset_shuffling(mock_dataset_config):
         batch_size=16
     )
     
-    # Compare first batch image IDs
+    # Helper function to get first batch image IDs
     def get_batch_image_ids(dataset):
         first_batch = next(iter(dataset))
         return [img.image_id for img in first_batch]
     
     # Verify behaviors
-    assert get_batch_image_ids(dataset1) == get_batch_image_ids(dataset2)
-    assert get_batch_image_ids(dataset1) != get_batch_image_ids(dataset3)
+    assert get_batch_image_ids(dataset1) == get_batch_image_ids(dataset2)  # Same seed = same order
+    assert get_batch_image_ids(dataset1) != get_batch_image_ids(dataset3)  # Different seeds = different order
     
-    # Non-shuffled should maintain some order
+    # Non-shuffled should maintain original order (unique IDs)
     dataset4_ids = get_batch_image_ids(dataset4)
     assert len(set(dataset4_ids)) == len(dataset4_ids)
 
@@ -371,4 +370,3 @@ def test_max_samples_zero(mock_dataset_config):
     
     # Verify the entire dataset is used
     assert len(dataset) == 100  # The mock dataset has 100 samples
-    

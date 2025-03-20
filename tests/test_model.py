@@ -1,4 +1,5 @@
-# tests/test_model.py
+"""Tests for the model handling functionality in BiasX."""
+
 import os
 import tempfile
 
@@ -9,9 +10,6 @@ import tensorflow as tf
 from biasx.models import Model
 from biasx.types import Gender
 from unittest.mock import patch, MagicMock
-
-import numpy as np
-import pytest
 
 
 def create_test_model(input_shape=(48, 48, 1), num_classes=2):
@@ -40,7 +38,6 @@ def sample_model_path():
     Returns:
         str: Path to the temporary model file
     """
-    # Use a context manager to ensure file is not immediately deleted
     with tempfile.NamedTemporaryFile(suffix='.h5', delete=False) as temp_file:
         # Create and save a test model
         model = create_test_model()
@@ -124,7 +121,7 @@ def test_model_probability_processing(sample_model_path):
     - Proper gender prediction
     - Confidence score generation
     """
-    # Create a mock model with predictable output
+    # Create a test model
     biasx_model = Model(
         path=sample_model_path, 
         inverted_classes=False, 
@@ -237,30 +234,14 @@ def test_empty_input_handling(sample_model_path):
     # Verify empty output
     assert len(predictions) == 0
 
-def create_test_model(input_shape=(48, 48, 1), num_classes=2):
-    """Create a minimal test model."""
-    inputs = tf.keras.layers.Input(shape=input_shape)
-    x = tf.keras.layers.Flatten()(inputs)
-    x = tf.keras.layers.Dense(10, activation='relu')(x)
-    outputs = tf.keras.layers.Dense(num_classes, activation='softmax')(x)
-    return tf.keras.Model(inputs=inputs, outputs=outputs)
-
-
-@pytest.fixture
-def sample_model_path():
-    """Create and save a test model."""
-    with tempfile.NamedTemporaryFile(suffix='.h5', delete=False) as temp_file:
-        model = create_test_model()
-        model.save(temp_file.name)
-        yield temp_file.name
-    try:
-        os.unlink(temp_file.name)
-    except Exception:
-        pass
-
 
 def test_get_probabilities_non_softmax_output(sample_model_path):
-    """Test handling of model output that doesn't need softmax application."""
+    """
+    Test handling of model output that doesn't need softmax application.
+    
+    Verifies:
+    - Correct handling of output that already has probabilities
+    """
     model = Model(path=sample_model_path, inverted_classes=False, batch_size=32)
     
     # Create a small batch
@@ -281,7 +262,12 @@ def test_get_probabilities_non_softmax_output(sample_model_path):
 
 
 def test_prepare_input_direct_ndarray(sample_model_path):
-    """Test preparing input when given a direct ndarray instead of a list."""
+    """
+    Test preparing input when given a direct ndarray instead of a list.
+    
+    Verifies:
+    - Correct handling of direct ndarray input
+    """
     model = Model(path=sample_model_path, inverted_classes=False, batch_size=32)
     
     # Test with a direct ndarray input (not in a list)
@@ -305,7 +291,12 @@ def test_prepare_input_direct_ndarray(sample_model_path):
 
 
 def test_get_probabilities_with_empty_batch(sample_model_path):
-    """Test that _get_probabilities correctly handles empty batches."""
+    """
+    Test that _get_probabilities correctly handles empty batches.
+    
+    Verifies:
+    - Proper handling of zero-length inputs
+    """
     model = Model(path=sample_model_path, inverted_classes=False, batch_size=32)
     
     # Create an empty batch

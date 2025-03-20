@@ -1,4 +1,5 @@
-# tests/test_explainers.py
+"""Tests for the visual explanation generation functionality in BiasX."""
+
 import os
 import json
 import tensorflow as tf
