@@ -1,16 +1,27 @@
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import roc_curve, auc
-from sklearn.metrics import precision_recall_fscore_support
-from sklearn.metrics import precision_recall_curve, auc
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import cv2
 import plotly.express as px
 import plotly.graph_objects as go
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import cv2
-import matplotlib.patches as patches
+from sklearn.metrics import (
+    confusion_matrix,
+    roc_curve,
+    auc,
+    precision_recall_fscore_support,
+    precision_recall_curve
+)
+from utils import get_landmark_names_and_colors
 
-def create_radar_chart(feature_analyses):
+# ----------------------
+# Feature Analysis Charts
+# ----------------------
+
+def create_radar_chart(
+        feature_analyses: list
+):
+    """Creates a radar chart showing bias scores for different features."""
     categories = list(feature_analyses.keys())
     values = [feature_analyses[feature]['bias_score'] for feature in categories]
 
@@ -32,15 +43,18 @@ def create_radar_chart(feature_analyses):
             radialaxis=dict(visible=True, range=zoom_range)
         ),
         showlegend=False,
-        autosize = False,
-        height = 500,
-        title = "Radial Chart",
+        autosize=False,
+        height=500,
+        title="Radial Chart",
         title_font=dict(size=20)
     )
 
     return fig
 
-def create_feature_probability_chart(feature_analyses):
+def create_feature_probability_chart(
+        feature_analyses: list
+):
+    """Creates a bar chart comparing feature activation probabilities by gender."""
     data = []
     for feature in feature_analyses:
         data.append({
@@ -50,13 +64,18 @@ def create_feature_probability_chart(feature_analyses):
         })
     
     df = pd.DataFrame(data)
-    fig = px.bar(df, x='Feature', y=['Male Probability', 'Female Probability'], 
-                 barmode='group', title='Feature Activation Probability by Gender')
+    fig = px.bar(
+        df, 
+        x='Feature', 
+        y=['Male Probability', 'Female Probability'], 
+        barmode='group', 
+        title='Feature Activation Probability by Gender'
+    )
     
     fig.update_layout(
-        autosize = False,
-        height = 500,
-        title = "Feature Activation Probability by Gender",
+        autosize=False,
+        height=500,
+        title="Feature Activation Probability by Gender",
         title_font=dict(size=20)
     )
 
@@ -64,8 +83,10 @@ def create_feature_probability_chart(feature_analyses):
 
 def create_spatial_heatmap(
     explanations: list,
+    gender_focus: int = None,  # 0 for Male, 1 for Female, None for all
     misclassified_only: bool = True,
-    gender_focus: int = None  # 0 for Male, 1 for Female, None for all
+    original_size: int = 200,
+    resolution: int = 48,
 ):
     """Creates a spatial heatmap of activation frequency across facial regions."""
     
@@ -78,26 +99,20 @@ def create_spatial_heatmap(
     features = [exp.landmark_boxes for exp in filtered_exps]
     flat_features = [box.feature for sublist in features for box in sublist]
 
-    heatmap = np.zeros((48, 48))
+    heatmap = np.zeros((resolution, resolution))
 
     for exp in filtered_exps:
         for box in exp.activation_boxes:
             if not flat_features or box.feature in flat_features:
-                # continue  # Skip if the feature is not in our list
-            # y_range = (max(0, box.min_y), min(48, box.max_y))
-            # x_range = (max(0, box.min_x), min(48, box.max_x))
-            # heatmap[y_range[0] : y_range[1], x_range[0] : x_range[1]] += 1
-                size = 210
-                y_min_scaled = int((box.min_y / size) * 48)
-                y_max_scaled = int((box.max_y / size) * 48)
-                x_min_scaled = int((box.min_x / size) * 48)
-                x_max_scaled = int((box.max_x / size) * 48)
+                y_min_scaled = int((box.min_y / original_size) * resolution)
+                y_max_scaled = int((box.max_y / original_size) * resolution)
+                x_min_scaled = int((box.min_x / original_size) * resolution)
+                x_max_scaled = int((box.max_x / original_size) * resolution)
 
-                y_range = (max(0, y_min_scaled), min(size, y_max_scaled))
-                x_range = (max(0, x_min_scaled), min(size, x_max_scaled))
+                y_range = (max(0, y_min_scaled), min(original_size, y_max_scaled))
+                x_range = (max(0, x_min_scaled), min(original_size, x_max_scaled))
 
                 heatmap[y_range[0]: y_range[1], x_range[0]: x_range[1]] += 1
-
 
     max_activation = np.max(heatmap)
     normalized_heatmap = heatmap / max_activation if max_activation > 0 else heatmap
@@ -109,13 +124,21 @@ def create_spatial_heatmap(
         yaxis=dict(showticklabels=False, showgrid=False, zeroline=False, scaleanchor="x", scaleratio=1, range=[49, -1]),
         margin=dict(l=0, r=0, b=0, t=0, pad=0),
         plot_bgcolor="rgba(0,0,0,0)",
-        width=400,  # Adjust to your desired width
+        width=400,
         height=400, 
     )
 
     return fig
 
-def create_confusion_matrix(explanations):
+# ----------------------
+# Model Performance Charts
+# ----------------------
+
+def create_confusion_matrix(
+        explanations: list
+):
+    """Creates a confusion matrix visualization."""
+
     y_true = np.array([exp.image_data.gender.numerator for exp in explanations])
     y_pred = np.array([exp.predicted_gender.numerator for exp in explanations])
 
@@ -124,16 +147,19 @@ def create_confusion_matrix(explanations):
     custom_colorscale = [[0, "#2B2D42"], [1, "#EDF2F4"]]
 
     labels = ["Male", "Female"]
-    fig = px.imshow(cm, 
-                    x=labels, y=labels, 
-                    color_continuous_scale=custom_colorscale,
-                    labels=dict(x="Predicted", y="True", color="Count"),
-                    title="Confusion Matrix",
-                    text_auto=True,)  # Show values inside heatmap cells
+    fig = px.imshow(
+        cm, 
+        x=labels, 
+        y=labels, 
+        color_continuous_scale=custom_colorscale,
+        labels=dict(x="Predicted", y="True", color="Count"),
+        title="Confusion Matrix",
+        text_auto=True
+    )
                     
     fig.update_layout(
         autosize=False,
-        height= 400,  
+        height=400,  
         title_font=dict(size=20),  
         xaxis_title_font=dict(size=14),
         yaxis_title_font=dict(size=14), 
@@ -144,7 +170,11 @@ def create_confusion_matrix(explanations):
 
     return fig  
 
-def create_roc_curve(explanations):
+def create_roc_curve(
+        explanations: list
+):
+    """Creates a ROC curve visualization."""
+
     y_true = np.array([exp.image_data.gender.numerator for exp in explanations])
     y_score = np.array([exp.prediction_confidence for exp in explanations])
 
@@ -155,9 +185,25 @@ def create_roc_curve(explanations):
 
     fig = go.Figure(
         [
-            go.Scatter(x=fpr, y=tpr, name=f"Female (AUC = {roc_auc:.3f})", line=dict(color="red", width=2)),
-            go.Scatter(x=fpr_inv, y=tpr_inv, name=f"Male (AUC = {roc_auc_inv:.3f})", line=dict(color="orange", width=2)),
-            go.Scatter(x=[0, 1], y=[0, 1], name="Random", line=dict(color="gray", width=2), showlegend=False),
+            go.Scatter(
+                x=fpr, 
+                y=tpr, 
+                name=f"Female (AUC = {roc_auc:.3f})", 
+                line=dict(color="red", width=2)
+            ),
+            go.Scatter(
+                x=fpr_inv, 
+                y=tpr_inv, 
+                name=f"Male (AUC = {roc_auc_inv:.3f})", 
+                line=dict(color="orange", width=2)
+            ),
+            go.Scatter(
+                x=[0, 1], 
+                y=[0, 1], 
+                name="Random", 
+                line=dict(color="gray", width=2), 
+                showlegend=False
+            ),
         ]
     )
 
@@ -167,42 +213,64 @@ def create_roc_curve(explanations):
         xaxis_range=[-0.02, 1.02],
         yaxis_range=[-0.02, 1.02],
         legend=dict(yanchor="bottom", xanchor="right", x=0.95, y=0.05),
-        height = 300
-    )
-
-    return fig  
-
-def create_precision_recall_curve(explanations):
-    y_true = np.array([exp.image_data.gender.numerator for exp in explanations])
-    y_score = np.array([exp.predicted_gender.numerator for exp in explanations])
-
-    precision, recall, _ = precision_recall_curve(y_true, y_score)
-    pr_auc = auc(recall, precision)  # AUC for Precision-Recall Curve
-
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=recall, y=precision, mode="lines", 
-                             name=f"AUC = {pr_auc:.2f}", 
-                             line=dict(color="orange"))) 
-
-    fig.add_trace(go.Scatter(x=[0, 1], y=[1, 0], mode="lines", 
-                             name="Baseline", 
-                             line=dict(dash="dash", color="gray")))
-
-    fig.update_layout(
-        title="Precision Recall Curve",
-        title_font=dict(size=20), 
-        xaxis_title="Recall",
-        yaxis_title="Precision",
-        xaxis_title_font=dict(size=14),  
-        yaxis_title_font=dict(size=14), 
-        font=dict(size=14),  
-        autosize=False,
         height=300
     )
 
     return fig  
 
-def create_classwise_performance_chart(explanations):
+def create_precision_recall_curve(
+        explanations: list
+):
+    """Creates a precision-recall curve visualization."""
+
+    y_true = np.array([exp.image_data.gender.numerator for exp in explanations])
+    y_score = np.array([exp.prediction_confidence for exp in explanations])
+    
+    precision, recall, _ = precision_recall_curve(y_true, y_score)
+    pr_auc = auc(recall, precision)  # AUC for Precision-Recall Curve
+    
+    # Create the figure
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=recall, 
+            y=precision, 
+            mode="lines",
+            name=f"AUC = {pr_auc:.2f}",
+            line=dict(color="orange")
+        )
+    )
+    
+    # Add the baseline (rate of positive samples)
+    baseline = sum(y_true) / len(y_true)
+    fig.add_trace(
+        go.Scatter(
+            x=[0, 1], 
+            y=[baseline, baseline], 
+            mode="lines",
+            name=f"Baseline ({baseline:.2f})",
+            line=dict(dash="dash", color="gray")
+        )
+    )
+    
+    fig.update_layout(
+        title="Precision Recall Curve",
+        title_font=dict(size=20),
+        xaxis_title="Recall",
+        yaxis_title="Precision",
+        xaxis_title_font=dict(size=14),  
+        yaxis_title_font=dict(size=14),
+        font=dict(size=14),  
+        autosize=False,
+        height=300
+    )
+    return fig
+
+def create_classwise_performance_chart(
+        explanations:list
+):
+    """Creates a bar chart showing precision, recall, and F1-score by class."""
+
     y_true = np.array([exp.image_data.gender.numerator for exp in explanations])
     y_pred = np.array([exp.predicted_gender.numerator for exp in explanations])
 
@@ -242,7 +310,20 @@ def create_classwise_performance_chart(explanations):
 
     return fig
 
-def image_overlays(image, heatmap, landmark_boxes, bboxes, overlay, colors, facial_feature):
+# ----------------------
+# Image Visualization
+# ----------------------
+
+def image_overlays(image, 
+                   heatmap: list = None, 
+                   landmark_boxes: list = None, 
+                   bounding_boxes: list = None, 
+                   overlay: list = None, 
+                   facial_feature: list = None,
+                   colors: list = get_landmark_names_and_colors()[1], 
+):
+    """Creates an image with various overlays for visualization."""
+    
     fig, ax = plt.subplots()
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = cv2.resize(image, (200, 200))
@@ -258,24 +339,39 @@ def image_overlays(image, heatmap, landmark_boxes, bboxes, overlay, colors, faci
             if not facial_feature or (box.feature and box.feature.value in facial_feature):
                 min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
                 color = colors[i % len(colors)]
-                rect = patches.Rectangle((min_x, min_y), max_x - min_x, max_y - min_y, 
-                                        linewidth=3, edgecolor=color, facecolor="none", alpha=0.9)
+                rect = patches.Rectangle(
+                    (min_x, min_y), 
+                    max_x - min_x, 
+                    max_y - min_y, 
+                    linewidth=3, 
+                    edgecolor=color, 
+                    facecolor="none", 
+                    alpha=0.9
+                )
                 ax.add_patch(rect)
     
     if "Bounding Boxes" in overlay:
-        for box in bboxes:
+        for box in bounding_boxes:
             if not facial_feature or (box.feature and box.feature.value in facial_feature):
                 min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
-                rect = patches.Rectangle((min_x, min_y), max_x - min_x, max_y - min_y, 
-                                        linewidth=4, edgecolor="red", facecolor="none")
+                rect = patches.Rectangle(
+                    (min_x, min_y), 
+                    max_x - min_x, 
+                    max_y - min_y, 
+                    linewidth=4, 
+                    edgecolor="red", 
+                    facecolor="none"
+                )
                 ax.add_patch(rect)
 
     ax.axis("off")  # Hide axis
-
-
     return fig
 
-def create_legend(landmark_names, colors):    
+def create_legend(
+        landmark_names: list = get_landmark_names_and_colors()[0], 
+        colors: list = get_landmark_names_and_colors()[1]
+):
+    """Creates a legend for landmark visualization."""
     fig = go.Figure()
     
     for i, name in enumerate(landmark_names):
