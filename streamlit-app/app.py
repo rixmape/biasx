@@ -63,12 +63,12 @@ def display_configuration_page():
 
             # --- Threshold Config ---
             with st.container(border=True):
-                st.session_state.config["explainer"]["threshold_method"] = st.pills("Thresholding Method", ["otsu", "niblack", "sauvola"], key="threshold_method", selection_mode="single")
+                st.session_state.config["explainer"]["threshold_method"] = st.pills("Thresholding Method", ["otsu", "triangle", "sauvola"], key="threshold_method", selection_mode="single")
                 st.session_state.config["explainer"]["overlap_threshold"] = st.slider("Overlap Threshold", key="overlap_ratio", value=st.session_state.config["explainer"]["overlap_threshold"])
 
             # --- Distance Metric Config ---
             with st.container(border=True):
-                st.session_state.config["explainer"]["distance_metric"] = st.pills("Distance Metric", ["euclidean", "manhattan"], key="distant_metric", selection_mode="single")
+                st.session_state.config["explainer"]["distance_metric"] = st.pills("Distance Metric", ["euclidean", "cityblock",  "cosine"], key="distant_metric", selection_mode="single")
 
         with other.container():
             # --- Dataset Config ---
