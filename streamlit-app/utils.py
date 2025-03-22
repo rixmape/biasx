@@ -25,7 +25,7 @@ def get_default_config():
         },
         "explainer": {
             "landmarker_source": "mediapipe",
-            "cam_method": "gradcam++",
+            "cam_method": "gradcam",
             "cutoff_percentile": 90,
             "threshold_method": "otsu",
             "overlap_threshold": 0.2,

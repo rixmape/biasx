@@ -58,26 +58,26 @@ def display_configuration_page():
 
             # --- Class Activation Config ---
             with st.container(border=True):
-                st.session_state.config["explainer"]["cam_method"] = st.pills("Class Activation Map Method", ["gradcam", "gradcam++", "scorecam"], key="cam_method", selection_mode="single")
+                st.session_state.config["explainer"]["cam_method"] = st.pills("Class Activation Map Method", ["gradcam", "gradcam++", "scorecam"], key="cam_method", selection_mode="single", default=st.session_state.config["explainer"]["cam_method"])
                 st.session_state.config["explainer"]["cutoff_percentile"] = st.slider("Cutoff Percentile", key="cam_threshold", value=st.session_state.config["explainer"]["cutoff_percentile"])
 
             # --- Threshold Config ---
             with st.container(border=True):
-                st.session_state.config["explainer"]["threshold_method"] = st.pills("Thresholding Method", ["otsu", "triangle", "sauvola"], key="threshold_method", selection_mode="single")
+                st.session_state.config["explainer"]["threshold_method"] = st.pills("Thresholding Method", ["otsu", "triangle", "sauvola"], key="threshold_method", selection_mode="single", default=st.session_state.config["explainer"]["threshold_method"])
                 st.session_state.config["explainer"]["overlap_threshold"] = st.slider("Overlap Threshold", key="overlap_ratio", value=st.session_state.config["explainer"]["overlap_threshold"])
 
             # --- Distance Metric Config ---
             with st.container(border=True):
-                st.session_state.config["explainer"]["distance_metric"] = st.pills("Distance Metric", ["euclidean", "cityblock",  "cosine"], key="distant_metric", selection_mode="single")
+                st.session_state.config["explainer"]["distance_metric"] = st.pills("Distance Metric", ["euclidean", "cityblock",  "cosine"], key="distant_metric", selection_mode="single", default=st.session_state.config["explainer"]["distance_metric"])
 
         with other.container():
             # --- Dataset Config ---
             with st.container(border=True):
                 st.markdown("### Dataset Configuration")
-                st.session_state.config["dataset"]["source"] = st.pills("Dataset Selection", ["utkface", "fairface"], key="dataset_selection", selection_mode="single")
+                st.session_state.config["dataset"]["source"] = st.pills("Dataset Selection", ["utkface", "fairface"], key="dataset_selection", selection_mode="single", default=st.session_state.config["dataset"]["source"])
                 c1, c2 = st.columns(2)
                 st.session_state.config["dataset"]["max_samples"] = c1.number_input("Sample Size", key="sample_size", value=st.session_state.config["dataset"]["max_samples"], disabled=st.session_state.select_all)
-                select_all = c1.toggle("Select All", key="select_all")
+                # select_all = c1.toggle("Select All", key="select_all")
                 st.session_state.config["dataset"]["seed"] = c2.number_input("Seed", key="seed", value=st.session_state.config["dataset"]["seed"], disabled=not st.session_state.enable_shuffle)
                 st.session_state.config["dataset"]["shuffle"] = c2.toggle("Shuffle?", key="enable_shuffle")
 
