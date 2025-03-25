@@ -1,0 +1,17 @@
+[run]
+source = biasx
+omit = 
+    biasx/__init__.py
+    biasx/tests/*
+    biasx/_version.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    pass
+
+[html]
+directory = htmlcov

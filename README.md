@@ -2,19 +2,43 @@
 
 BiasX is a Python library for detecting and explaining gender bias in face classification models. This repository provides a toolkit to analyze bias through both traditional fairness metrics and feature-level analysis. Visual heatmaps and quantitative bias scores are generated to help developers understand which facial features contribute to biased classifications.
 
-## Running the Streamlit App
+## Running Tests for BiasX
 
-Our project includes a Streamlit application for interactive visualization and exploration.
+### Step 1: Install Test Dependencies
 
-### Prerequisites
+```
+# Install test requirements using the provided file
+pip install -r test-requirements.txt
 
-- Python 3.7 or higher
-- Streamlit installed (`pip install streamlit`)
+# Install the BiasX package in development mode
+pip install -e .
 
-### Starting the App
-1. Navigate to the streamlit-app directory:
-   ```bash
-   cd /path/to/BIASX/streamlit-app
-2. Run the streamlit app    
-    ```bash
-    streamlit run app.py
+```
+
+### Step 2: Run the Tests
+
+#### Run all Test
+
+```
+pytest
+````
+
+#### Run Tests with Verbose Output
+
+```
+pytest -v
+
+```
+
+#### Run Tests with Coverage Report
+
+```
+
+pytest --cov=biasx --cov-report=term --cov-report=html
+```
+
+#### Run Specific Test Files
+
+```
+pytest tests/test_utils.py
+```
