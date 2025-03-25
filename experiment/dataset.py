@@ -114,13 +114,13 @@ class DatasetGenerator:
 
     def _apply_feature_masking(self, df: pd.DataFrame) -> pd.DataFrame:
         """Apply zero masking to a specific facial feature."""
-        if self.config.target_gender is None or self.config.target_feature is None:
+        if self.config.masked_gender is None or self.config.masked_feature is None:
             return df
         processor = FacialFeatureMasker()
         result = df.copy()
-        gender_mask = result["gender"] == self.config.target_gender
+        gender_mask = result["gender"] == self.config.masked_gender
         if gender_mask.any():
-            result.loc[gender_mask, "image"] = result.loc[gender_mask, "image"].apply(lambda img: processor.apply_zero_mask(img, self.config.target_feature, self.config.padding))
+            result.loc[gender_mask, "image"] = result.loc[gender_mask, "image"].apply(lambda img: processor.apply_zero_mask(img, self.config.masked_feature, self.config.padding))
         return result
 
     def create_dataset(self) -> pd.DataFrame:

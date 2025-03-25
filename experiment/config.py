@@ -12,8 +12,8 @@ class DatasetConfig:
     dataset_size: int = 1000
     gender_ratios: dict[int, float] = None
     random_seed: int = 42
-    target_gender: Optional[int] = None
-    target_feature: Optional[str] = None
+    masked_gender: Optional[int] = None
+    masked_feature: Optional[str] = None
     padding: int = 2
 
 

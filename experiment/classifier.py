@@ -23,21 +23,18 @@ class ModelTrainer:
         """Create and compile gender classification model."""
         model = tf.keras.Sequential(name="gender_classifier")
 
-        model.add(tf.keras.layers.InputLayer(shape=self.config.input_shape, name="input_layer"))
+        model.add(tf.keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same", name="block1_conv1", input_shape=self.config.input_shape))
+        model.add(tf.keras.layers.Conv2D(64, (3, 3), activation="relu", padding="same", name="block1_conv2"))
+        model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), name="block1_pool"))
 
-        blocks = [(2, 64), (2, 128), (3, 256)]
-        for idx, (n_convs, filters) in enumerate(blocks):
-            for i in range(n_convs):
-                model.add(
-                    tf.keras.layers.Conv2D(
-                        filters=filters,
-                        kernel_size=(3, 3),
-                        activation="relu",
-                        padding="same",
-                        name=f"block{idx+1}_conv{i+1}",
-                    )
-                )
-            model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), name=f"block{idx+1}_pool"))
+        model.add(tf.keras.layers.Conv2D(128, (3, 3), activation="relu", padding="same", name="block2_conv1"))
+        model.add(tf.keras.layers.Conv2D(128, (3, 3), activation="relu", padding="same", name="block2_conv2"))
+        model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), name="block2_pool"))
+
+        model.add(tf.keras.layers.Conv2D(256, (3, 3), activation="relu", padding="same", name="block3_conv1"))
+        model.add(tf.keras.layers.Conv2D(256, (3, 3), activation="relu", padding="same", name="block3_conv2"))
+        model.add(tf.keras.layers.Conv2D(256, (3, 3), activation="relu", padding="same", name="block3_conv3"))
+        model.add(tf.keras.layers.MaxPooling2D(pool_size=(2, 2), strides=(2, 2), name="block3_pool"))
 
         model.add(tf.keras.layers.Flatten(name="flatten"))
         model.add(tf.keras.layers.Dense(512, activation="relu", name="dense_1"))
