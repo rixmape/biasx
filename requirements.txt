@@ -4,6 +4,7 @@ numpy
 opencv-python-headless
 pandas
 pillow
+plotly
 pyarrow
 scikit-image
 scikit-learn
