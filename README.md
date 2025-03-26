@@ -97,7 +97,7 @@ make deploy
 
 ### Public Deployment
 
-The application is publicly available at: [biasx-framework.streamlit.app](https://biasx-framework.streamlit.app)
+The application is publicly available at: [biasxframework.streamlit.app](https://biasxframework.streamlit.app/)
 
 ## Development
 
