@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "biasx"
-version = "0.1.1"
+version = "0.1.2"
 description = "A toolkit for detecting and explaining gender bias in face classification models"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -23,14 +23,17 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "keras",
-    "tensorflow",
-    "mediapipe",
-    "scikit-image",
-    "tf_keras_vis",
-    "scikit-learn",
     "huggingface_hub",
+    "mediapipe",
+    "numpy",
+    "pandas",
+    "pillow",
     "pyarrow",
+    "scikit-image",
+    "scikit-learn",
+    "scipy",
+    "tensorflow",
+    "tf_keras_vis",
 ]
 
 [project.urls]
