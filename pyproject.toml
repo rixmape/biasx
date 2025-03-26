@@ -1,17 +1,27 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-packages = ["biasx"]
 
 [project]
 name = "biasx"
-version = "0.1.0"
+version = "0.1.1"
 description = "A toolkit for detecting and explaining gender bias in face classification models"
 readme = "README.md"
-license = {file = "LICENSE"}
-requires-python = ">=3.12"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+authors = [
+    { name = "Rixdon Niño Mape", email = "rixdonninorecario.mape@bicol-u.edu.ph" },
+    { name = "Jerwin Glen Lucero", email = "jerwinglenalejandre.lucero@bicol-u.edu.ph" },
+    { name = "Jan Wilhelm Sy", email = "janwilhelmtan.sy@bicol-u.edu.ph" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
     "keras",
     "tensorflow",
@@ -23,5 +33,14 @@ dependencies = [
     "pyarrow",
 ]
 
-[project.optional-dependencies]
-ui = ["gradio", "plotly", "streamlit"]
+[project.urls]
+"Homepage" = "https://github.com/rixmape/biasx"
+"Bug Tracker" = "https://github.com/rixmape/biasx/issues"
+"Documentation" = "https://github.com/rixmape/biasx/blob/main/README.md"
+
+[tool.setuptools]
+packages = ["biasx"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+biasx = ["data/*.json"]
