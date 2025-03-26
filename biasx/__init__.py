@@ -5,7 +5,7 @@ It provides tools for model evaluation, visual explanation generation, and bias 
 
 from .analyzer import BiasAnalyzer
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __all__ = [
     "BiasAnalyzer",
