@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "biasx"
-version = "0.1.0"
+version = "0.1.1"
 description = "A toolkit for detecting and explaining gender bias in face classification models"
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 authors = [
     { name = "Rixdon Niño Mape", email = "rixdonninorecario.mape@bicol-u.edu.ph" },
     { name = "Jerwin Glen Lucero", email = "jerwinglenalejandre.lucero@bicol-u.edu.ph" },
@@ -16,7 +16,7 @@ authors = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
