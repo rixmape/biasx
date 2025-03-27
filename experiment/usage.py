@@ -1,20 +1,28 @@
+import hashlib
 import itertools
 import json
 import os
-import hashlib
 
 from classifier import ModelTrainer
 from config import ClassifierConfig, DatasetConfig
 from dataset import DatasetGenerator
+
 from biasx import BiasAnalyzer
 
+OUTPUT_DIR = "."
+RESULTS_PATH = os.path.join(OUTPUT_DIR, "experiment_results.json")
 INPUT_SHAPE = (48, 48, 1)
-NUM_REPLICATES = 2
-MALE_RATIOS = [0.1, 0.3, 0.5, 0.7, 0.9]
-MASKED_GENDERS = [None]
-MASKED_FEATURES = [None]
-OUTPUT_DIR = "tmp/"
-RESULTS_PATH = os.path.join(OUTPUT_DIR, "gender_ratio.json")
+NUM_REPLICATES = 3
+
+# Setup for demographic parity experiments
+MALE_RATIOS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+MASKED_GENDERS = []
+MASKED_FEATURES = []
+
+# Setup for feature attention experiments
+# MALE_RATIOS = [0.5]  # Balanced gender distribution
+# MASKED_GENDERS = [0, 1]  # 0: male, 1: female
+# MASKED_FEATURES = ["left_eye", "right_eye", "nose", "lips", "left_cheek", "right_cheek", "chin", "forehead", "left_eyebrow", "right_eyebrow"]
 
 
 def create_experiment_metadata(ratio, masked_feature, masked_gender):
