@@ -1,0 +1,5271 @@
+[
+  {
+    "metadata": {
+      "id": "396fa70d4de1a946d8a79ad161291112",
+      "male_ratio": 30,
+      "female_ratio": 70,
+      "masked_feature": null,
+      "masked_gender": null
+    },
+    "bias_analyses": [
+      {
+        "disparity_scores": {
+          "biasx": 0.207,
+          "equalized_odds": 0.238
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.098,
+            "male_probability": 0.09,
+            "female_probability": 0.188
+          },
+          "right_eye": {
+            "bias_score": 0.137,
+            "male_probability": 0.051,
+            "female_probability": 0.188
+          },
+          "nose": {
+            "bias_score": 0.167,
+            "male_probability": 0.333,
+            "female_probability": 0.5
+          },
+          "lips": {
+            "bias_score": 0.144,
+            "male_probability": 0.231,
+            "female_probability": 0.375
+          },
+          "left_cheek": {
+            "bias_score": 0.143,
+            "male_probability": 0.295,
+            "female_probability": 0.438
+          },
+          "right_cheek": {
+            "bias_score": 0.183,
+            "male_probability": 0.308,
+            "female_probability": 0.125
+          },
+          "chin": {
+            "bias_score": 0.323,
+            "male_probability": 0.385,
+            "female_probability": 0.062
+          },
+          "forehead": {
+            "bias_score": 0.397,
+            "male_probability": 0.103,
+            "female_probability": 0.5
+          },
+          "left_eyebrow": {
+            "bias_score": 0.189,
+            "male_probability": 0.564,
+            "female_probability": 0.375
+          },
+          "right_eyebrow": {
+            "bias_score": 0.286,
+            "male_probability": 0.474,
+            "female_probability": 0.188
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.084,
+          "equalized_odds": 0.195
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.029,
+            "male_probability": 0.147,
+            "female_probability": 0.118
+          },
+          "right_eye": {
+            "bias_score": 0.073,
+            "male_probability": 0.132,
+            "female_probability": 0.059
+          },
+          "nose": {
+            "bias_score": 0.25,
+            "male_probability": 0.162,
+            "female_probability": 0.412
+          },
+          "lips": {
+            "bias_score": 0.059,
+            "male_probability": 0.294,
+            "female_probability": 0.235
+          },
+          "left_cheek": {
+            "bias_score": 0.118,
+            "male_probability": 0.294,
+            "female_probability": 0.412
+          },
+          "right_cheek": {
+            "bias_score": 0.058,
+            "male_probability": 0.118,
+            "female_probability": 0.176
+          },
+          "chin": {
+            "bias_score": 0.132,
+            "male_probability": 0.162,
+            "female_probability": 0.294
+          },
+          "forehead": {
+            "bias_score": 0.059,
+            "male_probability": 0.059,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.044,
+            "male_probability": 0.103,
+            "female_probability": 0.059
+          },
+          "right_eyebrow": {
+            "bias_score": 0.014,
+            "male_probability": 0.162,
+            "female_probability": 0.176
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.239,
+          "equalized_odds": 0.298
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.2,
+            "male_probability": 0.2,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.051,
+            "male_probability": 0.176,
+            "female_probability": 0.125
+          },
+          "nose": {
+            "bias_score": 0.371,
+            "male_probability": 0.129,
+            "female_probability": 0.5
+          },
+          "lips": {
+            "bias_score": 0.175,
+            "male_probability": 0.2,
+            "female_probability": 0.375
+          },
+          "left_cheek": {
+            "bias_score": 0.288,
+            "male_probability": 0.212,
+            "female_probability": 0.5
+          },
+          "right_cheek": {
+            "bias_score": 0.275,
+            "male_probability": 0.4,
+            "female_probability": 0.125
+          },
+          "chin": {
+            "bias_score": 0.087,
+            "male_probability": 0.212,
+            "female_probability": 0.125
+          },
+          "forehead": {
+            "bias_score": 0.429,
+            "male_probability": 0.071,
+            "female_probability": 0.5
+          },
+          "left_eyebrow": {
+            "bias_score": 0.263,
+            "male_probability": 0.388,
+            "female_probability": 0.125
+          },
+          "right_eyebrow": {
+            "bias_score": 0.247,
+            "male_probability": 0.247,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.246,
+          "equalized_odds": 0.505
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.023,
+            "male_probability": 0.023,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.015,
+            "male_probability": 0.015,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.383,
+            "male_probability": 0.383,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.316,
+            "male_probability": 0.316,
+            "female_probability": 0.0
+          },
+          "left_cheek": {
+            "bias_score": 0.374,
+            "male_probability": 0.293,
+            "female_probability": 0.667
+          },
+          "right_cheek": {
+            "bias_score": 0.163,
+            "male_probability": 0.496,
+            "female_probability": 0.333
+          },
+          "chin": {
+            "bias_score": 0.368,
+            "male_probability": 0.632,
+            "female_probability": 1.0
+          },
+          "forehead": {
+            "bias_score": 0.295,
+            "male_probability": 0.038,
+            "female_probability": 0.333
+          },
+          "left_eyebrow": {
+            "bias_score": 0.233,
+            "male_probability": 0.233,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.293,
+            "male_probability": 0.293,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.179,
+          "equalized_odds": 0.245
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.087,
+            "male_probability": 0.024,
+            "female_probability": 0.111
+          },
+          "right_eye": {
+            "bias_score": 0.074,
+            "male_probability": 0.037,
+            "female_probability": 0.111
+          },
+          "nose": {
+            "bias_score": 0.474,
+            "male_probability": 0.585,
+            "female_probability": 0.111
+          },
+          "lips": {
+            "bias_score": 0.071,
+            "male_probability": 0.207,
+            "female_probability": 0.278
+          },
+          "left_cheek": {
+            "bias_score": 0.405,
+            "male_probability": 0.317,
+            "female_probability": 0.722
+          },
+          "right_cheek": {
+            "bias_score": 0.011,
+            "male_probability": 0.622,
+            "female_probability": 0.611
+          },
+          "chin": {
+            "bias_score": 0.149,
+            "male_probability": 0.427,
+            "female_probability": 0.278
+          },
+          "forehead": {
+            "bias_score": 0.1,
+            "male_probability": 0.378,
+            "female_probability": 0.278
+          },
+          "left_eyebrow": {
+            "bias_score": 0.34,
+            "male_probability": 0.451,
+            "female_probability": 0.111
+          },
+          "right_eyebrow": {
+            "bias_score": 0.083,
+            "male_probability": 0.195,
+            "female_probability": 0.278
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.213,
+          "equalized_odds": 0.372
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.261,
+            "male_probability": 0.139,
+            "female_probability": 0.4
+          },
+          "right_eye": {
+            "bias_score": 0.119,
+            "male_probability": 0.119,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.113,
+            "male_probability": 0.287,
+            "female_probability": 0.4
+          },
+          "lips": {
+            "bias_score": 0.042,
+            "male_probability": 0.158,
+            "female_probability": 0.2
+          },
+          "left_cheek": {
+            "bias_score": 0.125,
+            "male_probability": 0.475,
+            "female_probability": 0.6
+          },
+          "right_cheek": {
+            "bias_score": 0.414,
+            "male_probability": 0.386,
+            "female_probability": 0.8
+          },
+          "chin": {
+            "bias_score": 0.275,
+            "male_probability": 0.475,
+            "female_probability": 0.2
+          },
+          "forehead": {
+            "bias_score": 0.356,
+            "male_probability": 0.356,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.257,
+            "male_probability": 0.257,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.168,
+            "male_probability": 0.168,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.091,
+          "equalized_odds": 0.309
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.067,
+            "male_probability": 0.167,
+            "female_probability": 0.1
+          },
+          "right_eye": {
+            "bias_score": 0.022,
+            "male_probability": 0.078,
+            "female_probability": 0.1
+          },
+          "nose": {
+            "bias_score": 0.044,
+            "male_probability": 0.256,
+            "female_probability": 0.3
+          },
+          "lips": {
+            "bias_score": 0.044,
+            "male_probability": 0.244,
+            "female_probability": 0.2
+          },
+          "left_cheek": {
+            "bias_score": 0.167,
+            "male_probability": 0.367,
+            "female_probability": 0.2
+          },
+          "right_cheek": {
+            "bias_score": 0.022,
+            "male_probability": 0.378,
+            "female_probability": 0.4
+          },
+          "chin": {
+            "bias_score": 0.056,
+            "male_probability": 0.644,
+            "female_probability": 0.7
+          },
+          "forehead": {
+            "bias_score": 0.044,
+            "male_probability": 0.056,
+            "female_probability": 0.1
+          },
+          "left_eyebrow": {
+            "bias_score": 0.156,
+            "male_probability": 0.256,
+            "female_probability": 0.1
+          },
+          "right_eyebrow": {
+            "bias_score": 0.289,
+            "male_probability": 0.289,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.178,
+          "equalized_odds": 0.387
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.06,
+            "male_probability": 0.065,
+            "female_probability": 0.125
+          },
+          "right_eye": {
+            "bias_score": 0.028,
+            "male_probability": 0.028,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.431,
+            "male_probability": 0.556,
+            "female_probability": 0.125
+          },
+          "lips": {
+            "bias_score": 0.111,
+            "male_probability": 0.361,
+            "female_probability": 0.25
+          },
+          "left_cheek": {
+            "bias_score": 0.375,
+            "male_probability": 0.5,
+            "female_probability": 0.125
+          },
+          "right_cheek": {
+            "bias_score": 0.181,
+            "male_probability": 0.694,
+            "female_probability": 0.875
+          },
+          "chin": {
+            "bias_score": 0.005,
+            "male_probability": 0.38,
+            "female_probability": 0.375
+          },
+          "forehead": {
+            "bias_score": 0.296,
+            "male_probability": 0.204,
+            "female_probability": 0.5
+          },
+          "left_eyebrow": {
+            "bias_score": 0.148,
+            "male_probability": 0.148,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.148,
+            "male_probability": 0.148,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.072,
+          "equalized_odds": 0.179
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.259,
+            "male_probability": 0.094,
+            "female_probability": 0.353
+          },
+          "right_eye": {
+            "bias_score": 0.082,
+            "male_probability": 0.094,
+            "female_probability": 0.176
+          },
+          "nose": {
+            "bias_score": 0.047,
+            "male_probability": 0.188,
+            "female_probability": 0.235
+          },
+          "lips": {
+            "bias_score": 0.009,
+            "male_probability": 0.344,
+            "female_probability": 0.353
+          },
+          "left_cheek": {
+            "bias_score": 0.106,
+            "male_probability": 0.188,
+            "female_probability": 0.294
+          },
+          "right_cheek": {
+            "bias_score": 0.124,
+            "male_probability": 0.359,
+            "female_probability": 0.235
+          },
+          "chin": {
+            "bias_score": 0.002,
+            "male_probability": 0.469,
+            "female_probability": 0.471
+          },
+          "forehead": {
+            "bias_score": 0.003,
+            "male_probability": 0.062,
+            "female_probability": 0.059
+          },
+          "left_eyebrow": {
+            "bias_score": 0.035,
+            "male_probability": 0.141,
+            "female_probability": 0.176
+          },
+          "right_eyebrow": {
+            "bias_score": 0.05,
+            "male_probability": 0.109,
+            "female_probability": 0.059
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.148,
+          "equalized_odds": 0.08
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.046,
+            "male_probability": 0.146,
+            "female_probability": 0.192
+          },
+          "right_eye": {
+            "bias_score": 0.093,
+            "male_probability": 0.208,
+            "female_probability": 0.115
+          },
+          "nose": {
+            "bias_score": 0.256,
+            "male_probability": 0.167,
+            "female_probability": 0.423
+          },
+          "lips": {
+            "bias_score": 0.194,
+            "male_probability": 0.229,
+            "female_probability": 0.423
+          },
+          "left_cheek": {
+            "bias_score": 0.043,
+            "male_probability": 0.188,
+            "female_probability": 0.231
+          },
+          "right_cheek": {
+            "bias_score": 0.085,
+            "male_probability": 0.146,
+            "female_probability": 0.231
+          },
+          "chin": {
+            "bias_score": 0.234,
+            "male_probability": 0.542,
+            "female_probability": 0.308
+          },
+          "forehead": {
+            "bias_score": 0.298,
+            "male_probability": 0.125,
+            "female_probability": 0.423
+          },
+          "left_eyebrow": {
+            "bias_score": 0.108,
+            "male_probability": 0.146,
+            "female_probability": 0.038
+          },
+          "right_eyebrow": {
+            "bias_score": 0.12,
+            "male_probability": 0.312,
+            "female_probability": 0.192
+          }
+        }
+      }
+    ]
+  },
+  {
+    "metadata": {
+      "id": "91677c9ea49b33fb083c677a7cb9af6f",
+      "male_ratio": 50,
+      "female_ratio": 50,
+      "masked_feature": null,
+      "masked_gender": null
+    },
+    "bias_analyses": [
+      {
+        "disparity_scores": {
+          "biasx": 0.141,
+          "equalized_odds": 0.103
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.06,
+            "male_probability": 0.238,
+            "female_probability": 0.178
+          },
+          "right_eye": {
+            "bias_score": 0.21,
+            "male_probability": 0.19,
+            "female_probability": 0.4
+          },
+          "nose": {
+            "bias_score": 0.099,
+            "male_probability": 0.19,
+            "female_probability": 0.289
+          },
+          "lips": {
+            "bias_score": 0.064,
+            "male_probability": 0.286,
+            "female_probability": 0.222
+          },
+          "left_cheek": {
+            "bias_score": 0.171,
+            "male_probability": 0.571,
+            "female_probability": 0.4
+          },
+          "right_cheek": {
+            "bias_score": 0.101,
+            "male_probability": 0.143,
+            "female_probability": 0.244
+          },
+          "chin": {
+            "bias_score": 0.079,
+            "male_probability": 0.143,
+            "female_probability": 0.222
+          },
+          "forehead": {
+            "bias_score": 0.044,
+            "male_probability": 0.0,
+            "female_probability": 0.044
+          },
+          "left_eyebrow": {
+            "bias_score": 0.194,
+            "male_probability": 0.238,
+            "female_probability": 0.044
+          },
+          "right_eyebrow": {
+            "bias_score": 0.387,
+            "male_probability": 0.476,
+            "female_probability": 0.089
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.12,
+          "equalized_odds": 0.057
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.125,
+            "male_probability": 0.0,
+            "female_probability": 0.125
+          },
+          "right_eye": {
+            "bias_score": 0.017,
+            "male_probability": 0.025,
+            "female_probability": 0.042
+          },
+          "nose": {
+            "bias_score": 0.2,
+            "male_probability": 0.575,
+            "female_probability": 0.375
+          },
+          "lips": {
+            "bias_score": 0.108,
+            "male_probability": 0.35,
+            "female_probability": 0.458
+          },
+          "left_cheek": {
+            "bias_score": 0.042,
+            "male_probability": 0.375,
+            "female_probability": 0.417
+          },
+          "right_cheek": {
+            "bias_score": 0.092,
+            "male_probability": 0.2,
+            "female_probability": 0.292
+          },
+          "chin": {
+            "bias_score": 0.192,
+            "male_probability": 0.4,
+            "female_probability": 0.208
+          },
+          "forehead": {
+            "bias_score": 0.033,
+            "male_probability": 0.05,
+            "female_probability": 0.083
+          },
+          "left_eyebrow": {
+            "bias_score": 0.342,
+            "male_probability": 0.425,
+            "female_probability": 0.083
+          },
+          "right_eyebrow": {
+            "bias_score": 0.05,
+            "male_probability": 0.05,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.122,
+          "equalized_odds": 0.049
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.403,
+            "male_probability": 0.162,
+            "female_probability": 0.565
+          },
+          "right_eye": {
+            "bias_score": 0.096,
+            "male_probability": 0.27,
+            "female_probability": 0.174
+          },
+          "nose": {
+            "bias_score": 0.207,
+            "male_probability": 0.054,
+            "female_probability": 0.261
+          },
+          "lips": {
+            "bias_score": 0.003,
+            "male_probability": 0.432,
+            "female_probability": 0.435
+          },
+          "left_cheek": {
+            "bias_score": 0.048,
+            "male_probability": 0.135,
+            "female_probability": 0.087
+          },
+          "right_cheek": {
+            "bias_score": 0.126,
+            "male_probability": 0.135,
+            "female_probability": 0.261
+          },
+          "chin": {
+            "bias_score": 0.117,
+            "male_probability": 0.378,
+            "female_probability": 0.261
+          },
+          "forehead": {
+            "bias_score": 0.043,
+            "male_probability": 0.0,
+            "female_probability": 0.043
+          },
+          "left_eyebrow": {
+            "bias_score": 0.027,
+            "male_probability": 0.027,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.146,
+            "male_probability": 0.189,
+            "female_probability": 0.043
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.087,
+          "equalized_odds": 0.168
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.038,
+            "male_probability": 0.15,
+            "female_probability": 0.188
+          },
+          "right_eye": {
+            "bias_score": 0.092,
+            "male_probability": 0.283,
+            "female_probability": 0.375
+          },
+          "nose": {
+            "bias_score": 0.008,
+            "male_probability": 0.117,
+            "female_probability": 0.125
+          },
+          "lips": {
+            "bias_score": 0.117,
+            "male_probability": 0.383,
+            "female_probability": 0.5
+          },
+          "left_cheek": {
+            "bias_score": 0.195,
+            "male_probability": 0.367,
+            "female_probability": 0.562
+          },
+          "right_cheek": {
+            "bias_score": 0.071,
+            "male_probability": 0.117,
+            "female_probability": 0.188
+          },
+          "chin": {
+            "bias_score": 0.179,
+            "male_probability": 0.367,
+            "female_probability": 0.188
+          },
+          "forehead": {
+            "bias_score": 0.071,
+            "male_probability": 0.133,
+            "female_probability": 0.062
+          },
+          "left_eyebrow": {
+            "bias_score": 0.029,
+            "male_probability": 0.217,
+            "female_probability": 0.188
+          },
+          "right_eyebrow": {
+            "bias_score": 0.071,
+            "male_probability": 0.117,
+            "female_probability": 0.188
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.093,
+          "equalized_odds": 0.08
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.081,
+            "male_probability": 0.267,
+            "female_probability": 0.348
+          },
+          "right_eye": {
+            "bias_score": 0.005,
+            "male_probability": 0.222,
+            "female_probability": 0.217
+          },
+          "nose": {
+            "bias_score": 0.086,
+            "male_probability": 0.044,
+            "female_probability": 0.13
+          },
+          "lips": {
+            "bias_score": 0.207,
+            "male_probability": 0.489,
+            "female_probability": 0.696
+          },
+          "left_cheek": {
+            "bias_score": 0.05,
+            "male_probability": 0.267,
+            "female_probability": 0.217
+          },
+          "right_cheek": {
+            "bias_score": 0.313,
+            "male_probability": 0.356,
+            "female_probability": 0.043
+          },
+          "chin": {
+            "bias_score": 0.076,
+            "male_probability": 0.467,
+            "female_probability": 0.391
+          },
+          "forehead": {
+            "bias_score": 0.044,
+            "male_probability": 0.044,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.021,
+            "male_probability": 0.022,
+            "female_probability": 0.043
+          },
+          "right_eyebrow": {
+            "bias_score": 0.046,
+            "male_probability": 0.089,
+            "female_probability": 0.043
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.075,
+          "equalized_odds": 0.029
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.128,
+            "male_probability": 0.378,
+            "female_probability": 0.25
+          },
+          "right_eye": {
+            "bias_score": 0.029,
+            "male_probability": 0.243,
+            "female_probability": 0.214
+          },
+          "nose": {
+            "bias_score": 0.178,
+            "male_probability": 0.108,
+            "female_probability": 0.286
+          },
+          "lips": {
+            "bias_score": 0.021,
+            "male_probability": 0.378,
+            "female_probability": 0.357
+          },
+          "left_cheek": {
+            "bias_score": 0.105,
+            "male_probability": 0.324,
+            "female_probability": 0.429
+          },
+          "right_cheek": {
+            "bias_score": 0.037,
+            "male_probability": 0.216,
+            "female_probability": 0.179
+          },
+          "chin": {
+            "bias_score": 0.082,
+            "male_probability": 0.189,
+            "female_probability": 0.107
+          },
+          "forehead": {
+            "bias_score": 0.027,
+            "male_probability": 0.027,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.118,
+            "male_probability": 0.189,
+            "female_probability": 0.071
+          },
+          "right_eyebrow": {
+            "bias_score": 0.028,
+            "male_probability": 0.135,
+            "female_probability": 0.107
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.085,
+          "equalized_odds": 0.056
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.049,
+            "male_probability": 0.089,
+            "female_probability": 0.138
+          },
+          "right_eye": {
+            "bias_score": 0.381,
+            "male_probability": 0.067,
+            "female_probability": 0.448
+          },
+          "nose": {
+            "bias_score": 0.117,
+            "male_probability": 0.289,
+            "female_probability": 0.172
+          },
+          "lips": {
+            "bias_score": 0.013,
+            "male_probability": 0.289,
+            "female_probability": 0.276
+          },
+          "left_cheek": {
+            "bias_score": 0.102,
+            "male_probability": 0.378,
+            "female_probability": 0.276
+          },
+          "right_cheek": {
+            "bias_score": 0.041,
+            "male_probability": 0.2,
+            "female_probability": 0.241
+          },
+          "chin": {
+            "bias_score": 0.068,
+            "male_probability": 0.378,
+            "female_probability": 0.31
+          },
+          "forehead": {
+            "bias_score": 0.064,
+            "male_probability": 0.133,
+            "female_probability": 0.069
+          },
+          "left_eyebrow": {
+            "bias_score": 0.014,
+            "male_probability": 0.089,
+            "female_probability": 0.103
+          },
+          "right_eyebrow": {
+            "bias_score": 0.003,
+            "male_probability": 0.244,
+            "female_probability": 0.241
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.075,
+          "equalized_odds": 0.051
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.092,
+            "male_probability": 0.064,
+            "female_probability": 0.156
+          },
+          "right_eye": {
+            "bias_score": 0.087,
+            "male_probability": 0.149,
+            "female_probability": 0.062
+          },
+          "nose": {
+            "bias_score": 0.024,
+            "male_probability": 0.149,
+            "female_probability": 0.125
+          },
+          "lips": {
+            "bias_score": 0.057,
+            "male_probability": 0.213,
+            "female_probability": 0.156
+          },
+          "left_cheek": {
+            "bias_score": 0.078,
+            "male_probability": 0.234,
+            "female_probability": 0.156
+          },
+          "right_cheek": {
+            "bias_score": 0.123,
+            "male_probability": 0.404,
+            "female_probability": 0.281
+          },
+          "chin": {
+            "bias_score": 0.119,
+            "male_probability": 0.213,
+            "female_probability": 0.094
+          },
+          "forehead": {
+            "bias_score": 0.049,
+            "male_probability": 0.17,
+            "female_probability": 0.219
+          },
+          "left_eyebrow": {
+            "bias_score": 0.012,
+            "male_probability": 0.043,
+            "female_probability": 0.031
+          },
+          "right_eyebrow": {
+            "bias_score": 0.106,
+            "male_probability": 0.106,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.067,
+          "equalized_odds": 0.073
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.074,
+            "male_probability": 0.1,
+            "female_probability": 0.174
+          },
+          "right_eye": {
+            "bias_score": 0.03,
+            "male_probability": 0.1,
+            "female_probability": 0.13
+          },
+          "nose": {
+            "bias_score": 0.113,
+            "male_probability": 0.3,
+            "female_probability": 0.413
+          },
+          "lips": {
+            "bias_score": 0.148,
+            "male_probability": 0.2,
+            "female_probability": 0.348
+          },
+          "left_cheek": {
+            "bias_score": 0.104,
+            "male_probability": 0.3,
+            "female_probability": 0.196
+          },
+          "right_cheek": {
+            "bias_score": 0.01,
+            "male_probability": 0.467,
+            "female_probability": 0.457
+          },
+          "chin": {
+            "bias_score": 0.072,
+            "male_probability": 0.333,
+            "female_probability": 0.261
+          },
+          "forehead": {
+            "bias_score": 0.013,
+            "male_probability": 0.1,
+            "female_probability": 0.087
+          },
+          "left_eyebrow": {
+            "bias_score": 0.002,
+            "male_probability": 0.067,
+            "female_probability": 0.065
+          },
+          "right_eyebrow": {
+            "bias_score": 0.102,
+            "male_probability": 0.167,
+            "female_probability": 0.065
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.058,
+          "equalized_odds": 0.057
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.067,
+            "male_probability": 0.275,
+            "female_probability": 0.208
+          },
+          "right_eye": {
+            "bias_score": 0.05,
+            "male_probability": 0.075,
+            "female_probability": 0.125
+          },
+          "nose": {
+            "bias_score": 0.0,
+            "male_probability": 0.125,
+            "female_probability": 0.125
+          },
+          "lips": {
+            "bias_score": 0.058,
+            "male_probability": 0.4,
+            "female_probability": 0.458
+          },
+          "left_cheek": {
+            "bias_score": 0.025,
+            "male_probability": 0.15,
+            "female_probability": 0.125
+          },
+          "right_cheek": {
+            "bias_score": 0.075,
+            "male_probability": 0.325,
+            "female_probability": 0.25
+          },
+          "chin": {
+            "bias_score": 0.125,
+            "male_probability": 0.375,
+            "female_probability": 0.25
+          },
+          "forehead": {
+            "bias_score": 0.075,
+            "male_probability": 0.075,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.017,
+            "male_probability": 0.1,
+            "female_probability": 0.083
+          },
+          "right_eyebrow": {
+            "bias_score": 0.092,
+            "male_probability": 0.075,
+            "female_probability": 0.167
+          }
+        }
+      }
+    ]
+  },
+  {
+    "metadata": {
+      "id": "772c7d5ff70dc213de18b46c425f1254",
+      "male_ratio": 70,
+      "female_ratio": 30,
+      "masked_feature": null,
+      "masked_gender": null
+    },
+    "bias_analyses": [
+      {
+        "disparity_scores": {
+          "biasx": 0.114,
+          "equalized_odds": 0.289
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.044,
+            "male_probability": 0.167,
+            "female_probability": 0.211
+          },
+          "right_eye": {
+            "bias_score": 0.158,
+            "male_probability": 0.0,
+            "female_probability": 0.158
+          },
+          "nose": {
+            "bias_score": 0.009,
+            "male_probability": 0.167,
+            "female_probability": 0.158
+          },
+          "lips": {
+            "bias_score": 0.25,
+            "male_probability": 0.0,
+            "female_probability": 0.25
+          },
+          "left_cheek": {
+            "bias_score": 0.224,
+            "male_probability": 0.0,
+            "female_probability": 0.224
+          },
+          "right_cheek": {
+            "bias_score": 0.122,
+            "male_probability": 0.333,
+            "female_probability": 0.211
+          },
+          "chin": {
+            "bias_score": 0.083,
+            "male_probability": 0.167,
+            "female_probability": 0.25
+          },
+          "forehead": {
+            "bias_score": 0.083,
+            "male_probability": 0.333,
+            "female_probability": 0.25
+          },
+          "left_eyebrow": {
+            "bias_score": 0.162,
+            "male_probability": 0.333,
+            "female_probability": 0.171
+          },
+          "right_eyebrow": {
+            "bias_score": 0.004,
+            "male_probability": 0.167,
+            "female_probability": 0.171
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.108,
+          "equalized_odds": 0.069
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.016,
+            "male_probability": 0.147,
+            "female_probability": 0.163
+          },
+          "right_eye": {
+            "bias_score": 0.023,
+            "male_probability": 0.059,
+            "female_probability": 0.082
+          },
+          "nose": {
+            "bias_score": 0.159,
+            "male_probability": 0.412,
+            "female_probability": 0.571
+          },
+          "lips": {
+            "bias_score": 0.194,
+            "male_probability": 0.235,
+            "female_probability": 0.429
+          },
+          "left_cheek": {
+            "bias_score": 0.076,
+            "male_probability": 0.353,
+            "female_probability": 0.429
+          },
+          "right_cheek": {
+            "bias_score": 0.206,
+            "male_probability": 0.529,
+            "female_probability": 0.735
+          },
+          "chin": {
+            "bias_score": 0.159,
+            "male_probability": 0.412,
+            "female_probability": 0.571
+          },
+          "forehead": {
+            "bias_score": 0.115,
+            "male_probability": 0.176,
+            "female_probability": 0.061
+          },
+          "right_eyebrow": {
+            "bias_score": 0.023,
+            "male_probability": 0.059,
+            "female_probability": 0.082
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.129,
+          "equalized_odds": 0.232
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.024,
+            "male_probability": 0.222,
+            "female_probability": 0.246
+          },
+          "right_eye": {
+            "bias_score": 0.108,
+            "male_probability": 0.0,
+            "female_probability": 0.108
+          },
+          "nose": {
+            "bias_score": 0.16,
+            "male_probability": 0.222,
+            "female_probability": 0.062
+          },
+          "lips": {
+            "bias_score": 0.104,
+            "male_probability": 0.111,
+            "female_probability": 0.215
+          },
+          "left_cheek": {
+            "bias_score": 0.313,
+            "male_probability": 0.667,
+            "female_probability": 0.354
+          },
+          "right_cheek": {
+            "bias_score": 0.022,
+            "male_probability": 0.222,
+            "female_probability": 0.2
+          },
+          "chin": {
+            "bias_score": 0.135,
+            "male_probability": 0.111,
+            "female_probability": 0.246
+          },
+          "forehead": {
+            "bias_score": 0.151,
+            "male_probability": 0.111,
+            "female_probability": 0.262
+          },
+          "left_eyebrow": {
+            "bias_score": 0.138,
+            "male_probability": 0.0,
+            "female_probability": 0.138
+          },
+          "right_eyebrow": {
+            "bias_score": 0.138,
+            "male_probability": 0.0,
+            "female_probability": 0.138
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.076,
+          "equalized_odds": 0.075
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.074,
+            "male_probability": 0.174,
+            "female_probability": 0.1
+          },
+          "right_eye": {
+            "bias_score": 0.001,
+            "male_probability": 0.174,
+            "female_probability": 0.175
+          },
+          "nose": {
+            "bias_score": 0.083,
+            "male_probability": 0.217,
+            "female_probability": 0.3
+          },
+          "lips": {
+            "bias_score": 0.058,
+            "male_probability": 0.217,
+            "female_probability": 0.275
+          },
+          "left_cheek": {
+            "bias_score": 0.172,
+            "male_probability": 0.522,
+            "female_probability": 0.35
+          },
+          "right_cheek": {
+            "bias_score": 0.015,
+            "male_probability": 0.435,
+            "female_probability": 0.45
+          },
+          "chin": {
+            "bias_score": 0.179,
+            "male_probability": 0.304,
+            "female_probability": 0.125
+          },
+          "forehead": {
+            "bias_score": 0.025,
+            "male_probability": 0.0,
+            "female_probability": 0.025
+          },
+          "left_eyebrow": {
+            "bias_score": 0.049,
+            "male_probability": 0.174,
+            "female_probability": 0.125
+          },
+          "right_eyebrow": {
+            "bias_score": 0.107,
+            "male_probability": 0.043,
+            "female_probability": 0.15
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.084,
+          "equalized_odds": 0.274
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.074,
+            "male_probability": 0.1,
+            "female_probability": 0.026
+          },
+          "right_eye": {
+            "bias_score": 0.061,
+            "male_probability": 0.1,
+            "female_probability": 0.039
+          },
+          "nose": {
+            "bias_score": 0.079,
+            "male_probability": 0.0,
+            "female_probability": 0.079
+          },
+          "lips": {
+            "bias_score": 0.189,
+            "male_probability": 0.1,
+            "female_probability": 0.289
+          },
+          "left_cheek": {
+            "bias_score": 0.108,
+            "male_probability": 0.7,
+            "female_probability": 0.592
+          },
+          "right_cheek": {
+            "bias_score": 0.032,
+            "male_probability": 0.4,
+            "female_probability": 0.368
+          },
+          "chin": {
+            "bias_score": 0.018,
+            "male_probability": 0.1,
+            "female_probability": 0.118
+          },
+          "forehead": {
+            "bias_score": 0.011,
+            "male_probability": 0.2,
+            "female_probability": 0.211
+          },
+          "left_eyebrow": {
+            "bias_score": 0.163,
+            "male_probability": 0.1,
+            "female_probability": 0.263
+          },
+          "right_eyebrow": {
+            "bias_score": 0.108,
+            "male_probability": 0.2,
+            "female_probability": 0.092
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.114,
+          "equalized_odds": 0.238
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.162,
+            "male_probability": 0.0,
+            "female_probability": 0.162
+          },
+          "right_eye": {
+            "bias_score": 0.198,
+            "male_probability": 0.059,
+            "female_probability": 0.257
+          },
+          "nose": {
+            "bias_score": 0.041,
+            "male_probability": 0.176,
+            "female_probability": 0.135
+          },
+          "lips": {
+            "bias_score": 0.039,
+            "male_probability": 0.353,
+            "female_probability": 0.392
+          },
+          "left_cheek": {
+            "bias_score": 0.132,
+            "male_probability": 0.294,
+            "female_probability": 0.162
+          },
+          "right_cheek": {
+            "bias_score": 0.139,
+            "male_probability": 0.118,
+            "female_probability": 0.257
+          },
+          "chin": {
+            "bias_score": 0.066,
+            "male_probability": 0.529,
+            "female_probability": 0.595
+          },
+          "forehead": {
+            "bias_score": 0.027,
+            "male_probability": 0.176,
+            "female_probability": 0.149
+          },
+          "left_eyebrow": {
+            "bias_score": 0.189,
+            "male_probability": 0.0,
+            "female_probability": 0.189
+          },
+          "right_eyebrow": {
+            "bias_score": 0.148,
+            "male_probability": 0.176,
+            "female_probability": 0.324
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.07,
+          "equalized_odds": 0.319
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.189,
+            "male_probability": 0.2,
+            "female_probability": 0.011
+          },
+          "right_eye": {
+            "bias_score": 0.077,
+            "male_probability": 0.1,
+            "female_probability": 0.023
+          },
+          "nose": {
+            "bias_score": 0.074,
+            "male_probability": 0.2,
+            "female_probability": 0.126
+          },
+          "lips": {
+            "bias_score": 0.07,
+            "male_probability": 0.3,
+            "female_probability": 0.23
+          },
+          "left_cheek": {
+            "bias_score": 0.04,
+            "male_probability": 0.5,
+            "female_probability": 0.54
+          },
+          "right_cheek": {
+            "bias_score": 0.067,
+            "male_probability": 0.4,
+            "female_probability": 0.333
+          },
+          "chin": {
+            "bias_score": 0.067,
+            "male_probability": 0.4,
+            "female_probability": 0.333
+          },
+          "forehead": {
+            "bias_score": 0.041,
+            "male_probability": 0.2,
+            "female_probability": 0.241
+          },
+          "left_eyebrow": {
+            "bias_score": 0.01,
+            "male_probability": 0.3,
+            "female_probability": 0.31
+          },
+          "right_eyebrow": {
+            "bias_score": 0.066,
+            "male_probability": 0.1,
+            "female_probability": 0.034
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.069,
+          "equalized_odds": 0.234
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.028,
+            "male_probability": 0.0,
+            "female_probability": 0.028
+          },
+          "right_eye": {
+            "bias_score": 0.011,
+            "male_probability": 0.067,
+            "female_probability": 0.056
+          },
+          "nose": {
+            "bias_score": 0.06,
+            "male_probability": 0.067,
+            "female_probability": 0.127
+          },
+          "lips": {
+            "bias_score": 0.141,
+            "male_probability": 0.0,
+            "female_probability": 0.141
+          },
+          "left_cheek": {
+            "bias_score": 0.057,
+            "male_probability": 0.267,
+            "female_probability": 0.324
+          },
+          "right_cheek": {
+            "bias_score": 0.02,
+            "male_probability": 0.4,
+            "female_probability": 0.38
+          },
+          "chin": {
+            "bias_score": 0.14,
+            "male_probability": 0.267,
+            "female_probability": 0.127
+          },
+          "forehead": {
+            "bias_score": 0.116,
+            "male_probability": 0.067,
+            "female_probability": 0.183
+          },
+          "left_eyebrow": {
+            "bias_score": 0.106,
+            "male_probability": 0.133,
+            "female_probability": 0.239
+          },
+          "right_eyebrow": {
+            "bias_score": 0.015,
+            "male_probability": 0.267,
+            "female_probability": 0.282
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.093,
+          "equalized_odds": 0.209
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.123,
+            "male_probability": 0.4,
+            "female_probability": 0.277
+          },
+          "right_eye": {
+            "bias_score": 0.01,
+            "male_probability": 0.333,
+            "female_probability": 0.323
+          },
+          "nose": {
+            "bias_score": 0.108,
+            "male_probability": 0.2,
+            "female_probability": 0.092
+          },
+          "lips": {
+            "bias_score": 0.031,
+            "male_probability": 0.4,
+            "female_probability": 0.431
+          },
+          "left_cheek": {
+            "bias_score": 0.148,
+            "male_probability": 0.267,
+            "female_probability": 0.415
+          },
+          "right_cheek": {
+            "bias_score": 0.19,
+            "male_probability": 0.133,
+            "female_probability": 0.323
+          },
+          "chin": {
+            "bias_score": 0.2,
+            "male_probability": 0.4,
+            "female_probability": 0.2
+          },
+          "forehead": {
+            "bias_score": 0.036,
+            "male_probability": 0.067,
+            "female_probability": 0.031
+          },
+          "left_eyebrow": {
+            "bias_score": 0.015,
+            "male_probability": 0.0,
+            "female_probability": 0.015
+          },
+          "right_eyebrow": {
+            "bias_score": 0.067,
+            "male_probability": 0.067,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.106,
+          "equalized_odds": 0.282
+        },
+        "feature_analyses": {
+          "right_eye": {
+            "bias_score": 0.013,
+            "male_probability": 0.0,
+            "female_probability": 0.013
+          },
+          "nose": {
+            "bias_score": 0.23,
+            "male_probability": 0.375,
+            "female_probability": 0.145
+          },
+          "lips": {
+            "bias_score": 0.072,
+            "male_probability": 0.125,
+            "female_probability": 0.053
+          },
+          "left_cheek": {
+            "bias_score": 0.013,
+            "male_probability": 0.75,
+            "female_probability": 0.763
+          },
+          "right_cheek": {
+            "bias_score": 0.046,
+            "male_probability": 0.125,
+            "female_probability": 0.171
+          },
+          "chin": {
+            "bias_score": 0.204,
+            "male_probability": 0.875,
+            "female_probability": 0.671
+          },
+          "forehead": {
+            "bias_score": 0.184,
+            "male_probability": 0.5,
+            "female_probability": 0.684
+          },
+          "left_eyebrow": {
+            "bias_score": 0.046,
+            "male_probability": 0.125,
+            "female_probability": 0.079
+          },
+          "right_eyebrow": {
+            "bias_score": 0.145,
+            "male_probability": 0.0,
+            "female_probability": 0.145
+          }
+        }
+      }
+    ]
+  },
+  {
+    "metadata": {
+      "id": "fbdc23100b12780fa9f69da5de08d8b4",
+      "male_ratio": 10,
+      "female_ratio": 90,
+      "masked_feature": null,
+      "masked_gender": null
+    },
+    "bias_analyses": [
+      {
+        "disparity_scores": {
+          "biasx": 0.206,
+          "equalized_odds": 0.681
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.227,
+            "male_probability": 0.227,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.085,
+            "male_probability": 0.085,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.097,
+            "male_probability": 0.097,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.364,
+            "male_probability": 0.364,
+            "female_probability": 0.0
+          },
+          "left_cheek": {
+            "bias_score": 0.159,
+            "male_probability": 0.159,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.682,
+            "male_probability": 0.318,
+            "female_probability": 1.0
+          },
+          "chin": {
+            "bias_score": 0.364,
+            "male_probability": 0.364,
+            "female_probability": 0.0
+          },
+          "forehead": {
+            "bias_score": 0.011,
+            "male_probability": 0.011,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.045,
+            "male_probability": 0.045,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.028,
+            "male_probability": 0.028,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.224,
+          "equalized_odds": 0.65
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.321,
+            "male_probability": 0.321,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.244,
+            "male_probability": 0.244,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.173,
+            "male_probability": 0.173,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.524,
+            "male_probability": 0.476,
+            "female_probability": 1.0
+          },
+          "left_cheek": {
+            "bias_score": 0.113,
+            "male_probability": 0.113,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.256,
+            "male_probability": 0.256,
+            "female_probability": 0.0
+          },
+          "chin": {
+            "bias_score": 0.482,
+            "male_probability": 0.482,
+            "female_probability": 0.0
+          },
+          "forehead": {
+            "bias_score": 0.018,
+            "male_probability": 0.018,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.03,
+            "male_probability": 0.03,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.083,
+            "male_probability": 0.083,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.172,
+          "equalized_odds": 0.797
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.295,
+            "male_probability": 0.295,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.126,
+            "male_probability": 0.126,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.097,
+            "male_probability": 0.097,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.225,
+            "male_probability": 0.275,
+            "female_probability": 0.5
+          },
+          "left_cheek": {
+            "bias_score": 0.101,
+            "male_probability": 0.101,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.355,
+            "male_probability": 0.145,
+            "female_probability": 0.5
+          },
+          "chin": {
+            "bias_score": 0.362,
+            "male_probability": 0.362,
+            "female_probability": 0.0
+          },
+          "forehead": {
+            "bias_score": 0.039,
+            "male_probability": 0.039,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.077,
+            "male_probability": 0.077,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.043,
+            "male_probability": 0.043,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.089,
+          "equalized_odds": 0.808
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.11,
+            "male_probability": 0.31,
+            "female_probability": 0.2
+          },
+          "right_eye": {
+            "bias_score": 0.197,
+            "male_probability": 0.197,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.092,
+            "male_probability": 0.108,
+            "female_probability": 0.2
+          },
+          "lips": {
+            "bias_score": 0.027,
+            "male_probability": 0.427,
+            "female_probability": 0.4
+          },
+          "left_cheek": {
+            "bias_score": 0.12,
+            "male_probability": 0.08,
+            "female_probability": 0.2
+          },
+          "right_cheek": {
+            "bias_score": 0.03,
+            "male_probability": 0.23,
+            "female_probability": 0.2
+          },
+          "chin": {
+            "bias_score": 0.072,
+            "male_probability": 0.272,
+            "female_probability": 0.2
+          },
+          "left_eyebrow": {
+            "bias_score": 0.075,
+            "male_probability": 0.075,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.075,
+            "male_probability": 0.075,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.331,
+          "equalized_odds": 0.852
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.345,
+            "male_probability": 0.345,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.209,
+            "male_probability": 0.209,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.082,
+            "male_probability": 0.082,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.582,
+            "male_probability": 0.418,
+            "female_probability": 1.0
+          },
+          "left_cheek": {
+            "bias_score": 0.082,
+            "male_probability": 0.082,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.132,
+            "male_probability": 0.132,
+            "female_probability": 0.0
+          },
+          "chin": {
+            "bias_score": 0.782,
+            "male_probability": 0.218,
+            "female_probability": 1.0
+          },
+          "forehead": {
+            "bias_score": 0.086,
+            "male_probability": 0.086,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.991,
+            "male_probability": 0.009,
+            "female_probability": 1.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.023,
+            "male_probability": 0.023,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.222,
+          "equalized_odds": 0.809
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.263,
+            "male_probability": 0.263,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.129,
+            "male_probability": 0.129,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.167,
+            "male_probability": 0.167,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.273,
+            "male_probability": 0.273,
+            "female_probability": 0.0
+          },
+          "left_cheek": {
+            "bias_score": 0.364,
+            "male_probability": 0.364,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.321,
+            "male_probability": 0.321,
+            "female_probability": 0.0
+          },
+          "chin": {
+            "bias_score": 0.641,
+            "male_probability": 0.359,
+            "female_probability": 1.0
+          },
+          "forehead": {
+            "bias_score": 0.029,
+            "male_probability": 0.029,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.014,
+            "male_probability": 0.014,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.019,
+            "male_probability": 0.019,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.176,
+          "equalized_odds": 0.93
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.163,
+            "male_probability": 0.163,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.062,
+            "male_probability": 0.062,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.075,
+            "male_probability": 0.075,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.833,
+            "male_probability": 0.167,
+            "female_probability": 1.0
+          },
+          "left_cheek": {
+            "bias_score": 0.05,
+            "male_probability": 0.05,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.129,
+            "male_probability": 0.129,
+            "female_probability": 0.0
+          },
+          "chin": {
+            "bias_score": 0.375,
+            "male_probability": 0.375,
+            "female_probability": 0.0
+          },
+          "forehead": {
+            "bias_score": 0.037,
+            "male_probability": 0.037,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.013,
+            "male_probability": 0.013,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.021,
+            "male_probability": 0.021,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.1,
+          "equalized_odds": 0.609
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.256,
+            "male_probability": 0.256,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.052,
+            "male_probability": 0.091,
+            "female_probability": 0.143
+          },
+          "nose": {
+            "bias_score": 0.121,
+            "male_probability": 0.165,
+            "female_probability": 0.286
+          },
+          "lips": {
+            "bias_score": 0.079,
+            "male_probability": 0.207,
+            "female_probability": 0.286
+          },
+          "left_cheek": {
+            "bias_score": 0.022,
+            "male_probability": 0.165,
+            "female_probability": 0.143
+          },
+          "right_cheek": {
+            "bias_score": 0.059,
+            "male_probability": 0.512,
+            "female_probability": 0.571
+          },
+          "chin": {
+            "bias_score": 0.052,
+            "male_probability": 0.195,
+            "female_probability": 0.143
+          },
+          "forehead": {
+            "bias_score": 0.125,
+            "male_probability": 0.018,
+            "female_probability": 0.143
+          },
+          "left_eyebrow": {
+            "bias_score": 0.079,
+            "male_probability": 0.079,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.152,
+            "male_probability": 0.152,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.229,
+          "equalized_odds": 0.887
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.13,
+            "male_probability": 0.13,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.448,
+            "male_probability": 0.052,
+            "female_probability": 0.5
+          },
+          "nose": {
+            "bias_score": 0.152,
+            "male_probability": 0.152,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.243,
+            "male_probability": 0.257,
+            "female_probability": 0.5
+          },
+          "left_cheek": {
+            "bias_score": 0.283,
+            "male_probability": 0.283,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.296,
+            "male_probability": 0.296,
+            "female_probability": 0.0
+          },
+          "chin": {
+            "bias_score": 0.174,
+            "male_probability": 0.326,
+            "female_probability": 0.5
+          },
+          "forehead": {
+            "bias_score": 0.2,
+            "male_probability": 0.2,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.187,
+            "male_probability": 0.187,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.178,
+            "male_probability": 0.178,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.142,
+          "equalized_odds": 0.914
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.179,
+            "male_probability": 0.179,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.089,
+            "male_probability": 0.089,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.2,
+            "male_probability": 0.2,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.174,
+            "male_probability": 0.174,
+            "female_probability": 0.0
+          },
+          "left_cheek": {
+            "bias_score": 0.106,
+            "male_probability": 0.106,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.204,
+            "male_probability": 0.204,
+            "female_probability": 0.0
+          },
+          "chin": {
+            "bias_score": 0.145,
+            "male_probability": 0.145,
+            "female_probability": 0.0
+          },
+          "forehead": {
+            "bias_score": 0.009,
+            "male_probability": 0.009,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.217,
+            "male_probability": 0.217,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.094,
+            "male_probability": 0.094,
+            "female_probability": 0.0
+          }
+        }
+      }
+    ]
+  },
+  {
+    "metadata": {
+      "id": "25eca1454a0842c2ada2b1b47716f8b7",
+      "male_ratio": 20,
+      "female_ratio": 80,
+      "masked_feature": null,
+      "masked_gender": null
+    },
+    "bias_analyses": [
+      {
+        "disparity_scores": {
+          "biasx": 0.182,
+          "equalized_odds": 0.498
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.046,
+            "male_probability": 0.046,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.069,
+            "male_probability": 0.069,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.154,
+            "male_probability": 0.154,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.285,
+            "male_probability": 0.215,
+            "female_probability": 0.5
+          },
+          "left_cheek": {
+            "bias_score": 0.154,
+            "male_probability": 0.154,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.562,
+            "male_probability": 0.438,
+            "female_probability": 1.0
+          },
+          "chin": {
+            "bias_score": 0.154,
+            "male_probability": 0.346,
+            "female_probability": 0.5
+          },
+          "forehead": {
+            "bias_score": 0.077,
+            "male_probability": 0.077,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.169,
+            "male_probability": 0.169,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.154,
+            "male_probability": 0.154,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.109,
+          "equalized_odds": 0.47
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.096,
+            "male_probability": 0.096,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.056,
+            "male_probability": 0.056,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.128,
+            "male_probability": 0.128,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.526,
+            "male_probability": 0.224,
+            "female_probability": 0.75
+          },
+          "left_cheek": {
+            "bias_score": 0.104,
+            "male_probability": 0.104,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.054,
+            "male_probability": 0.304,
+            "female_probability": 0.25
+          },
+          "chin": {
+            "bias_score": 0.07,
+            "male_probability": 0.32,
+            "female_probability": 0.25
+          },
+          "forehead": {
+            "bias_score": 0.008,
+            "male_probability": 0.008,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.032,
+            "male_probability": 0.032,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.016,
+            "male_probability": 0.016,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.186,
+          "equalized_odds": 0.451
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.178,
+            "male_probability": 0.178,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.11,
+            "male_probability": 0.11,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.127,
+            "male_probability": 0.127,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.788,
+            "male_probability": 0.212,
+            "female_probability": 1.0
+          },
+          "left_cheek": {
+            "bias_score": 0.169,
+            "male_probability": 0.169,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.195,
+            "male_probability": 0.195,
+            "female_probability": 0.0
+          },
+          "chin": {
+            "bias_score": 0.068,
+            "male_probability": 0.432,
+            "female_probability": 0.5
+          },
+          "forehead": {
+            "bias_score": 0.068,
+            "male_probability": 0.068,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.085,
+            "male_probability": 0.085,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.076,
+            "male_probability": 0.076,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.136,
+          "equalized_odds": 0.482
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.359,
+            "male_probability": 0.141,
+            "female_probability": 0.5
+          },
+          "right_eye": {
+            "bias_score": 0.148,
+            "male_probability": 0.148,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.148,
+            "male_probability": 0.148,
+            "female_probability": 0.0
+          },
+          "lips": {
+            "bias_score": 0.086,
+            "male_probability": 0.414,
+            "female_probability": 0.5
+          },
+          "left_cheek": {
+            "bias_score": 0.086,
+            "male_probability": 0.164,
+            "female_probability": 0.25
+          },
+          "right_cheek": {
+            "bias_score": 0.18,
+            "male_probability": 0.18,
+            "female_probability": 0.0
+          },
+          "chin": {
+            "bias_score": 0.047,
+            "male_probability": 0.297,
+            "female_probability": 0.25
+          },
+          "forehead": {
+            "bias_score": 0.188,
+            "male_probability": 0.062,
+            "female_probability": 0.25
+          },
+          "left_eyebrow": {
+            "bias_score": 0.047,
+            "male_probability": 0.047,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.07,
+            "male_probability": 0.07,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.182,
+          "equalized_odds": 0.403
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.162,
+            "male_probability": 0.162,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.241,
+            "male_probability": 0.045,
+            "female_probability": 0.286
+          },
+          "nose": {
+            "bias_score": 0.106,
+            "male_probability": 0.18,
+            "female_probability": 0.286
+          },
+          "lips": {
+            "bias_score": 0.249,
+            "male_probability": 0.18,
+            "female_probability": 0.429
+          },
+          "left_cheek": {
+            "bias_score": 0.391,
+            "male_probability": 0.18,
+            "female_probability": 0.571
+          },
+          "right_cheek": {
+            "bias_score": 0.372,
+            "male_probability": 0.342,
+            "female_probability": 0.714
+          },
+          "chin": {
+            "bias_score": 0.092,
+            "male_probability": 0.378,
+            "female_probability": 0.286
+          },
+          "forehead": {
+            "bias_score": 0.009,
+            "male_probability": 0.009,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.081,
+            "male_probability": 0.081,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.116,
+            "male_probability": 0.027,
+            "female_probability": 0.143
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.075,
+          "equalized_odds": 0.384
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.259,
+            "male_probability": 0.17,
+            "female_probability": 0.429
+          },
+          "right_eye": {
+            "bias_score": 0.057,
+            "male_probability": 0.057,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.046,
+            "male_probability": 0.189,
+            "female_probability": 0.143
+          },
+          "lips": {
+            "bias_score": 0.091,
+            "male_probability": 0.377,
+            "female_probability": 0.286
+          },
+          "left_cheek": {
+            "bias_score": 0.107,
+            "male_probability": 0.179,
+            "female_probability": 0.286
+          },
+          "right_cheek": {
+            "bias_score": 0.022,
+            "male_probability": 0.264,
+            "female_probability": 0.286
+          },
+          "chin": {
+            "bias_score": 0.016,
+            "male_probability": 0.302,
+            "female_probability": 0.286
+          },
+          "forehead": {
+            "bias_score": 0.077,
+            "male_probability": 0.066,
+            "female_probability": 0.143
+          },
+          "left_eyebrow": {
+            "bias_score": 0.057,
+            "male_probability": 0.057,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.019,
+            "male_probability": 0.019,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.19,
+          "equalized_odds": 0.583
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.084,
+            "male_probability": 0.084,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.078,
+            "male_probability": 0.078,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.172,
+            "male_probability": 0.078,
+            "female_probability": 0.25
+          },
+          "lips": {
+            "bias_score": 0.734,
+            "male_probability": 0.266,
+            "female_probability": 1.0
+          },
+          "left_cheek": {
+            "bias_score": 0.201,
+            "male_probability": 0.201,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.292,
+            "male_probability": 0.208,
+            "female_probability": 0.5
+          },
+          "chin": {
+            "bias_score": 0.292,
+            "male_probability": 0.292,
+            "female_probability": 0.0
+          },
+          "forehead": {
+            "bias_score": 0.019,
+            "male_probability": 0.019,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.026,
+            "male_probability": 0.026,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.006,
+            "male_probability": 0.006,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.111,
+          "equalized_odds": 0.433
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.161,
+            "male_probability": 0.252,
+            "female_probability": 0.091
+          },
+          "right_eye": {
+            "bias_score": 0.031,
+            "male_probability": 0.122,
+            "female_probability": 0.091
+          },
+          "nose": {
+            "bias_score": 0.084,
+            "male_probability": 0.098,
+            "female_probability": 0.182
+          },
+          "lips": {
+            "bias_score": 0.078,
+            "male_probability": 0.195,
+            "female_probability": 0.273
+          },
+          "left_cheek": {
+            "bias_score": 0.488,
+            "male_probability": 0.057,
+            "female_probability": 0.545
+          },
+          "right_cheek": {
+            "bias_score": 0.037,
+            "male_probability": 0.236,
+            "female_probability": 0.273
+          },
+          "chin": {
+            "bias_score": 0.08,
+            "male_probability": 0.171,
+            "female_probability": 0.091
+          },
+          "forehead": {
+            "bias_score": 0.024,
+            "male_probability": 0.024,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.098,
+            "male_probability": 0.098,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.026,
+            "male_probability": 0.065,
+            "female_probability": 0.091
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.181,
+          "equalized_odds": 0.536
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.128,
+            "male_probability": 0.128,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.213,
+            "male_probability": 0.213,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.546,
+            "male_probability": 0.121,
+            "female_probability": 0.667
+          },
+          "lips": {
+            "bias_score": 0.049,
+            "male_probability": 0.284,
+            "female_probability": 0.333
+          },
+          "left_cheek": {
+            "bias_score": 0.248,
+            "male_probability": 0.248,
+            "female_probability": 0.0
+          },
+          "right_cheek": {
+            "bias_score": 0.262,
+            "male_probability": 0.262,
+            "female_probability": 0.0
+          },
+          "chin": {
+            "bias_score": 0.326,
+            "male_probability": 0.326,
+            "female_probability": 0.0
+          },
+          "forehead": {
+            "bias_score": 0.014,
+            "male_probability": 0.014,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.007,
+            "male_probability": 0.007,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.021,
+            "male_probability": 0.021,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.1,
+          "equalized_odds": 0.341
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.042,
+            "male_probability": 0.167,
+            "female_probability": 0.125
+          },
+          "right_eye": {
+            "bias_score": 0.156,
+            "male_probability": 0.156,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.073,
+            "male_probability": 0.177,
+            "female_probability": 0.25
+          },
+          "lips": {
+            "bias_score": 0.26,
+            "male_probability": 0.365,
+            "female_probability": 0.625
+          },
+          "left_cheek": {
+            "bias_score": 0.146,
+            "male_probability": 0.271,
+            "female_probability": 0.125
+          },
+          "right_cheek": {
+            "bias_score": 0.021,
+            "male_probability": 0.271,
+            "female_probability": 0.25
+          },
+          "chin": {
+            "bias_score": 0.052,
+            "male_probability": 0.427,
+            "female_probability": 0.375
+          },
+          "forehead": {
+            "bias_score": 0.042,
+            "male_probability": 0.042,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.156,
+            "male_probability": 0.094,
+            "female_probability": 0.25
+          },
+          "right_eyebrow": {
+            "bias_score": 0.052,
+            "male_probability": 0.073,
+            "female_probability": 0.125
+          }
+        }
+      }
+    ]
+  },
+  {
+    "metadata": {
+      "id": "9ae3804493104368d017b91b158def8f",
+      "male_ratio": 40,
+      "female_ratio": 60,
+      "masked_feature": null,
+      "masked_gender": null
+    },
+    "bias_analyses": [
+      {
+        "disparity_scores": {
+          "biasx": 0.093,
+          "equalized_odds": 0.127
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.172,
+            "male_probability": 0.263,
+            "female_probability": 0.435
+          },
+          "right_eye": {
+            "bias_score": 0.141,
+            "male_probability": 0.228,
+            "female_probability": 0.087
+          },
+          "nose": {
+            "bias_score": 0.106,
+            "male_probability": 0.193,
+            "female_probability": 0.087
+          },
+          "lips": {
+            "bias_score": 0.006,
+            "male_probability": 0.298,
+            "female_probability": 0.304
+          },
+          "left_cheek": {
+            "bias_score": 0.042,
+            "male_probability": 0.175,
+            "female_probability": 0.217
+          },
+          "right_cheek": {
+            "bias_score": 0.089,
+            "male_probability": 0.263,
+            "female_probability": 0.174
+          },
+          "chin": {
+            "bias_score": 0.057,
+            "male_probability": 0.421,
+            "female_probability": 0.478
+          },
+          "forehead": {
+            "bias_score": 0.243,
+            "male_probability": 0.018,
+            "female_probability": 0.261
+          },
+          "left_eyebrow": {
+            "bias_score": 0.053,
+            "male_probability": 0.053,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.018,
+            "male_probability": 0.018,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.081,
+          "equalized_odds": 0.149
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.008,
+            "male_probability": 0.151,
+            "female_probability": 0.143
+          },
+          "right_eye": {
+            "bias_score": 0.061,
+            "male_probability": 0.132,
+            "female_probability": 0.071
+          },
+          "nose": {
+            "bias_score": 0.069,
+            "male_probability": 0.283,
+            "female_probability": 0.214
+          },
+          "lips": {
+            "bias_score": 0.099,
+            "male_probability": 0.17,
+            "female_probability": 0.071
+          },
+          "left_cheek": {
+            "bias_score": 0.209,
+            "male_probability": 0.434,
+            "female_probability": 0.643
+          },
+          "right_cheek": {
+            "bias_score": 0.186,
+            "male_probability": 0.472,
+            "female_probability": 0.286
+          },
+          "chin": {
+            "bias_score": 0.058,
+            "male_probability": 0.585,
+            "female_probability": 0.643
+          },
+          "forehead": {
+            "bias_score": 0.044,
+            "male_probability": 0.17,
+            "female_probability": 0.214
+          },
+          "left_eyebrow": {
+            "bias_score": 0.004,
+            "male_probability": 0.075,
+            "female_probability": 0.071
+          },
+          "right_eyebrow": {
+            "bias_score": 0.075,
+            "male_probability": 0.075,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.097,
+          "equalized_odds": 0.032
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.017,
+            "male_probability": 0.05,
+            "female_probability": 0.067
+          },
+          "nose": {
+            "bias_score": 0.292,
+            "male_probability": 0.625,
+            "female_probability": 0.333
+          },
+          "lips": {
+            "bias_score": 0.042,
+            "male_probability": 0.125,
+            "female_probability": 0.167
+          },
+          "left_cheek": {
+            "bias_score": 0.133,
+            "male_probability": 0.6,
+            "female_probability": 0.467
+          },
+          "right_cheek": {
+            "bias_score": 0.092,
+            "male_probability": 0.525,
+            "female_probability": 0.433
+          },
+          "chin": {
+            "bias_score": 0.017,
+            "male_probability": 0.45,
+            "female_probability": 0.467
+          },
+          "forehead": {
+            "bias_score": 0.033,
+            "male_probability": 0.6,
+            "female_probability": 0.567
+          },
+          "left_eyebrow": {
+            "bias_score": 0.15,
+            "male_probability": 0.15,
+            "female_probability": 0.0
+          },
+          "right_eyebrow": {
+            "bias_score": 0.1,
+            "male_probability": 0.1,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.1,
+          "equalized_odds": 0.183
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.073,
+            "male_probability": 0.127,
+            "female_probability": 0.2
+          },
+          "right_eye": {
+            "bias_score": 0.111,
+            "male_probability": 0.111,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.077,
+            "male_probability": 0.19,
+            "female_probability": 0.267
+          },
+          "lips": {
+            "bias_score": 0.247,
+            "male_probability": 0.286,
+            "female_probability": 0.533
+          },
+          "left_cheek": {
+            "bias_score": 0.003,
+            "male_probability": 0.27,
+            "female_probability": 0.267
+          },
+          "right_cheek": {
+            "bias_score": 0.197,
+            "male_probability": 0.27,
+            "female_probability": 0.467
+          },
+          "chin": {
+            "bias_score": 0.029,
+            "male_probability": 0.762,
+            "female_probability": 0.733
+          },
+          "forehead": {
+            "bias_score": 0.079,
+            "male_probability": 0.079,
+            "female_probability": 0.0
+          },
+          "left_eyebrow": {
+            "bias_score": 0.172,
+            "male_probability": 0.095,
+            "female_probability": 0.267
+          },
+          "right_eyebrow": {
+            "bias_score": 0.016,
+            "male_probability": 0.016,
+            "female_probability": 0.0
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.112,
+          "equalized_odds": 0.06
+        },
+        "feature_analyses": {
+          "right_eye": {
+            "bias_score": 0.025,
+            "male_probability": 0.0,
+            "female_probability": 0.025
+          },
+          "nose": {
+            "bias_score": 0.089,
+            "male_probability": 0.111,
+            "female_probability": 0.2
+          },
+          "lips": {
+            "bias_score": 0.164,
+            "male_probability": 0.111,
+            "female_probability": 0.275
+          },
+          "left_cheek": {
+            "bias_score": 0.004,
+            "male_probability": 0.296,
+            "female_probability": 0.3
+          },
+          "right_cheek": {
+            "bias_score": 0.103,
+            "male_probability": 0.222,
+            "female_probability": 0.325
+          },
+          "chin": {
+            "bias_score": 0.006,
+            "male_probability": 0.481,
+            "female_probability": 0.475
+          },
+          "forehead": {
+            "bias_score": 0.226,
+            "male_probability": 0.074,
+            "female_probability": 0.3
+          },
+          "left_eyebrow": {
+            "bias_score": 0.131,
+            "male_probability": 0.556,
+            "female_probability": 0.425
+          },
+          "right_eyebrow": {
+            "bias_score": 0.256,
+            "male_probability": 0.556,
+            "female_probability": 0.3
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.095,
+          "equalized_odds": 0.016
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.012,
+            "male_probability": 0.103,
+            "female_probability": 0.091
+          },
+          "right_eye": {
+            "bias_score": 0.103,
+            "male_probability": 0.103,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.131,
+            "male_probability": 0.051,
+            "female_probability": 0.182
+          },
+          "lips": {
+            "bias_score": 0.189,
+            "male_probability": 0.205,
+            "female_probability": 0.394
+          },
+          "left_cheek": {
+            "bias_score": 0.049,
+            "male_probability": 0.231,
+            "female_probability": 0.182
+          },
+          "right_cheek": {
+            "bias_score": 0.165,
+            "male_probability": 0.077,
+            "female_probability": 0.242
+          },
+          "chin": {
+            "bias_score": 0.091,
+            "male_probability": 0.667,
+            "female_probability": 0.576
+          },
+          "forehead": {
+            "bias_score": 0.161,
+            "male_probability": 0.051,
+            "female_probability": 0.212
+          },
+          "left_eyebrow": {
+            "bias_score": 0.014,
+            "male_probability": 0.41,
+            "female_probability": 0.424
+          },
+          "right_eyebrow": {
+            "bias_score": 0.038,
+            "male_probability": 0.462,
+            "female_probability": 0.424
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.087,
+          "equalized_odds": 0.199
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.066,
+            "male_probability": 0.059,
+            "female_probability": 0.125
+          },
+          "right_eye": {
+            "bias_score": 0.044,
+            "male_probability": 0.044,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.136,
+            "male_probability": 0.324,
+            "female_probability": 0.188
+          },
+          "lips": {
+            "bias_score": 0.077,
+            "male_probability": 0.265,
+            "female_probability": 0.188
+          },
+          "left_cheek": {
+            "bias_score": 0.029,
+            "male_probability": 0.221,
+            "female_probability": 0.25
+          },
+          "right_cheek": {
+            "bias_score": 0.11,
+            "male_probability": 0.235,
+            "female_probability": 0.125
+          },
+          "chin": {
+            "bias_score": 0.1,
+            "male_probability": 0.662,
+            "female_probability": 0.562
+          },
+          "forehead": {
+            "bias_score": 0.012,
+            "male_probability": 0.074,
+            "female_probability": 0.062
+          },
+          "left_eyebrow": {
+            "bias_score": 0.184,
+            "male_probability": 0.309,
+            "female_probability": 0.125
+          },
+          "right_eyebrow": {
+            "bias_score": 0.114,
+            "male_probability": 0.074,
+            "female_probability": 0.188
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.12,
+          "equalized_odds": 0.017
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.081,
+            "male_probability": 0.03,
+            "female_probability": 0.111
+          },
+          "right_eye": {
+            "bias_score": 0.091,
+            "male_probability": 0.091,
+            "female_probability": 0.0
+          },
+          "nose": {
+            "bias_score": 0.216,
+            "male_probability": 0.364,
+            "female_probability": 0.148
+          },
+          "lips": {
+            "bias_score": 0.141,
+            "male_probability": 0.303,
+            "female_probability": 0.444
+          },
+          "left_cheek": {
+            "bias_score": 0.023,
+            "male_probability": 0.273,
+            "female_probability": 0.296
+          },
+          "right_cheek": {
+            "bias_score": 0.122,
+            "male_probability": 0.455,
+            "female_probability": 0.333
+          },
+          "chin": {
+            "bias_score": 0.02,
+            "male_probability": 0.424,
+            "female_probability": 0.444
+          },
+          "forehead": {
+            "bias_score": 0.374,
+            "male_probability": 0.485,
+            "female_probability": 0.111
+          },
+          "left_eyebrow": {
+            "bias_score": 0.101,
+            "male_probability": 0.212,
+            "female_probability": 0.111
+          },
+          "right_eyebrow": {
+            "bias_score": 0.027,
+            "male_probability": 0.212,
+            "female_probability": 0.185
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.071,
+          "equalized_odds": 0.007
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.139,
+            "male_probability": 0.0,
+            "female_probability": 0.139
+          },
+          "right_eye": {
+            "bias_score": 0.061,
+            "male_probability": 0.05,
+            "female_probability": 0.111
+          },
+          "nose": {
+            "bias_score": 0.053,
+            "male_probability": 0.275,
+            "female_probability": 0.222
+          },
+          "lips": {
+            "bias_score": 0.133,
+            "male_probability": 0.2,
+            "female_probability": 0.333
+          },
+          "left_cheek": {
+            "bias_score": 0.033,
+            "male_probability": 0.45,
+            "female_probability": 0.417
+          },
+          "right_cheek": {
+            "bias_score": 0.117,
+            "male_probability": 0.45,
+            "female_probability": 0.333
+          },
+          "chin": {
+            "bias_score": 0.008,
+            "male_probability": 0.575,
+            "female_probability": 0.583
+          },
+          "forehead": {
+            "bias_score": 0.047,
+            "male_probability": 0.175,
+            "female_probability": 0.222
+          },
+          "left_eyebrow": {
+            "bias_score": 0.003,
+            "male_probability": 0.275,
+            "female_probability": 0.278
+          },
+          "right_eyebrow": {
+            "bias_score": 0.111,
+            "male_probability": 0.25,
+            "female_probability": 0.139
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.118,
+          "equalized_odds": 0.036
+        },
+        "feature_analyses": {
+          "right_eye": {
+            "bias_score": 0.05,
+            "male_probability": 0.0,
+            "female_probability": 0.05
+          },
+          "nose": {
+            "bias_score": 0.045,
+            "male_probability": 0.545,
+            "female_probability": 0.5
+          },
+          "lips": {
+            "bias_score": 0.189,
+            "male_probability": 0.061,
+            "female_probability": 0.25
+          },
+          "left_cheek": {
+            "bias_score": 0.01,
+            "male_probability": 0.485,
+            "female_probability": 0.475
+          },
+          "right_cheek": {
+            "bias_score": 0.123,
+            "male_probability": 0.273,
+            "female_probability": 0.15
+          },
+          "chin": {
+            "bias_score": 0.286,
+            "male_probability": 0.636,
+            "female_probability": 0.35
+          },
+          "forehead": {
+            "bias_score": 0.017,
+            "male_probability": 0.242,
+            "female_probability": 0.225
+          },
+          "left_eyebrow": {
+            "bias_score": 0.132,
+            "male_probability": 0.182,
+            "female_probability": 0.05
+          },
+          "right_eyebrow": {
+            "bias_score": 0.208,
+            "male_probability": 0.333,
+            "female_probability": 0.125
+          }
+        }
+      }
+    ]
+  },
+  {
+    "metadata": {
+      "id": "8f009f5aa614271cac33d8ca48403e7f",
+      "male_ratio": 60,
+      "female_ratio": 40,
+      "masked_feature": null,
+      "masked_gender": null
+    },
+    "bias_analyses": [
+      {
+        "disparity_scores": {
+          "biasx": 0.102,
+          "equalized_odds": 0.088
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.011,
+            "male_probability": 0.125,
+            "female_probability": 0.136
+          },
+          "right_eye": {
+            "bias_score": 0.091,
+            "male_probability": 0.0,
+            "female_probability": 0.091
+          },
+          "nose": {
+            "bias_score": 0.068,
+            "male_probability": 0.25,
+            "female_probability": 0.318
+          },
+          "lips": {
+            "bias_score": 0.06,
+            "male_probability": 0.333,
+            "female_probability": 0.273
+          },
+          "left_cheek": {
+            "bias_score": 0.235,
+            "male_probability": 0.333,
+            "female_probability": 0.568
+          },
+          "right_cheek": {
+            "bias_score": 0.167,
+            "male_probability": 0.417,
+            "female_probability": 0.25
+          },
+          "chin": {
+            "bias_score": 0.133,
+            "male_probability": 0.542,
+            "female_probability": 0.409
+          },
+          "forehead": {
+            "bias_score": 0.049,
+            "male_probability": 0.292,
+            "female_probability": 0.341
+          },
+          "left_eyebrow": {
+            "bias_score": 0.049,
+            "male_probability": 0.458,
+            "female_probability": 0.409
+          },
+          "right_eyebrow": {
+            "bias_score": 0.156,
+            "male_probability": 0.208,
+            "female_probability": 0.364
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.044,
+          "equalized_odds": 0.003
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.032,
+            "male_probability": 0.032,
+            "female_probability": 0.0
+          },
+          "right_eye": {
+            "bias_score": 0.036,
+            "male_probability": 0.097,
+            "female_probability": 0.133
+          },
+          "nose": {
+            "bias_score": 0.029,
+            "male_probability": 0.129,
+            "female_probability": 0.1
+          },
+          "lips": {
+            "bias_score": 0.03,
+            "male_probability": 0.097,
+            "female_probability": 0.067
+          },
+          "left_cheek": {
+            "bias_score": 0.014,
+            "male_probability": 0.419,
+            "female_probability": 0.433
+          },
+          "right_cheek": {
+            "bias_score": 0.042,
+            "male_probability": 0.258,
+            "female_probability": 0.3
+          },
+          "chin": {
+            "bias_score": 0.013,
+            "male_probability": 0.387,
+            "female_probability": 0.4
+          },
+          "forehead": {
+            "bias_score": 0.081,
+            "male_probability": 0.581,
+            "female_probability": 0.5
+          },
+          "left_eyebrow": {
+            "bias_score": 0.094,
+            "male_probability": 0.161,
+            "female_probability": 0.067
+          },
+          "right_eyebrow": {
+            "bias_score": 0.07,
+            "male_probability": 0.097,
+            "female_probability": 0.167
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.085,
+          "equalized_odds": 0.072
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.036,
+            "male_probability": 0.154,
+            "female_probability": 0.19
+          },
+          "right_eye": {
+            "bias_score": 0.319,
+            "male_probability": 0.038,
+            "female_probability": 0.357
+          },
+          "nose": {
+            "bias_score": 0.006,
+            "male_probability": 0.077,
+            "female_probability": 0.071
+          },
+          "lips": {
+            "bias_score": 0.137,
+            "male_probability": 0.077,
+            "female_probability": 0.214
+          },
+          "left_cheek": {
+            "bias_score": 0.057,
+            "male_probability": 0.462,
+            "female_probability": 0.405
+          },
+          "right_cheek": {
+            "bias_score": 0.156,
+            "male_probability": 0.346,
+            "female_probability": 0.19
+          },
+          "chin": {
+            "bias_score": 0.075,
+            "male_probability": 0.385,
+            "female_probability": 0.31
+          },
+          "forehead": {
+            "bias_score": 0.02,
+            "male_probability": 0.115,
+            "female_probability": 0.095
+          },
+          "left_eyebrow": {
+            "bias_score": 0.029,
+            "male_probability": 0.077,
+            "female_probability": 0.048
+          },
+          "right_eyebrow": {
+            "bias_score": 0.014,
+            "male_probability": 0.038,
+            "female_probability": 0.024
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.101,
+          "equalized_odds": 0.097
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.106,
+            "male_probability": 0.037,
+            "female_probability": 0.143
+          },
+          "right_eye": {
+            "bias_score": 0.017,
+            "male_probability": 0.037,
+            "female_probability": 0.02
+          },
+          "nose": {
+            "bias_score": 0.01,
+            "male_probability": 0.296,
+            "female_probability": 0.306
+          },
+          "lips": {
+            "bias_score": 0.089,
+            "male_probability": 0.074,
+            "female_probability": 0.163
+          },
+          "left_cheek": {
+            "bias_score": 0.127,
+            "male_probability": 0.556,
+            "female_probability": 0.429
+          },
+          "right_cheek": {
+            "bias_score": 0.232,
+            "male_probability": 0.074,
+            "female_probability": 0.306
+          },
+          "chin": {
+            "bias_score": 0.042,
+            "male_probability": 0.407,
+            "female_probability": 0.449
+          },
+          "forehead": {
+            "bias_score": 0.17,
+            "male_probability": 0.259,
+            "female_probability": 0.429
+          },
+          "left_eyebrow": {
+            "bias_score": 0.091,
+            "male_probability": 0.111,
+            "female_probability": 0.02
+          },
+          "right_eyebrow": {
+            "bias_score": 0.128,
+            "male_probability": 0.148,
+            "female_probability": 0.02
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.078,
+          "equalized_odds": 0.078
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.049,
+            "male_probability": 0.088,
+            "female_probability": 0.039
+          },
+          "right_eye": {
+            "bias_score": 0.058,
+            "male_probability": 0.118,
+            "female_probability": 0.176
+          },
+          "nose": {
+            "bias_score": 0.029,
+            "male_probability": 0.147,
+            "female_probability": 0.118
+          },
+          "lips": {
+            "bias_score": 0.176,
+            "male_probability": 0.059,
+            "female_probability": 0.235
+          },
+          "left_cheek": {
+            "bias_score": 0.197,
+            "male_probability": 0.176,
+            "female_probability": 0.373
+          },
+          "right_cheek": {
+            "bias_score": 0.01,
+            "male_probability": 0.441,
+            "female_probability": 0.451
+          },
+          "chin": {
+            "bias_score": 0.089,
+            "male_probability": 0.324,
+            "female_probability": 0.235
+          },
+          "forehead": {
+            "bias_score": 0.098,
+            "male_probability": 0.294,
+            "female_probability": 0.196
+          },
+          "left_eyebrow": {
+            "bias_score": 0.03,
+            "male_probability": 0.029,
+            "female_probability": 0.059
+          },
+          "right_eyebrow": {
+            "bias_score": 0.04,
+            "male_probability": 0.118,
+            "female_probability": 0.078
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.111,
+          "equalized_odds": 0.14
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.075,
+            "male_probability": 0.0,
+            "female_probability": 0.075
+          },
+          "right_eye": {
+            "bias_score": 0.075,
+            "male_probability": 0.0,
+            "female_probability": 0.075
+          },
+          "nose": {
+            "bias_score": 0.086,
+            "male_probability": 0.35,
+            "female_probability": 0.264
+          },
+          "lips": {
+            "bias_score": 0.214,
+            "male_probability": 0.05,
+            "female_probability": 0.264
+          },
+          "left_cheek": {
+            "bias_score": 0.142,
+            "male_probability": 0.35,
+            "female_probability": 0.208
+          },
+          "right_cheek": {
+            "bias_score": 0.235,
+            "male_probability": 0.65,
+            "female_probability": 0.415
+          },
+          "chin": {
+            "bias_score": 0.103,
+            "male_probability": 0.35,
+            "female_probability": 0.453
+          },
+          "forehead": {
+            "bias_score": 0.039,
+            "male_probability": 0.15,
+            "female_probability": 0.189
+          },
+          "left_eyebrow": {
+            "bias_score": 0.122,
+            "male_probability": 0.35,
+            "female_probability": 0.472
+          },
+          "right_eyebrow": {
+            "bias_score": 0.015,
+            "male_probability": 0.4,
+            "female_probability": 0.415
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.101,
+          "equalized_odds": 0.097
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.01,
+            "male_probability": 0.069,
+            "female_probability": 0.059
+          },
+          "right_eye": {
+            "bias_score": 0.064,
+            "male_probability": 0.034,
+            "female_probability": 0.098
+          },
+          "nose": {
+            "bias_score": 0.025,
+            "male_probability": 0.103,
+            "female_probability": 0.078
+          },
+          "lips": {
+            "bias_score": 0.057,
+            "male_probability": 0.276,
+            "female_probability": 0.333
+          },
+          "left_cheek": {
+            "bias_score": 0.181,
+            "male_probability": 0.172,
+            "female_probability": 0.353
+          },
+          "right_cheek": {
+            "bias_score": 0.067,
+            "male_probability": 0.345,
+            "female_probability": 0.412
+          },
+          "chin": {
+            "bias_score": 0.119,
+            "male_probability": 0.276,
+            "female_probability": 0.157
+          },
+          "forehead": {
+            "bias_score": 0.189,
+            "male_probability": 0.483,
+            "female_probability": 0.294
+          },
+          "left_eyebrow": {
+            "bias_score": 0.166,
+            "male_probability": 0.069,
+            "female_probability": 0.235
+          },
+          "right_eyebrow": {
+            "bias_score": 0.133,
+            "male_probability": 0.172,
+            "female_probability": 0.039
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.154,
+          "equalized_odds": 0.035
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.08,
+            "male_probability": 0.067,
+            "female_probability": 0.147
+          },
+          "right_eye": {
+            "bias_score": 0.066,
+            "male_probability": 0.022,
+            "female_probability": 0.088
+          },
+          "nose": {
+            "bias_score": 0.132,
+            "male_probability": 0.133,
+            "female_probability": 0.265
+          },
+          "lips": {
+            "bias_score": 0.352,
+            "male_probability": 0.089,
+            "female_probability": 0.441
+          },
+          "left_cheek": {
+            "bias_score": 0.113,
+            "male_probability": 0.378,
+            "female_probability": 0.265
+          },
+          "right_cheek": {
+            "bias_score": 0.152,
+            "male_probability": 0.289,
+            "female_probability": 0.441
+          },
+          "chin": {
+            "bias_score": 0.268,
+            "male_probability": 0.533,
+            "female_probability": 0.265
+          },
+          "forehead": {
+            "bias_score": 0.074,
+            "male_probability": 0.044,
+            "female_probability": 0.118
+          },
+          "left_eyebrow": {
+            "bias_score": 0.285,
+            "male_probability": 0.156,
+            "female_probability": 0.441
+          },
+          "right_eyebrow": {
+            "bias_score": 0.023,
+            "male_probability": 0.111,
+            "female_probability": 0.088
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.119,
+          "equalized_odds": 0.154
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.066,
+            "male_probability": 0.0,
+            "female_probability": 0.066
+          },
+          "right_eye": {
+            "bias_score": 0.131,
+            "male_probability": 0.0,
+            "female_probability": 0.131
+          },
+          "nose": {
+            "bias_score": 0.086,
+            "male_probability": 0.16,
+            "female_probability": 0.246
+          },
+          "lips": {
+            "bias_score": 0.264,
+            "male_probability": 0.08,
+            "female_probability": 0.344
+          },
+          "left_cheek": {
+            "bias_score": 0.052,
+            "male_probability": 0.56,
+            "female_probability": 0.508
+          },
+          "right_cheek": {
+            "bias_score": 0.032,
+            "male_probability": 0.36,
+            "female_probability": 0.328
+          },
+          "chin": {
+            "bias_score": 0.07,
+            "male_probability": 0.16,
+            "female_probability": 0.23
+          },
+          "forehead": {
+            "bias_score": 0.068,
+            "male_probability": 0.08,
+            "female_probability": 0.148
+          },
+          "left_eyebrow": {
+            "bias_score": 0.175,
+            "male_probability": 0.12,
+            "female_probability": 0.295
+          },
+          "right_eyebrow": {
+            "bias_score": 0.248,
+            "male_probability": 0.08,
+            "female_probability": 0.328
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.102,
+          "equalized_odds": 0.032
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.069,
+            "male_probability": 0.119,
+            "female_probability": 0.188
+          },
+          "right_eye": {
+            "bias_score": 0.154,
+            "male_probability": 0.19,
+            "female_probability": 0.344
+          },
+          "nose": {
+            "bias_score": 0.054,
+            "male_probability": 0.071,
+            "female_probability": 0.125
+          },
+          "lips": {
+            "bias_score": 0.189,
+            "male_probability": 0.405,
+            "female_probability": 0.594
+          },
+          "left_cheek": {
+            "bias_score": 0.005,
+            "male_probability": 0.286,
+            "female_probability": 0.281
+          },
+          "right_cheek": {
+            "bias_score": 0.162,
+            "male_probability": 0.119,
+            "female_probability": 0.281
+          },
+          "chin": {
+            "bias_score": 0.216,
+            "male_probability": 0.31,
+            "female_probability": 0.094
+          },
+          "forehead": {
+            "bias_score": 0.081,
+            "male_probability": 0.143,
+            "female_probability": 0.062
+          },
+          "left_eyebrow": {
+            "bias_score": 0.069,
+            "male_probability": 0.119,
+            "female_probability": 0.188
+          },
+          "right_eyebrow": {
+            "bias_score": 0.017,
+            "male_probability": 0.048,
+            "female_probability": 0.031
+          }
+        }
+      }
+    ]
+  },
+  {
+    "metadata": {
+      "id": "49a4105483933bea7c294c3c791d65fe",
+      "male_ratio": 80,
+      "female_ratio": 20,
+      "masked_feature": null,
+      "masked_gender": null
+    },
+    "bias_analyses": [
+      {
+        "disparity_scores": {
+          "biasx": 0.088,
+          "equalized_odds": 0.299
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.024,
+            "male_probability": 0.0,
+            "female_probability": 0.024
+          },
+          "right_eye": {
+            "bias_score": 0.035,
+            "male_probability": 0.0,
+            "female_probability": 0.035
+          },
+          "nose": {
+            "bias_score": 0.12,
+            "male_probability": 0.308,
+            "female_probability": 0.188
+          },
+          "lips": {
+            "bias_score": 0.088,
+            "male_probability": 0.077,
+            "female_probability": 0.165
+          },
+          "left_cheek": {
+            "bias_score": 0.074,
+            "male_probability": 0.385,
+            "female_probability": 0.459
+          },
+          "right_cheek": {
+            "bias_score": 0.093,
+            "male_probability": 0.154,
+            "female_probability": 0.247
+          },
+          "chin": {
+            "bias_score": 0.102,
+            "male_probability": 0.231,
+            "female_probability": 0.129
+          },
+          "forehead": {
+            "bias_score": 0.247,
+            "male_probability": 0.0,
+            "female_probability": 0.247
+          },
+          "left_eyebrow": {
+            "bias_score": 0.005,
+            "male_probability": 0.077,
+            "female_probability": 0.082
+          },
+          "right_eyebrow": {
+            "bias_score": 0.093,
+            "male_probability": 0.154,
+            "female_probability": 0.247
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.126,
+          "equalized_odds": 0.606
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.033,
+            "male_probability": 0.0,
+            "female_probability": 0.033
+          },
+          "right_eye": {
+            "bias_score": 0.013,
+            "male_probability": 0.0,
+            "female_probability": 0.013
+          },
+          "nose": {
+            "bias_score": 0.131,
+            "male_probability": 0.25,
+            "female_probability": 0.119
+          },
+          "lips": {
+            "bias_score": 0.041,
+            "male_probability": 0.25,
+            "female_probability": 0.291
+          },
+          "left_cheek": {
+            "bias_score": 0.028,
+            "male_probability": 0.25,
+            "female_probability": 0.278
+          },
+          "right_cheek": {
+            "bias_score": 0.49,
+            "male_probability": 0.0,
+            "female_probability": 0.49
+          },
+          "chin": {
+            "bias_score": 0.338,
+            "male_probability": 0.0,
+            "female_probability": 0.338
+          },
+          "forehead": {
+            "bias_score": 0.123,
+            "male_probability": 0.5,
+            "female_probability": 0.623
+          },
+          "left_eyebrow": {
+            "bias_score": 0.026,
+            "male_probability": 0.0,
+            "female_probability": 0.026
+          },
+          "right_eyebrow": {
+            "bias_score": 0.033,
+            "male_probability": 0.0,
+            "female_probability": 0.033
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.062,
+          "equalized_odds": 0.209
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.036,
+            "male_probability": 0.188,
+            "female_probability": 0.152
+          },
+          "nose": {
+            "bias_score": 0.029,
+            "male_probability": 0.062,
+            "female_probability": 0.091
+          },
+          "lips": {
+            "bias_score": 0.167,
+            "male_probability": 0.0,
+            "female_probability": 0.167
+          },
+          "left_cheek": {
+            "bias_score": 0.008,
+            "male_probability": 0.25,
+            "female_probability": 0.242
+          },
+          "right_cheek": {
+            "bias_score": 0.023,
+            "male_probability": 0.25,
+            "female_probability": 0.273
+          },
+          "chin": {
+            "bias_score": 0.098,
+            "male_probability": 0.25,
+            "female_probability": 0.348
+          },
+          "forehead": {
+            "bias_score": 0.1,
+            "male_probability": 0.188,
+            "female_probability": 0.288
+          },
+          "left_eyebrow": {
+            "bias_score": 0.032,
+            "male_probability": 0.062,
+            "female_probability": 0.03
+          },
+          "right_eyebrow": {
+            "bias_score": 0.061,
+            "male_probability": 0.0,
+            "female_probability": 0.061
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.134,
+          "equalized_odds": 0.263
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.163,
+            "male_probability": 0.188,
+            "female_probability": 0.025
+          },
+          "right_eye": {
+            "bias_score": 0.15,
+            "male_probability": 0.188,
+            "female_probability": 0.038
+          },
+          "nose": {
+            "bias_score": 0.023,
+            "male_probability": 0.188,
+            "female_probability": 0.165
+          },
+          "lips": {
+            "bias_score": 0.203,
+            "male_probability": 0.0,
+            "female_probability": 0.203
+          },
+          "left_cheek": {
+            "bias_score": 0.011,
+            "male_probability": 0.125,
+            "female_probability": 0.114
+          },
+          "right_cheek": {
+            "bias_score": 0.053,
+            "male_probability": 0.188,
+            "female_probability": 0.241
+          },
+          "chin": {
+            "bias_score": 0.286,
+            "male_probability": 0.438,
+            "female_probability": 0.152
+          },
+          "forehead": {
+            "bias_score": 0.255,
+            "male_probability": 0.125,
+            "female_probability": 0.38
+          },
+          "left_eyebrow": {
+            "bias_score": 0.116,
+            "male_probability": 0.125,
+            "female_probability": 0.241
+          },
+          "right_eyebrow": {
+            "bias_score": 0.08,
+            "male_probability": 0.312,
+            "female_probability": 0.392
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.101,
+          "equalized_odds": 0.388
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.02,
+            "male_probability": 0.0,
+            "female_probability": 0.02
+          },
+          "right_eye": {
+            "bias_score": 0.092,
+            "male_probability": 0.0,
+            "female_probability": 0.092
+          },
+          "nose": {
+            "bias_score": 0.041,
+            "male_probability": 0.0,
+            "female_probability": 0.041
+          },
+          "lips": {
+            "bias_score": 0.015,
+            "male_probability": 0.25,
+            "female_probability": 0.265
+          },
+          "left_cheek": {
+            "bias_score": 0.367,
+            "male_probability": 0.0,
+            "female_probability": 0.367
+          },
+          "right_cheek": {
+            "bias_score": 0.066,
+            "male_probability": 0.25,
+            "female_probability": 0.184
+          },
+          "chin": {
+            "bias_score": 0.092,
+            "male_probability": 0.5,
+            "female_probability": 0.408
+          },
+          "forehead": {
+            "bias_score": 0.199,
+            "male_probability": 0.25,
+            "female_probability": 0.051
+          },
+          "left_eyebrow": {
+            "bias_score": 0.026,
+            "male_probability": 0.25,
+            "female_probability": 0.276
+          },
+          "right_eyebrow": {
+            "bias_score": 0.092,
+            "male_probability": 0.0,
+            "female_probability": 0.092
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.117,
+          "equalized_odds": 0.373
+        },
+        "feature_analyses": {
+          "right_eye": {
+            "bias_score": 0.058,
+            "male_probability": 0.077,
+            "female_probability": 0.019
+          },
+          "nose": {
+            "bias_score": 0.468,
+            "male_probability": 0.769,
+            "female_probability": 0.301
+          },
+          "lips": {
+            "bias_score": 0.011,
+            "male_probability": 0.154,
+            "female_probability": 0.165
+          },
+          "left_cheek": {
+            "bias_score": 0.006,
+            "male_probability": 0.385,
+            "female_probability": 0.379
+          },
+          "right_cheek": {
+            "bias_score": 0.012,
+            "male_probability": 0.231,
+            "female_probability": 0.243
+          },
+          "chin": {
+            "bias_score": 0.226,
+            "male_probability": 0.692,
+            "female_probability": 0.466
+          },
+          "forehead": {
+            "bias_score": 0.134,
+            "male_probability": 0.231,
+            "female_probability": 0.097
+          },
+          "left_eyebrow": {
+            "bias_score": 0.019,
+            "male_probability": 0.0,
+            "female_probability": 0.019
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.236,
+          "equalized_odds": 0.486
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.059,
+            "male_probability": 0.0,
+            "female_probability": 0.059
+          },
+          "right_eye": {
+            "bias_score": 0.034,
+            "male_probability": 0.0,
+            "female_probability": 0.034
+          },
+          "nose": {
+            "bias_score": 0.328,
+            "male_probability": 0.0,
+            "female_probability": 0.328
+          },
+          "lips": {
+            "bias_score": 0.034,
+            "male_probability": 0.0,
+            "female_probability": 0.034
+          },
+          "left_cheek": {
+            "bias_score": 0.563,
+            "male_probability": 1.0,
+            "female_probability": 0.437
+          },
+          "right_cheek": {
+            "bias_score": 0.445,
+            "male_probability": 0.0,
+            "female_probability": 0.445
+          },
+          "chin": {
+            "bias_score": 0.336,
+            "male_probability": 0.0,
+            "female_probability": 0.336
+          },
+          "forehead": {
+            "bias_score": 0.311,
+            "male_probability": 0.0,
+            "female_probability": 0.311
+          },
+          "left_eyebrow": {
+            "bias_score": 0.101,
+            "male_probability": 0.0,
+            "female_probability": 0.101
+          },
+          "right_eyebrow": {
+            "bias_score": 0.151,
+            "male_probability": 0.0,
+            "female_probability": 0.151
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.045,
+          "equalized_odds": 0.153
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.011,
+            "male_probability": 0.045,
+            "female_probability": 0.034
+          },
+          "right_eye": {
+            "bias_score": 0.011,
+            "male_probability": 0.045,
+            "female_probability": 0.034
+          },
+          "nose": {
+            "bias_score": 0.086,
+            "male_probability": 0.0,
+            "female_probability": 0.086
+          },
+          "lips": {
+            "bias_score": 0.19,
+            "male_probability": 0.0,
+            "female_probability": 0.19
+          },
+          "left_cheek": {
+            "bias_score": 0.015,
+            "male_probability": 0.364,
+            "female_probability": 0.379
+          },
+          "right_cheek": {
+            "bias_score": 0.02,
+            "male_probability": 0.273,
+            "female_probability": 0.293
+          },
+          "chin": {
+            "bias_score": 0.02,
+            "male_probability": 0.227,
+            "female_probability": 0.207
+          },
+          "forehead": {
+            "bias_score": 0.045,
+            "male_probability": 0.545,
+            "female_probability": 0.5
+          },
+          "left_eyebrow": {
+            "bias_score": 0.027,
+            "male_probability": 0.182,
+            "female_probability": 0.155
+          },
+          "right_eyebrow": {
+            "bias_score": 0.027,
+            "male_probability": 0.182,
+            "female_probability": 0.155
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.118,
+          "equalized_odds": 0.189
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.102,
+            "male_probability": 0.118,
+            "female_probability": 0.016
+          },
+          "right_eye": {
+            "bias_score": 0.011,
+            "male_probability": 0.059,
+            "female_probability": 0.048
+          },
+          "nose": {
+            "bias_score": 0.113,
+            "male_probability": 0.0,
+            "female_probability": 0.113
+          },
+          "lips": {
+            "bias_score": 0.102,
+            "male_probability": 0.059,
+            "female_probability": 0.161
+          },
+          "left_cheek": {
+            "bias_score": 0.188,
+            "male_probability": 0.118,
+            "female_probability": 0.306
+          },
+          "right_cheek": {
+            "bias_score": 0.344,
+            "male_probability": 0.059,
+            "female_probability": 0.403
+          },
+          "chin": {
+            "bias_score": 0.202,
+            "male_probability": 0.412,
+            "female_probability": 0.21
+          },
+          "forehead": {
+            "bias_score": 0.03,
+            "male_probability": 0.647,
+            "female_probability": 0.677
+          },
+          "left_eyebrow": {
+            "bias_score": 0.066,
+            "male_probability": 0.176,
+            "female_probability": 0.242
+          },
+          "right_eyebrow": {
+            "bias_score": 0.022,
+            "male_probability": 0.059,
+            "female_probability": 0.081
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.081,
+          "equalized_odds": 0.311
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.004,
+            "male_probability": 0.111,
+            "female_probability": 0.107
+          },
+          "right_eye": {
+            "bias_score": 0.048,
+            "male_probability": 0.0,
+            "female_probability": 0.048
+          },
+          "nose": {
+            "bias_score": 0.068,
+            "male_probability": 0.111,
+            "female_probability": 0.179
+          },
+          "lips": {
+            "bias_score": 0.139,
+            "male_probability": 0.111,
+            "female_probability": 0.25
+          },
+          "left_cheek": {
+            "bias_score": 0.044,
+            "male_probability": 0.111,
+            "female_probability": 0.155
+          },
+          "right_cheek": {
+            "bias_score": 0.282,
+            "male_probability": 0.556,
+            "female_probability": 0.274
+          },
+          "chin": {
+            "bias_score": 0.02,
+            "male_probability": 0.444,
+            "female_probability": 0.464
+          },
+          "forehead": {
+            "bias_score": 0.004,
+            "male_probability": 0.444,
+            "female_probability": 0.44
+          },
+          "left_eyebrow": {
+            "bias_score": 0.044,
+            "male_probability": 0.111,
+            "female_probability": 0.155
+          },
+          "right_eyebrow": {
+            "bias_score": 0.154,
+            "male_probability": 0.333,
+            "female_probability": 0.179
+          }
+        }
+      }
+    ]
+  },
+  {
+    "metadata": {
+      "id": "d1f5c238880adc542f242a59950ff408",
+      "male_ratio": 90,
+      "female_ratio": 10,
+      "masked_feature": null,
+      "masked_gender": null
+    },
+    "bias_analyses": [
+      {
+        "disparity_scores": {
+          "biasx": 0.14,
+          "equalized_odds": 0.455
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.167,
+            "male_probability": 0.0,
+            "female_probability": 0.167
+          },
+          "right_eye": {
+            "bias_score": 0.1,
+            "male_probability": 0.1,
+            "female_probability": 0.2
+          },
+          "nose": {
+            "bias_score": 0.15,
+            "male_probability": 0.7,
+            "female_probability": 0.55
+          },
+          "lips": {
+            "bias_score": 0.15,
+            "male_probability": 0.0,
+            "female_probability": 0.15
+          },
+          "left_cheek": {
+            "bias_score": 0.225,
+            "male_probability": 0.9,
+            "female_probability": 0.675
+          },
+          "right_cheek": {
+            "bias_score": 0.125,
+            "male_probability": 0.1,
+            "female_probability": 0.225
+          },
+          "chin": {
+            "bias_score": 0.283,
+            "male_probability": 0.6,
+            "female_probability": 0.317
+          },
+          "forehead": {
+            "bias_score": 0.075,
+            "male_probability": 0.1,
+            "female_probability": 0.175
+          },
+          "left_eyebrow": {
+            "bias_score": 0.025,
+            "male_probability": 0.0,
+            "female_probability": 0.025
+          },
+          "right_eyebrow": {
+            "bias_score": 0.1,
+            "male_probability": 0.0,
+            "female_probability": 0.1
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.115,
+          "equalized_odds": 0.521
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.059,
+            "male_probability": 0.111,
+            "female_probability": 0.052
+          },
+          "right_eye": {
+            "bias_score": 0.022,
+            "male_probability": 0.111,
+            "female_probability": 0.089
+          },
+          "nose": {
+            "bias_score": 0.081,
+            "male_probability": 0.0,
+            "female_probability": 0.081
+          },
+          "lips": {
+            "bias_score": 0.015,
+            "male_probability": 0.222,
+            "female_probability": 0.207
+          },
+          "left_cheek": {
+            "bias_score": 0.281,
+            "male_probability": 0.444,
+            "female_probability": 0.163
+          },
+          "right_cheek": {
+            "bias_score": 0.193,
+            "male_probability": 0.333,
+            "female_probability": 0.526
+          },
+          "chin": {
+            "bias_score": 0.096,
+            "male_probability": 0.111,
+            "female_probability": 0.207
+          },
+          "forehead": {
+            "bias_score": 0.148,
+            "male_probability": 0.111,
+            "female_probability": 0.259
+          },
+          "left_eyebrow": {
+            "bias_score": 0.096,
+            "male_probability": 0.0,
+            "female_probability": 0.096
+          },
+          "right_eyebrow": {
+            "bias_score": 0.155,
+            "male_probability": 0.222,
+            "female_probability": 0.067
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.075,
+          "equalized_odds": 0.517
+        },
+        "feature_analyses": {
+          "right_eye": {
+            "bias_score": 0.007,
+            "male_probability": 0.0,
+            "female_probability": 0.007
+          },
+          "nose": {
+            "bias_score": 0.138,
+            "male_probability": 0.182,
+            "female_probability": 0.044
+          },
+          "lips": {
+            "bias_score": 0.006,
+            "male_probability": 0.182,
+            "female_probability": 0.176
+          },
+          "left_cheek": {
+            "bias_score": 0.073,
+            "male_probability": 0.455,
+            "female_probability": 0.382
+          },
+          "right_cheek": {
+            "bias_score": 0.151,
+            "male_probability": 0.364,
+            "female_probability": 0.515
+          },
+          "chin": {
+            "bias_score": 0.063,
+            "male_probability": 0.364,
+            "female_probability": 0.301
+          },
+          "forehead": {
+            "bias_score": 0.149,
+            "male_probability": 0.818,
+            "female_probability": 0.669
+          },
+          "left_eyebrow": {
+            "bias_score": 0.059,
+            "male_probability": 0.0,
+            "female_probability": 0.059
+          },
+          "right_eyebrow": {
+            "bias_score": 0.032,
+            "male_probability": 0.091,
+            "female_probability": 0.059
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.128,
+          "equalized_odds": 0.947
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.009,
+            "male_probability": 0.0,
+            "female_probability": 0.009
+          },
+          "right_eye": {
+            "bias_score": 0.03,
+            "male_probability": 0.0,
+            "female_probability": 0.03
+          },
+          "nose": {
+            "bias_score": 0.022,
+            "male_probability": 0.0,
+            "female_probability": 0.022
+          },
+          "lips": {
+            "bias_score": 0.039,
+            "male_probability": 0.0,
+            "female_probability": 0.039
+          },
+          "left_cheek": {
+            "bias_score": 0.257,
+            "male_probability": 0.0,
+            "female_probability": 0.257
+          },
+          "right_cheek": {
+            "bias_score": 0.517,
+            "male_probability": 0.0,
+            "female_probability": 0.517
+          },
+          "chin": {
+            "bias_score": 0.122,
+            "male_probability": 0.0,
+            "female_probability": 0.122
+          },
+          "forehead": {
+            "bias_score": 0.091,
+            "male_probability": 0.0,
+            "female_probability": 0.091
+          },
+          "left_eyebrow": {
+            "bias_score": 0.057,
+            "male_probability": 0.0,
+            "female_probability": 0.057
+          },
+          "right_eyebrow": {
+            "bias_score": 0.135,
+            "male_probability": 0.0,
+            "female_probability": 0.135
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.213,
+          "equalized_odds": 0.601
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.378,
+            "male_probability": 0.667,
+            "female_probability": 0.289
+          },
+          "right_eye": {
+            "bias_score": 0.282,
+            "male_probability": 0.0,
+            "female_probability": 0.282
+          },
+          "nose": {
+            "bias_score": 0.067,
+            "male_probability": 0.0,
+            "female_probability": 0.067
+          },
+          "lips": {
+            "bias_score": 0.342,
+            "male_probability": 0.0,
+            "female_probability": 0.342
+          },
+          "left_cheek": {
+            "bias_score": 0.493,
+            "male_probability": 0.667,
+            "female_probability": 0.174
+          },
+          "right_cheek": {
+            "bias_score": 0.101,
+            "male_probability": 0.0,
+            "female_probability": 0.101
+          },
+          "chin": {
+            "bias_score": 0.118,
+            "male_probability": 0.333,
+            "female_probability": 0.215
+          },
+          "forehead": {
+            "bias_score": 0.027,
+            "male_probability": 0.0,
+            "female_probability": 0.027
+          },
+          "left_eyebrow": {
+            "bias_score": 0.279,
+            "male_probability": 0.333,
+            "female_probability": 0.054
+          },
+          "right_eyebrow": {
+            "bias_score": 0.04,
+            "male_probability": 0.0,
+            "female_probability": 0.04
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.135,
+          "equalized_odds": 0.438
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.009,
+            "male_probability": 0.0,
+            "female_probability": 0.009
+          },
+          "right_eye": {
+            "bias_score": 0.053,
+            "male_probability": 0.0,
+            "female_probability": 0.053
+          },
+          "nose": {
+            "bias_score": 0.149,
+            "male_probability": 0.0,
+            "female_probability": 0.149
+          },
+          "lips": {
+            "bias_score": 0.226,
+            "male_probability": 0.375,
+            "female_probability": 0.149
+          },
+          "left_cheek": {
+            "bias_score": 0.219,
+            "male_probability": 0.5,
+            "female_probability": 0.281
+          },
+          "right_cheek": {
+            "bias_score": 0.022,
+            "male_probability": 0.25,
+            "female_probability": 0.228
+          },
+          "chin": {
+            "bias_score": 0.355,
+            "male_probability": 0.75,
+            "female_probability": 0.395
+          },
+          "forehead": {
+            "bias_score": 0.077,
+            "male_probability": 0.125,
+            "female_probability": 0.202
+          },
+          "left_eyebrow": {
+            "bias_score": 0.211,
+            "male_probability": 0.0,
+            "female_probability": 0.211
+          },
+          "right_eyebrow": {
+            "bias_score": 0.031,
+            "male_probability": 0.25,
+            "female_probability": 0.281
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.105,
+          "equalized_odds": 0.479
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.11,
+            "male_probability": 0.143,
+            "female_probability": 0.033
+          },
+          "right_eye": {
+            "bias_score": 0.078,
+            "male_probability": 0.143,
+            "female_probability": 0.065
+          },
+          "nose": {
+            "bias_score": 0.242,
+            "male_probability": 0.714,
+            "female_probability": 0.472
+          },
+          "lips": {
+            "bias_score": 0.044,
+            "male_probability": 0.143,
+            "female_probability": 0.187
+          },
+          "left_cheek": {
+            "bias_score": 0.059,
+            "male_probability": 0.571,
+            "female_probability": 0.512
+          },
+          "right_cheek": {
+            "bias_score": 0.288,
+            "male_probability": 0.143,
+            "female_probability": 0.431
+          },
+          "chin": {
+            "bias_score": 0.055,
+            "male_probability": 0.429,
+            "female_probability": 0.374
+          },
+          "forehead": {
+            "bias_score": 0.114,
+            "male_probability": 0.0,
+            "female_probability": 0.114
+          },
+          "left_eyebrow": {
+            "bias_score": 0.01,
+            "male_probability": 0.286,
+            "female_probability": 0.276
+          },
+          "right_eyebrow": {
+            "bias_score": 0.047,
+            "male_probability": 0.286,
+            "female_probability": 0.333
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.183,
+          "equalized_odds": 0.499
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.081,
+            "male_probability": 0.0,
+            "female_probability": 0.081
+          },
+          "right_eye": {
+            "bias_score": 0.04,
+            "male_probability": 0.0,
+            "female_probability": 0.04
+          },
+          "nose": {
+            "bias_score": 0.03,
+            "male_probability": 0.333,
+            "female_probability": 0.363
+          },
+          "lips": {
+            "bias_score": 0.315,
+            "male_probability": 0.0,
+            "female_probability": 0.315
+          },
+          "left_cheek": {
+            "bias_score": 0.102,
+            "male_probability": 0.667,
+            "female_probability": 0.565
+          },
+          "right_cheek": {
+            "bias_score": 0.465,
+            "male_probability": 0.667,
+            "female_probability": 0.202
+          },
+          "chin": {
+            "bias_score": 0.014,
+            "male_probability": 0.333,
+            "female_probability": 0.347
+          },
+          "forehead": {
+            "bias_score": 0.121,
+            "male_probability": 0.0,
+            "female_probability": 0.121
+          },
+          "left_eyebrow": {
+            "bias_score": 0.352,
+            "male_probability": 0.667,
+            "female_probability": 0.315
+          },
+          "right_eyebrow": {
+            "bias_score": 0.306,
+            "male_probability": 0.0,
+            "female_probability": 0.306
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.468,
+          "equalized_odds": 0.696
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.276,
+            "male_probability": 0.0,
+            "female_probability": 0.276
+          },
+          "right_eye": {
+            "bias_score": 0.6,
+            "male_probability": 1.0,
+            "female_probability": 0.4
+          },
+          "nose": {
+            "bias_score": 0.965,
+            "male_probability": 1.0,
+            "female_probability": 0.035
+          },
+          "lips": {
+            "bias_score": 0.824,
+            "male_probability": 1.0,
+            "female_probability": 0.176
+          },
+          "left_cheek": {
+            "bias_score": 0.429,
+            "male_probability": 0.0,
+            "female_probability": 0.429
+          },
+          "right_cheek": {
+            "bias_score": 0.459,
+            "male_probability": 0.0,
+            "female_probability": 0.459
+          },
+          "chin": {
+            "bias_score": 0.806,
+            "male_probability": 1.0,
+            "female_probability": 0.194
+          },
+          "forehead": {
+            "bias_score": 0.206,
+            "male_probability": 0.0,
+            "female_probability": 0.206
+          },
+          "left_eyebrow": {
+            "bias_score": 0.065,
+            "male_probability": 0.0,
+            "female_probability": 0.065
+          },
+          "right_eyebrow": {
+            "bias_score": 0.047,
+            "male_probability": 0.0,
+            "female_probability": 0.047
+          }
+        }
+      },
+      {
+        "disparity_scores": {
+          "biasx": 0.395,
+          "equalized_odds": 0.757
+        },
+        "feature_analyses": {
+          "left_eye": {
+            "bias_score": 0.011,
+            "male_probability": 0.0,
+            "female_probability": 0.011
+          },
+          "right_eye": {
+            "bias_score": 0.005,
+            "male_probability": 0.0,
+            "female_probability": 0.005
+          },
+          "nose": {
+            "bias_score": 0.973,
+            "male_probability": 1.0,
+            "female_probability": 0.027
+          },
+          "lips": {
+            "bias_score": 0.2,
+            "male_probability": 0.0,
+            "female_probability": 0.2
+          },
+          "left_cheek": {
+            "bias_score": 0.508,
+            "male_probability": 1.0,
+            "female_probability": 0.492
+          },
+          "right_cheek": {
+            "bias_score": 0.773,
+            "male_probability": 1.0,
+            "female_probability": 0.227
+          },
+          "chin": {
+            "bias_score": 0.551,
+            "male_probability": 1.0,
+            "female_probability": 0.449
+          },
+          "forehead": {
+            "bias_score": 0.795,
+            "male_probability": 0.0,
+            "female_probability": 0.795
+          },
+          "left_eyebrow": {
+            "bias_score": 0.086,
+            "male_probability": 0.0,
+            "female_probability": 0.086
+          },
+          "right_eyebrow": {
+            "bias_score": 0.049,
+            "male_probability": 0.0,
+            "female_probability": 0.049
+          }
+        }
+      }
+    ]
+  }
+]
