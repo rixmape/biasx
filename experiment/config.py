@@ -1,30 +1,34 @@
-"""Configuration management for gender bias experiments."""
+from dataclasses import dataclass
+from typing import Literal, Optional
 
-from dataclasses import asdict, dataclass, field
-from typing import Dict, Optional, Tuple
+# isort: off
+from utils import setup_logger
 
-
-@dataclass
-class DatasetConfig:
-    """Configuration for facial dataset with controlled gender bias."""
-
-    dataset_name: str = "utkface"
-    dataset_size: int = 1000
-    gender_ratios: dict[int, float] = None
-    random_seed: int = 42
-    masked_gender: Optional[int] = None
-    masked_feature: Optional[str] = None
-    padding: int = 2
+logger = setup_logger(name="experiment.config")
 
 
 @dataclass
-class ClassifierConfig:
-    """Configuration for gender classification model training."""
+class Config:
+    """Dataclass containing experiment parameters, dataset configurations, and model training settings."""
 
-    epochs: int = 10
+    # Experiment parameters
+    replicate: int
+    male_ratios: list[float]
+    mask_genders: list[int]
+    mask_features: list[str]
+    mask_padding: int = 0
+    feature_attention_threshold: Optional[float] = 0.5
+    results_path: Optional[str] = "outputs"
+    base_seed: Optional[int] = 42
+
+    # Dataset parameters
+    dataset_name: Literal["utkface", "fairface"] = "utkface"
+    dataset_size: int = 5000
+    val_split: float = 0.1
+    test_split: float = 0.2
+    image_size: int = 48
+    grayscale: bool = True
+
+    # Model parameters
     batch_size: int = 64
-    val_split: float = 0.2
-    test_split: float = 0.1
-    input_shape: Tuple[int, int, int] = (48, 48, 1)
-    random_seed: int = 42
-
+    epochs: int = 10
