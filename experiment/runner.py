@@ -17,7 +17,7 @@ from dataset import DatasetGenerator
 from explainer import VisualExplainer
 from masker import FeatureMasker
 from model import ModelTrainer
-from datatypes import DatasetSplits, Gender
+from datatypes import Gender
 from utils import setup_logger
 
 
@@ -54,16 +54,19 @@ class ExperimentRunner:
         tf.random.set_seed(seed)
         os.environ["PYTHONHASHSEED"] = str(seed)
 
-    def _run_replicate(self, replicate: int, data_splits: DatasetSplits) -> dict:
+    def _run_replicate(self, replicate: int, train_data: tf.data.Dataset, val_data: tf.data.Dataset, test_data: tf.data.Dataset) -> dict:
         """Runs a single experiment replicate by setting seeds, preparing data, training the model, and analyzing results."""
         self.logger.info(f"Running replicate {replicate + 1}/{self.config.replicate}")
 
         seed = self.config.base_seed + replicate
         self._set_random_seeds(seed)
 
-        model, predictions, test_labels = self.model_trainer.train_and_predict(data_splits)
-        key_features = self.visual_explainer.explain(model, data_splits.test_dataset)
-        analysis = self.bias_analyzer.analyze(test_labels, predictions, key_features)
+        model = self.model_trainer.train_model(train_data, val_data)
+        del train_data, val_data
+
+        predictions, labels = self.model_trainer.predict(model, test_data)
+        key_features = self.visual_explainer.explain(model, test_data)
+        analysis = self.bias_analyzer.analyze(labels, predictions, key_features)
 
         return {"seed": seed, "analysis": analysis}
 
@@ -75,11 +78,11 @@ class ExperimentRunner:
         gender_str = Gender(mask_gender).name.lower() if mask_gender is not None else "none"
         exp_id = f"male_{int(male_ratio * 100)}_mask_{feature_str}_of_{gender_str}"
 
-        data_splits = self.dataset_generator.prepare_data(male_ratio, mask_gender, mask_feature, self.config.base_seed)
+        train_data, val_data, test_data = self.dataset_generator.prepare_data(male_ratio, mask_gender, mask_feature, self.config.base_seed)
 
         replicates = []
         for rep in range(self.config.replicate):
-            replicate_result = self._run_replicate(rep, data_splits)
+            replicate_result = self._run_replicate(rep, train_data, val_data, test_data)
             replicates.append(replicate_result)
 
             gc.collect()

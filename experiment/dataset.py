@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 # isort: off
 from config import Config
 from masker import FeatureMasker
-from datatypes import DatasetSplits, Gender
+from datatypes import Gender
 from utils import setup_logger
 
 
@@ -167,7 +167,7 @@ class DatasetGenerator:
 
         return train, val, test
 
-    def prepare_data(self, male_ratio: float, mask_gender: int, mask_feature: str, seed: int) -> DatasetSplits:
+    def prepare_data(self, male_ratio: float, mask_gender: int, mask_feature: str, seed: int) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
         """Loads, samples by gender, splits the dataset, and returns batched and cached TensorFlow datasets for training, validation, and testing."""
         self.logger.info(f"Preparing dataset: male_ratio={male_ratio}, mask_gender={mask_gender}, mask_feature={mask_feature}, seed={seed}")
 
@@ -178,15 +178,15 @@ class DatasetGenerator:
 
         batch_size = self.config.batch_size
 
-        train_dataset = self._create_dataset(train_df, mask_gender, mask_feature, "TRAINING").batch(batch_size).cache()
+        train_data = self._create_dataset(train_df, mask_gender, mask_feature, "TRAINING").batch(batch_size).cache()
         self.logger.debug(f"Training dataset cached with {len(train_df)} samples ({len(train_df) // batch_size + 1} batches)")
 
-        val_dataset = self._create_dataset(val_df, mask_gender, mask_feature, "VALIDATION").batch(batch_size).cache()
+        val_data = self._create_dataset(val_df, mask_gender, mask_feature, "VALIDATION").batch(batch_size).cache()
         self.logger.debug(f"Validation dataset cached with {len(val_df)} samples ({len(val_df) // batch_size + 1} batches)")
 
-        test_dataset = self._create_dataset(test_df, mask_gender, mask_feature, "TEST").batch(batch_size)
+        test_data = self._create_dataset(test_df, mask_gender, mask_feature, "TEST").batch(batch_size)
         self.logger.debug(f"Test dataset created with {len(test_df)} samples ({len(test_df) // batch_size + 1} batches)")
 
         self.logger.info("Dataset preparation complete")
 
-        return DatasetSplits(train_dataset=train_dataset, val_dataset=val_dataset, test_dataset=test_dataset)
+        return train_data, val_data, test_data

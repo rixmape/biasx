@@ -61,7 +61,7 @@ class VisualExplainer:
 
         return filtered_boxes
 
-    def explain(self, model: tf.keras.Model, test_dataset: tf.data.Dataset) -> list[list[FeatureBox]]:
+    def explain(self, model: tf.keras.Model, test_data: tf.data.Dataset) -> list[list[FeatureBox]]:
         """Iterates over test dataset images to generate heatmaps, extract feature boxes, and compile key features for explanation."""
         self.logger.info("Starting visual explanation generation")
 
@@ -75,7 +75,7 @@ class VisualExplainer:
         empty_feature_count = 0
 
         self.logger.info("Processing test batches for feature importance")
-        for batch in test_dataset:
+        for batch in test_data:
             batch_count += 1
             images, labels = batch
             batch_size = len(images)
