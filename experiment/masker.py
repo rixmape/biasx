@@ -10,7 +10,7 @@ from mediapipe.tasks.python.vision.face_landmarker import FaceLandmarker, FaceLa
 
 # isort: off
 from config import Config
-from datatypes import FeatureBox
+from datatypes import FacialFeature
 from utils import setup_logger
 
 
@@ -61,8 +61,9 @@ class FeatureMasker:
             return None
         return self._to_pixel_coords(landmarks, image.shape)
 
-    def _get_bbox(self, pix_coords: list[tuple[int, int]], feature: str, pad: int = 0) -> tuple[int, int, int, int]:
-        """Computes the bounding box for a specified facial feature from pixel coordinates, incorporating optional padding."""
+    def _get_bbox(self, pix_coords: list[tuple[int, int]], feature: str) -> tuple[int, int, int, int]:
+        """Computes the bounding box for a specified facial feature from pixel coordinates"""
+        pad = max(1, self.config.mask_padding)  # Ensure padding is at least 1 to avoid zero area
         pts = [pix_coords[i] for i in self.feature_map[feature]]
         min_x = max(0, min(x for x, _ in pts) - pad)
         min_y = max(0, min(y for _, y in pts) - pad)
@@ -70,27 +71,35 @@ class FeatureMasker:
         max_y = max(y for _, y in pts) + pad
         return int(min_x), int(min_y), int(max_x), int(max_y)
 
+    # TODO: Allow masking multiple features at once
     def apply_mask(self, image: np.ndarray, feature: str) -> np.ndarray:
         """Applies a mask by setting the pixel values to zero within the bounding box of the specified facial feature in the image."""
         pix_coords = self._get_landmarks_in_pixels(image)
         if pix_coords is None:
             return image
 
-        min_x, min_y, max_x, max_y = self._get_bbox(pix_coords, feature, self.config.mask_padding)
+        # TODO: Ensure uniform masking area across different features (e.g., 800 pixels, 400 pixels for smaller features)
+        min_x, min_y, max_x, max_y = self._get_bbox(pix_coords, feature)
         result = image.copy()
         result[min_y:max_y, min_x:max_x] = 0
 
         return result
 
-    def get_feature_boxes(self, image: np.ndarray) -> list[FeatureBox]:
-        """Returns a list of `FeatureBox` objects representing bounding boxes for all defined facial features in the image."""
+    def get_features(self, image: np.ndarray) -> list[FacialFeature]:
+        """Returns a list of features representing bounding boxes for all defined facial features in the image."""
         pix_coords = self._get_landmarks_in_pixels(image)
         if pix_coords is None:
             return []
 
-        boxes = []
-        for feature in self.feature_map:
-            min_x, min_y, max_x, max_y = self._get_bbox(pix_coords, feature)
-            boxes.append(FeatureBox(min_x, min_y, max_x, max_y, feature))
+        features = []
+        for feature_name in self.feature_map.keys():
+            min_x, min_y, max_x, max_y = self._get_bbox(pix_coords, feature_name)
+            feature = FacialFeature(min_x, min_y, max_x, max_y, feature_name)
 
-        return boxes
+            if feature.get_area() == 0:
+                self.logger.warning(f"Feature '{feature}' ignored: area=0, min_x={min_x}, min_y={min_y}, max_x={max_x}, max_y={max_y}")
+                continue
+
+            features.append(feature)
+
+        return features

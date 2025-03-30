@@ -11,15 +11,15 @@ class Gender(Enum):
 
 
 @dataclass
-class FeatureBox:
-    """Dataclass encapsulating the coordinates and name of a facial feature's bounding box, with an optional importance score."""
+class FacialFeature:
+    """Dataclass encapsulating the coordinates and name of a facial feature's bounding box, with an optional attention score."""
 
     min_x: int
     min_y: int
     max_x: int
     max_y: int
     name: str
-    importance: Optional[float] = None
+    attention: Optional[float] = 0
 
     def get_area(self) -> int:
         """Calculates and returns the area of the bounding box."""

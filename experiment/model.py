@@ -68,11 +68,13 @@ class ModelTrainer:
     def predict(self, model: tf.keras.Model, test_data: tf.data.Dataset) -> tuple[np.ndarray, np.ndarray]:
         """Generates predictions on the dataset using the trained model."""
         self.logger.info("Generating predictions on the dataset")
+
         all_predictions = []
         all_labels = []
-
         batch_count = 0
         total_samples = 0
+
+        self.logger.info(f"Processing batches for prediction with {self.config.batch_size} batch size")
 
         for batch in test_data:
             batch_count += 1
@@ -80,10 +82,12 @@ class ModelTrainer:
             batch_size = len(labels)
             total_samples += batch_size
 
-            self.logger.debug(f"Processing batch {batch_count}: {batch_size} samples")
             batch_predictions = model.predict(images, verbose=0)
             all_predictions.append(batch_predictions)
             all_labels.append(labels)
+
+            if batch_count % 5 == 0:
+                self.logger.debug(f"Processed {batch_count} batches with {total_samples} total samples")
 
         self.logger.debug(f"Processed {batch_count} batches with {total_samples} total samples")
 

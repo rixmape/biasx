@@ -24,7 +24,7 @@ class DatasetGenerator:
         path = hf_hub_download(repo_id=f"rixmape/{self.config.dataset_name}", filename="data/train-00000-of-00001.parquet", repo_type="dataset")
         self.logger.debug(f"Dataset successfully downloaded")
 
-        # TODO: Include image ID column to mention in log messages during image processing
+        # TODO: Include image ID column for detailed logging
         df = pd.read_parquet(path, columns=["image", "gender", "race", "age"])
         self.logger.debug(f"Raw dataset: {df.shape[0]} rows, {df.shape[1]} columns")
 
@@ -144,6 +144,7 @@ class DatasetGenerator:
         else:
             self.logger.debug(f"{purpose} dataset: No feature masking applied")
 
+        # TODO: Add image ID column to log messages
         dataset = tf.data.Dataset.from_tensor_slices((df["image_bytes"].values, df["gender"].values))
         dataset = dataset.map(lambda x, y: self._decode_and_process_image(x, y, mask_gender, mask_feature), num_parallel_calls=tf.data.AUTOTUNE)
 

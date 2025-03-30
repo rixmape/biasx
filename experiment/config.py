@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from typing import Literal, Optional
 
 
+# TODO: Add data validation for the dataclass fields
+# TODO: Add parameters: cam_method, target_layer
 @dataclass
 class Config:
     """Dataclass containing experiment parameters, dataset configurations, and model training settings."""
