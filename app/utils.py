@@ -1,6 +1,8 @@
 import tempfile
 import os
 import streamlit as st
+from huggingface_hub import hf_hub_download
+import json
 
 def create_temp_file(uploaded_file):
     """Create a temporary file from an uploaded file."""
@@ -14,6 +16,28 @@ def create_temp_file(uploaded_file):
     with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
         temp_file.write(uploaded_file.read())
         return temp_file.name
+
+@st.cache_data
+def retrieve_model_options(repo_id):
+    """Retrieve model options from a given repository ID."""
+    try:
+        model_path = hf_hub_download(repo_id=repo_id, filename="models.json")
+        with open(model_path, "r") as json_file:
+            model_options = json.load(json_file)
+        return model_options
+    except Exception as e:
+        st.error(f"Error fetching model list: {e}")
+        return None
+
+@st.cache_data
+def load_hf_model(repo_id, model_filename):
+    """Load a model from the Hugging Face Hub."""
+    try:
+        model_path = hf_hub_download(repo_id=repo_id, filename=model_filename)
+        return model_path
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        return None
 
 def get_default_config():
     """Return the default configuration for the application."""
@@ -34,8 +58,8 @@ def get_default_config():
         },
         "dataset": {
             "source": "utkface",
-            "image_width": 224,
-            "image_height": 224,
+            "image_width": 48,
+            "image_height": 48,
             "color_mode": "L",
             "single_channel": False,
             "max_samples": 100,
@@ -71,6 +95,7 @@ def get_landmark_names_and_colors():
 
 def initialize_session_state():
     """Initialize session state variables if they don't exist."""
+        
     if "layout" not in st.session_state:
         st.session_state.layout = "centered"
     
@@ -97,6 +122,26 @@ def initialize_session_state():
     
     if 'config' not in st.session_state:
         st.session_state.config = get_default_config()
+    
+    if 'file_info' not in st.session_state:
+        st.session_state.file_info = None
+
+    if 'model_config' not in st.session_state:
+        st.session_state.model_config = {"height": 48,
+                                         "width": 48,
+                                         "color_mode": "Grayscale",
+                                         "channel": "Single"}
+
+def reset_config():
+    """Reset all configuration settings."""
+    st.session_state.config = get_default_config()
+    st.session_state.model_path = ""
+    st.session_state.result = None
+    st.session_state.page = [0, 18]
+
+def show_model_info(info):
+    st.write("#### Selected Model Info:")
+    st.json(info)
 
 def reset_page():
     """Reset pagination."""

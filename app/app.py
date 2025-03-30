@@ -21,10 +21,63 @@ def main():
     st.set_page_config(layout=st.session_state.layout)
     
     # Display the appropriate page based on the application state
-    if st.session_state.configuration:
+    if st.session_state.config["model"]["path"] is None:
+        display_model_upload_page()
+    elif st.session_state.configuration and st.session_state.config["model"]["path"]:
         display_configuration_page()
     else:
         display_visualization_page()
+
+def display_model_upload_page():
+    st.write("# BiasX")
+    st.markdown("BiasX is a Python library for detecting and explaining gender bias in face classification models. This repository provides a toolkit to analyze bias through both traditional fairness metrics and feature-level analysis. Visual heatmaps and quantitative bias scores are generated to help developers understand which facial features contribute to biased classifications.")
+    st.markdown("")
+
+    with st.container(border=True):
+        st.write("### Upload Own Model")
+        uploaded_file = st.file_uploader("Upload", 
+                                        type=["h5", "keras"], 
+                                        key="uploaded_model", 
+                                        label_visibility="collapsed",
+                                        accept_multiple_files=False)
+        if uploaded_file is not None:
+            st.session_state.file_info = uploaded_file.name
+            st.session_state.config["model"]["path"] = utils.create_temp_file(uploaded_file)
+            st.rerun()
+
+    with st.container(border=True):
+        st.write("### Select from Pre-existing Models")
+        repo_id = "4shL3I/biasx-models" # Change to final repo ID
+
+        model_options = utils.retrieve_model_options(repo_id)
+        
+        selected_model = st.pills("Select a model", 
+                list(model_options.keys()), 
+                key="pretrained_model", 
+                label_visibility="collapsed")
+        
+        if selected_model:
+            utils.show_model_info(model_options[selected_model])
+
+        st.markdown("")
+        continue_button = st.button("Continue", type="primary", use_container_width=True)
+
+        if continue_button:
+            with st.spinner("Downloading model..."):
+                model_filename = model_options[selected_model]["path"]
+
+                # Download the model from Hugging Face
+                model_path = utils.load_hf_model(repo_id, model_filename)
+
+                # Create a temporary file for the downloaded model
+                with open(model_path, "rb") as file_data:
+                    st.session_state.config["model"]["path"] = utils.create_temp_file(file_data)
+
+                st.session_state.file_info = model_filename
+
+                st.success(f"{selected_model} downloaded successfully!")
+
+                st.rerun()
 
 def display_configuration_page():
     """Display the configuration page for model settings."""
@@ -34,18 +87,19 @@ def display_configuration_page():
         model_upload, model_config = st.columns(2)
         
         with model_upload:
-            uploaded_file = model_upload.file_uploader("Upload", type=["h5", "keras"], key="uploaded_model", label_visibility="collapsed")
-            if uploaded_file is not None:
-                st.session_state.config["model"]["path"] = utils.create_temp_file(uploaded_file)
+            st.write(f"# Model: {st.session_state.file_info}")
+            if st.button("Change Model", use_container_width=True):
+                st.session_state.config["model"]["path"] = None
+                st.rerun()
         
         with model_config.container(border=True):
             c1, c2 = st.columns(2)
-            st.session_state.config["dataset"]["image_width"] = c1.number_input("Image Width", key="input_image_width", value=st.session_state.config["dataset"]["image_width"])
-            st.session_state.config["dataset"]["image_height"] = c2.number_input("Image Height", key="input_image_height", value=st.session_state.config["dataset"]["image_height"])
-            st.session_state.config["dataset"]["color_mode"] = c1.pills("Color Mode", ["Grayscale", "RGB"], key="color_mode", selection_mode="single")
+            st.session_state.config["dataset"]["image_width"] = c1.number_input("Image Width", key="input_image_width", value=st.session_state.model_config["width"])
+            st.session_state.config["dataset"]["image_height"] = c2.number_input("Image Height", key="input_image_height", value=st.session_state.model_config["height"])
+            st.session_state.config["dataset"]["color_mode"] = c1.pills("Color Mode", ["Grayscale", "RGB"], key="color_mode", default=st.session_state.model_config["color_mode"])
             if st.session_state.config["dataset"]["color_mode"] == "Grayscale":
                 st.session_state.config["dataset"]["color_mode"] = "L"
-            channel = c2.pills("Channel", ["Single", "Triple"], key="channel", selection_mode="single")
+            channel = c2.pills("Channel", ["Single", "Triple"], key="channel", selection_mode="single", default=st.session_state.model_config["channel"])
             st.session_state.config["dataset"]["single_channel"] = channel == "Single"
             st.session_state.config["model"]["inverted_classes"] = st.toggle("Invert Label?", value=st.session_state.invert_label)
 
@@ -79,7 +133,7 @@ def display_configuration_page():
                 st.session_state.config["dataset"]["max_samples"] = c1.number_input("Sample Size", key="sample_size", value=st.session_state.config["dataset"]["max_samples"], disabled=st.session_state.select_all)
                 # select_all = c1.toggle("Select All", key="select_all")
                 st.session_state.config["dataset"]["seed"] = c2.number_input("Seed", key="seed", value=st.session_state.config["dataset"]["seed"], disabled=not st.session_state.enable_shuffle)
-                st.session_state.config["dataset"]["shuffle"] = c2.toggle("Shuffle?", key="enable_shuffle")
+                st.session_state.config["dataset"]["shuffle"] = c2.toggle("Shuffle?", key="enable_shuffle", value=st.session_state.enable_shuffle)
 
             # --- Start Analysis ---
             if st.button("Start Analysis", type="primary", use_container_width=True):
@@ -225,6 +279,7 @@ def display_visualization_page():
     if st.button("Go Back", type="primary", use_container_width=True):
         st.session_state.layout = "centered"
         st.session_state.configuration = True
+        utils.reset_config()
         st.rerun()
 
 def display_images(samples, overlay, facial_feature):
