@@ -3,7 +3,6 @@ import tensorflow as tf
 
 # isort: off
 from config import Config
-from datatypes import DatasetSplits
 from utils import setup_logger
 
 
@@ -16,7 +15,7 @@ class ModelTrainer:
 
     def _build_model(self) -> tf.keras.Model:
         """Constructs and compiles a sequential convolutional neural network model based on the configuration settings."""
-        self.logger.info("Building CNN model architecture")
+        self.logger.info("Building CNN model architecture for facial gender classification")
         model = tf.keras.Sequential()
 
         input_shape = (self.config.image_size, self.config.image_size, 1 if self.config.grayscale else 3)
@@ -43,49 +42,52 @@ class ModelTrainer:
 
         return model
 
-    def train_and_predict(self, splits: DatasetSplits) -> tuple[tf.keras.Model, np.ndarray, np.ndarray]:
-        """Trains the model on the training dataset, evaluates it on the validation set, and generates predictions on the test data."""
-        self.logger.info("Starting model training process")
+    def train_model(self, train_data: tf.data.Dataset, val_data: tf.data.Dataset) -> tf.keras.Model:
+        """Trains the model on the training dataset and evaluates it on the test set."""
         model = self._build_model()
 
-        self.logger.info(f"Training model for {self.config.epochs} epochs")
-        history = model.fit(splits.train_dataset, validation_data=splits.val_dataset, epochs=self.config.epochs, verbose=0)
+        self.logger.info(f"Training model for {self.config.epochs} epochs with {self.config.batch_size} batch size")
+        history = model.fit(train_data, validation_data=val_data, epochs=self.config.epochs, verbose=0)
 
         train_acc = history.history["accuracy"][-1]
         val_acc = history.history["val_accuracy"][-1]
         train_loss = history.history["loss"][-1]
         val_loss = history.history["val_loss"][-1]
 
-        self.logger.info(f"Training completed - Final metrics: train_acc={train_acc:.4f}, val_acc={val_acc:.4f}")
+        self.logger.info(f"Training completed: train_acc={train_acc:.4f}, val_acc={val_acc:.4f}")
         self.logger.debug(f"Final loss values: train_loss={train_loss:.4f}, val_loss={val_loss:.4f}")
 
         if val_acc < 0.6:
-            self.logger.warning(f"Low validation accuracy ({val_acc:.4f}). Model may be underfitting or the task might be challenging.")
+            self.logger.warning(f"Low validation accuracy ({val_acc:.4f}). Model may be underfitting.")
 
         if val_acc < train_acc - 0.1:
             self.logger.warning(f"Large gap between training and validation accuracy ({train_acc:.4f} vs {val_acc:.4f}). Possible overfitting.")
 
-        self.logger.info("Generating predictions on test dataset")
+        return model
+
+    def predict(self, model: tf.keras.Model, test_data: tf.data.Dataset) -> tuple[np.ndarray, np.ndarray]:
+        """Generates predictions on the dataset using the trained model."""
+        self.logger.info("Generating predictions on the dataset")
         all_predictions = []
         all_labels = []
 
         batch_count = 0
         total_samples = 0
 
-        for batch in splits.test_dataset:
+        for batch in test_data:
             batch_count += 1
             images, labels = batch
             batch_size = len(labels)
             total_samples += batch_size
 
-            self.logger.debug(f"Processing test batch {batch_count}: {batch_size} samples")
+            self.logger.debug(f"Processing batch {batch_count}: {batch_size} samples")
             batch_predictions = model.predict(images, verbose=0)
             all_predictions.append(batch_predictions)
             all_labels.append(labels)
 
-        self.logger.debug(f"Processed {batch_count} test batches with {total_samples} total samples")
+        self.logger.debug(f"Processed {batch_count} batches with {total_samples} total samples")
 
         predictions = np.vstack(all_predictions).argmax(axis=1)
-        test_labels = np.concatenate(all_labels)
+        labels = np.concatenate(all_labels)
 
-        return model, predictions, test_labels
+        return predictions, labels
