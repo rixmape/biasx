@@ -1,24 +1,22 @@
 from collections import defaultdict
 
 import numpy as np
+from sklearn.metrics import confusion_matrix
 
 # isort: off
 from datatypes import FeatureBox, Gender
 from utils import setup_logger
 
-logger = setup_logger(name="experiment.analyzer")
-
 
 class BiasAnalyzer:
     """Class that computes bias metrics by analyzing feature probabilities, confusion matrices, and gender-based performance statistics."""
 
-    def __init__(self):
-        logger.info("Initializing BiasAnalyzer")
-        logger.debug("BiasAnalyzer will compute feature metrics, construct confusion matrices, and calculate gender-specific bias scores")
+    def __init__(self, log_path: str):
+        self.logger = setup_logger(name="bias_analyzer", log_path=log_path)
 
     def _compute_feature_metrics(self, labels: np.ndarray, features: list[list[FeatureBox]]) -> dict[str, dict[str, float]]:
         """Computes per-feature probabilities and overall feature bias by aggregating counts from the provided feature boxes."""
-        logger.info("Computing feature importance metrics across gender groups")
+        self.logger.info("Computing feature occurence probabilities and attention bias")
 
         counts = defaultdict(lambda: defaultdict(int))
         for label, feature_boxes in zip(labels, features):
@@ -36,31 +34,25 @@ class BiasAnalyzer:
             male_prob = count[Gender.MALE.name] / max(male_count, 1)
             female_prob = count[Gender.FEMALE.name] / max(female_count, 1)
             bias = abs(male_prob - female_prob)
-            feature_count += 1
+            analysis[feature_name] = {"male": male_prob, "female": female_prob, "bias": bias}
 
-            logger.debug(f"Feature '{feature_name}': male_prob={male_prob:.3f}, female_prob={female_prob:.3f}, bias={bias:.3f}")
-
-            analysis[feature_name] = {
-                "male": male_prob,
-                "female": female_prob,
-                "bias": bias,
-            }
+            self.logger.debug(f"Feature '{feature_name}': male_prob={male_prob:.3f}, female_prob={female_prob:.3f}, bias={bias:.3f}")
 
             total_bias += bias
+            feature_count += 1
 
-        feature_bias = total_bias / max(feature_count, 1)
-        logger.info(f"Feature analysis complete: {feature_count} unique features identified with average bias score of {feature_bias:.3f}")
+        # TODO: Compute feature attention bias in `_compute_bias_scores`
+        feature_attention_bias = total_bias / max(feature_count, 1)
+        self.logger.info(f"Detected {feature_count} unique features with {feature_attention_bias:.3f} average attention bias")
 
         if feature_count == 0:
-            logger.warning("No features were found in the analysis. This may indicate issues with feature extraction or importance thresholding.")
-        elif feature_bias > 0.3:
-            logger.warning(f"High average feature bias detected ({feature_bias:.3f}). This suggests significant gender-based differences in feature importance.")
+            self.logger.warning("No features were found during analysis. Potential issue during visual explanation.")
 
-        return analysis, feature_bias
+        return analysis, feature_attention_bias
 
     def _compute_confusion_matrix(self, labels: np.ndarray, preds: np.ndarray) -> dict[str, dict[str, int]]:
         """Constructs a confusion matrix by comparing true labels with predictions for both male and female classes."""
-        logger.info("Constructing gender-based confusion matrix")
+        self.logger.info("Constructing confusion matrix")
 
         male_actual = labels == Gender.MALE.value
         female_actual = labels == Gender.FEMALE.value
@@ -75,30 +67,21 @@ class BiasAnalyzer:
         total = tp + tn + fp + fn
         accuracy = (tp + tn) / total if total > 0 else 0
 
-        logger.debug(f"Confusion matrix: TP={tp}, FN={fn}, FP={fp}, TN={tn}")
-        logger.debug(f"Overall accuracy: {accuracy:.3f} ({tp + tn}/{total} correct)")
+        self.logger.debug(f"Confusion matrix: TP={tp}, FN={fn}, FP={fp}, TN={tn}")
+        self.logger.debug(f"Overall accuracy: {accuracy:.3f} ({tp + tn}/{total} correct)")
 
-        male_correct = tp / (tp + fn) if (tp + fn) > 0 else 0
-        female_correct = tn / (tn + fp) if (tn + fp) > 0 else 0
-        logger.debug(f"Class-wise accuracy: Male={male_correct:.3f} ({tp}/{tp+fn}), Female={female_correct:.3f} ({tn}/{tn+fp})")
-
-        if abs(male_correct - female_correct) > 0.1:
-            logger.warning(f"Significant accuracy gap between genders: Male={male_correct:.3f}, Female={female_correct:.3f}. This suggests potential bias in model performance.")
+        male_correct = tp / max(tp + fn, 1)
+        female_correct = tn / max(tn + fp, 1)
+        self.logger.debug(f"Gender-specific accuracy: male={male_correct:.3f} ({tp}/{tp+fn}), female={female_correct:.3f} ({tn}/{tn+fp})")
 
         return {
-            "true_male": {
-                "predicted_male": tp,
-                "predicted_female": fn,
-            },
-            "true_female": {
-                "predicted_male": fp,
-                "predicted_female": tn,
-            },
+            "true_male": {"predicted_male": tp, "predicted_female": fn},
+            "true_female": {"predicted_male": fp, "predicted_female": tn},
         }
 
     def _compute_gender_metrics(self, cm: dict) -> tuple[dict[str, float], dict[str, float]]:
         """Calculates gender-specific performance metrics such as TPR, FPR, PPV, and FDR using the confusion matrix data."""
-        logger.info("Computing gender-specific fairness metrics")
+        self.logger.info("Computing gender-specific performance metrics")
 
         tp_male = cm["true_male"]["predicted_male"]
         fn_male = cm["true_male"]["predicted_female"]
@@ -115,40 +98,17 @@ class BiasAnalyzer:
         female_ppv = tn_male / max(tn_male + fn_male, 1)
         female_fdr = fn_male / max(tn_male + fn_male, 1)
 
-        logger.debug(f"Male metrics: TPR={male_tpr:.3f}, FPR={male_fpr:.3f}, PPV={male_ppv:.3f}, FDR={male_fdr:.3f}")
-        logger.debug(f"Female metrics: TPR={female_tpr:.3f}, FPR={female_fpr:.3f}, PPV={female_ppv:.3f}, FDR={female_fdr:.3f}")
-
-        tpr_gap = abs(male_tpr - female_tpr)
-        fpr_gap = abs(male_fpr - female_fpr)
-        ppv_gap = abs(male_ppv - female_ppv)
-
-        if tpr_gap > 0.1:
-            logger.warning(f"Large true positive rate gap between genders: {tpr_gap:.3f}. The model has different sensitivity for different genders.")
-
-        if fpr_gap > 0.1:
-            logger.warning(f"Large false positive rate gap between genders: {fpr_gap:.3f}. The model has different specificity for different genders.")
-
-        if ppv_gap > 0.1:
-            logger.warning(f"Large precision gap between genders: {ppv_gap:.3f}. The model has different reliability for different genders.")
+        self.logger.debug(f"Male metrics: TPR={male_tpr:.3f}, FPR={male_fpr:.3f}, PPV={male_ppv:.3f}, FDR={male_fdr:.3f}")
+        self.logger.debug(f"Female metrics: TPR={female_tpr:.3f}, FPR={female_fpr:.3f}, PPV={female_ppv:.3f}, FDR={female_fdr:.3f}")
 
         return (
-            {
-                "tpr": male_tpr,
-                "fpr": male_fpr,
-                "ppv": male_ppv,
-                "fdr": male_fdr,
-            },
-            {
-                "tpr": female_tpr,
-                "fpr": female_fpr,
-                "ppv": female_ppv,
-                "fdr": female_fdr,
-            },
+            {"tpr": male_tpr, "fpr": male_fpr, "ppv": male_ppv, "fdr": male_fdr},
+            {"tpr": female_tpr, "fpr": female_fpr, "ppv": female_ppv, "fdr": female_fdr},
         )
 
-    def _compute_bias_scores(self, cm: dict, male_metrics: dict, female_metrics: dict, feature_bias: float) -> dict[str, float]:
+    def _compute_bias_scores(self, cm: dict, male_metrics: dict, female_metrics: dict) -> dict[str, float]:
         """Derives overall bias scores based on demographic parity, equalized odds, conditional use accuracy, treatment equality, and feature attention."""
-        logger.info("Computing composite bias scores across multiple fairness criteria")
+        self.logger.info("Computing bias scores across multiple fairness criteria")
 
         tp_male = cm["true_male"]["predicted_male"]
         fn_male = cm["true_male"]["predicted_female"]
@@ -162,68 +122,37 @@ class BiasAnalyzer:
         female_selection_rate = fp_male / max(female_count, 1)
         demographic_parity = abs(male_selection_rate - female_selection_rate)
 
-        logger.debug(f"Selection rates: Male={male_selection_rate:.3f}, Female={female_selection_rate:.3f}")
-        logger.debug(f"Demographic parity difference: {demographic_parity:.3f}")
+        self.logger.debug(f"Selection rates: male={male_selection_rate:.3f}, female={female_selection_rate:.3f}")
+        self.logger.debug(f"Demographic parity difference: {demographic_parity:.3f}")
 
         tpr_diff = abs(male_metrics["tpr"] - female_metrics["tpr"])
         fpr_diff = abs(male_metrics["fpr"] - female_metrics["fpr"])
         equalized_odds = max(tpr_diff, fpr_diff)
 
-        logger.debug(f"TPR difference: {tpr_diff:.3f}, FPR difference: {fpr_diff:.3f}")
-        logger.debug(f"Equalized odds: {equalized_odds:.3f} (maximum of TPR and FPR differences)")
+        self.logger.debug(f"TPR difference: {tpr_diff:.3f}, FPR difference: {fpr_diff:.3f}")
+        self.logger.debug(f"Equalized odds: {equalized_odds:.3f}")
 
-        # TODO: Clarify that CUAE requires equal PPV and NPV, but since male NPV is similar to female PPV and vice versa, we can just use PPV
-        ppv_diff = abs(male_metrics["ppv"] - female_metrics["ppv"])
-        conditional_use_accuracy_equality = ppv_diff
+        conditional_use_accuracy_equality = abs(male_metrics["ppv"] - female_metrics["ppv"])
+        self.logger.debug(f"Conditional use accuracy equality: {conditional_use_accuracy_equality:.3f}")
 
-        logger.debug(f"Conditional use accuracy equality: {conditional_use_accuracy_equality:.3f}")
-        logger.debug(f"Feature attention bias: {feature_bias:.3f}")
-
-        bias_scores = {
+        return {
             "demographic_parity": demographic_parity,
             "equalized_odds": equalized_odds,
             "conditional_use_accuracy_equality": conditional_use_accuracy_equality,
-            "feature_attention": feature_bias,
         }
-
-        average_bias = sum(bias_scores.values()) / len(bias_scores)
-        logger.info(f"Overall average bias score: {average_bias:.3f}")
-
-        if average_bias > 0.2:
-            logger.warning(f"High overall bias detected ({average_bias:.3f}). Multiple fairness metrics suggest problematic gender disparities.")
-
-        sorted_biases = sorted(bias_scores.items(), key=lambda x: x[1], reverse=True)
-        logger.debug(f"Fairness criteria ordered by bias magnitude: {sorted_biases}")
-
-        return bias_scores
 
     def analyze(self, labels: np.ndarray, preds: np.ndarray, features: list[list[FeatureBox]]) -> dict:
         """Integrates feature metrics, confusion matrix, gender metrics, and bias scores to produce a comprehensive bias analysis."""
-        logger.info(f"Starting comprehensive bias analysis on dataset with {len(labels)} samples")
-
-        if len(labels) == 0:
-            logger.error("Empty dataset provided for bias analysis")
-            return {}
-
-        if len(labels) != len(preds) or len(labels) != len(features):
-            logger.error(f"Dimension mismatch: labels={len(labels)}, predictions={len(preds)}, features={len(features)}")
-            return {}
+        self.logger.info(f"Starting bias analysis on {len(labels)} samples")
 
         feature_probs, feature_bias = self._compute_feature_metrics(labels, features)
         confusion_matrix = self._compute_confusion_matrix(labels, preds)
         male_metrics, female_metrics = self._compute_gender_metrics(confusion_matrix)
-        bias_scores = self._compute_bias_scores(confusion_matrix, male_metrics, female_metrics, feature_bias)
 
-        logger.info("Bias analysis completed successfully")
+        bias_scores = self._compute_bias_scores(confusion_matrix, male_metrics, female_metrics)
+        bias_scores["feature_attention"] = feature_bias
 
-        male_perf = male_metrics["tpr"]
-        female_perf = female_metrics["tpr"]
-        overall_accuracy = (confusion_matrix["true_male"]["predicted_male"] + confusion_matrix["true_female"]["predicted_female"]) / len(labels)
-
-        logger.debug(f"Summary statistics - Overall accuracy: {overall_accuracy:.3f}, Male performance: {male_perf:.3f}, Female performance: {female_perf:.3f}")
-
-        max_bias_metric = max(bias_scores.items(), key=lambda x: x[1])
-        logger.debug(f"Highest bias detected in: {max_bias_metric[0]} = {max_bias_metric[1]:.3f}")
+        self.logger.info("Bias analysis completed successfully")
 
         return {
             "feature_probabilities": feature_probs,
