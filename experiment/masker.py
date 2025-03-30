@@ -13,14 +13,14 @@ from config import Config
 from datatypes import FeatureBox
 from utils import setup_logger
 
-logger = setup_logger(name="experiment.masker")
-
 
 class FeatureMasker:
     """Class responsible for detecting facial landmarks and applying masks to specific facial features in images."""
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, log_path: str):
         self.config = config
+        self.logger = setup_logger(name="feature_masker", log_path=log_path)
+
         self.landmarker = self.load_landmarker()
         self.feature_map = self.load_feature_map()
 

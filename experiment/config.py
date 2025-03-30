@@ -1,11 +1,6 @@
 from dataclasses import dataclass
 from typing import Literal, Optional
 
-# isort: off
-from utils import setup_logger
-
-logger = setup_logger(name="experiment.config")
-
 
 @dataclass
 class Config:
@@ -18,8 +13,9 @@ class Config:
     mask_features: list[str]
     mask_padding: int = 0
     feature_attention_threshold: Optional[float] = 0.5
-    results_path: Optional[str] = "outputs"
     base_seed: Optional[int] = 42
+    results_path: Optional[str] = "outputs"
+    log_path: Optional[str] = "logs"
 
     # Dataset parameters
     dataset_name: Literal["utkface", "fairface"] = "utkface"

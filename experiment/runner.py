@@ -20,7 +20,6 @@ from model import ModelTrainer
 from datatypes import DatasetSplits, Gender
 from utils import setup_logger
 
-logger = setup_logger(name="experiment.runner")
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 warnings.filterwarnings("ignore")
@@ -31,16 +30,25 @@ class ExperimentRunner:
 
     def __init__(self, config: Optional[Config] = None):
         self.config = config or Config()
-        self.feature_masker = FeatureMasker(self.config)
-        self.dataset_generator = DatasetGenerator(self.config, self.feature_masker)
-        self.model_trainer = ModelTrainer(self.config)
-        self.visual_explainer = VisualExplainer(self.config, self.feature_masker)
-        self.bias_analyzer = BiasAnalyzer()
+
+        self.exp_log_path = self._create_log_path()
+        self.logger = setup_logger(name="experiment_runner", log_path=self.exp_log_path)
+
+        self.feature_masker = FeatureMasker(self.config, self.exp_log_path)
+        self.dataset_generator = DatasetGenerator(self.config, self.feature_masker, self.exp_log_path)
+        self.model_trainer = ModelTrainer(self.config, self.exp_log_path)
+        self.visual_explainer = VisualExplainer(self.config, self.feature_masker, self.exp_log_path)
+        self.bias_analyzer = BiasAnalyzer(self.exp_log_path)
+
+    def _create_log_path(self) -> str:
+        """Creates a unique log directory for the current experiment run."""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        path = os.path.join(self.config.log_path, f"experiment_{timestamp}")
+        os.makedirs(path, exist_ok=True)
+        return path
 
     def _set_random_seeds(self, seed: int) -> None:
         """Sets the random seeds for reproducibility across various libraries and modules."""
-        logger.info(f"Setting random seed: {seed}")
-
         random.seed(seed)
         np.random.seed(seed)
         tf.random.set_seed(seed)
@@ -48,7 +56,7 @@ class ExperimentRunner:
 
     def _run_replicate(self, replicate: int, data_splits: DatasetSplits) -> dict:
         """Runs a single experiment replicate by setting seeds, preparing data, training the model, and analyzing results."""
-        logger.info(f"Running replicate {replicate + 1}/{self.config.replicate}")
+        self.logger.info(f"Running replicate {replicate + 1}/{self.config.replicate}")
 
         seed = self.config.base_seed + replicate
         self._set_random_seeds(seed)
@@ -57,13 +65,11 @@ class ExperimentRunner:
         key_features = self.visual_explainer.explain(model, data_splits.test_dataset)
         analysis = self.bias_analyzer.analyze(test_labels, predictions, key_features)
 
-        tf.keras.backend.clear_session()
-
         return {"seed": seed, "analysis": analysis}
 
     def run_experiment(self, male_ratio: float, mask_gender: int, mask_feature: str) -> dict:
         """Executes a single experiment with the specified parameters"""
-        logger.info(f"Running experiment: male_ratio={male_ratio}, mask_gender={mask_gender}, mask_feature={mask_feature}")
+        self.logger.info(f"Running experiment: male_ratio={male_ratio}, mask_gender={mask_gender}, mask_feature={mask_feature}")
 
         feature_str = mask_feature.replace("_", "") if mask_feature is not None else "none"
         gender_str = Gender(mask_gender).name.lower() if mask_gender is not None else "none"
@@ -75,6 +81,9 @@ class ExperimentRunner:
         for rep in range(self.config.replicate):
             replicate_result = self._run_replicate(rep, data_splits)
             replicates.append(replicate_result)
+
+            gc.collect()
+            tf.keras.backend.clear_session()
 
         return {
             "id": exp_id,
@@ -88,14 +97,17 @@ class ExperimentRunner:
 
     def run_all_experiments(self) -> None:
         """Executes multiple experiment replicates sequentially and aggregates their results."""
+        self.logger.info("Starting all experiments")
+        self.logger.debug(f"Experiments configuration: {self.config}")
+
         os.makedirs(self.config.results_path, exist_ok=True)
 
         mask_genders = self.config.mask_genders if self.config.mask_genders else [None]
         mask_features = self.config.mask_features if self.config.mask_features else [None]
         setups = list(itertools.product(self.config.male_ratios, mask_genders, mask_features))
 
-        logger.info(f"Running {len(setups)} experiments with {self.config.replicate} replicates each")
-        logger.debug(f"Experiment setups: {setups}")
+        self.logger.info(f"Running {len(setups)} experiments with {self.config.replicate} replicates each")
+        self.logger.debug(f"Experiments: {setups}")
 
         experiments = []
         for male_ratio, mask_gender, mask_feature in setups:
@@ -105,13 +117,14 @@ class ExperimentRunner:
             timestamp = int(datetime.now().timestamp())
             path = os.path.join(self.config.results_path, f"experiments_{timestamp}.json")
             with open(path, "w") as f:
-                json.dump(experiments, f, indent=2)
-            logger.info(f"Saved experiment results to {path}")
+                json.dump(experiments, f)
+
+            self.logger.info(f"Saved experiment results to {path}")
 
             gc.collect()
             tf.keras.backend.clear_session()
 
-        logger.info("All experiments completed successfully")
+        self.logger.info("All experiments completed successfully")
 
 
 def main() -> None:
