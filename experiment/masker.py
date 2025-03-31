@@ -71,17 +71,17 @@ class FeatureMasker:
         max_y = max(y for _, y in pts) + pad
         return int(min_x), int(min_y), int(max_x), int(max_y)
 
-    # TODO: Allow masking multiple features at once
-    def apply_mask(self, image: np.ndarray, feature: str) -> np.ndarray:
+    # TODO: Ensure uniform masking area across different features (e.g., 800 pixels, 400 pixels for smaller features)
+    def apply_mask(self, image: np.ndarray, features: list[str]) -> np.ndarray:
         """Applies a mask by setting the pixel values to zero within the bounding box of the specified facial feature in the image."""
         pix_coords = self._get_landmarks_in_pixels(image)
         if pix_coords is None:
             return image
 
-        # TODO: Ensure uniform masking area across different features (e.g., 800 pixels, 400 pixels for smaller features)
-        min_x, min_y, max_x, max_y = self._get_bbox(pix_coords, feature)
         result = image.copy()
-        result[min_y:max_y, min_x:max_x] = 0
+        for feature in features:
+            min_x, min_y, max_x, max_y = self._get_bbox(pix_coords, feature)
+            result[min_y:max_y, min_x:max_x] = 0
 
         return result
 

@@ -70,15 +70,15 @@ class ExperimentRunner:
 
         return {"seed": seed, "analysis": analysis}
 
-    def run_experiment(self, male_ratio: float, mask_gender: int, mask_feature: str) -> dict:
+    def run_experiment(self, male_ratio: float, mask_gender: Optional[int], mask_features: Optional[list[str]]) -> dict:
         """Executes a single experiment with the specified parameters"""
-        self.logger.info(f"Running experiment: male_ratio={male_ratio}, mask_gender={mask_gender}, mask_feature={mask_feature}")
+        self.logger.info(f"Running experiment: male_ratio={male_ratio}, mask_gender={mask_gender}, mask_feature={mask_features}")
 
-        feature_str = mask_feature.replace("_", "") if mask_feature is not None else "none"
+        features_str = "_".join([f.replace("_", "") for f in mask_features]) if mask_features is not None else "none"
         gender_str = Gender(mask_gender).name.lower() if mask_gender is not None else "none"
-        exp_id = f"male_{int(male_ratio * 100)}_mask_{feature_str}_of_{gender_str}"
+        exp_id = f"male_{int(male_ratio * 100)}_mask_{features_str}_of_{gender_str}"
 
-        train_data, val_data, test_data = self.dataset_generator.prepare_data(male_ratio, mask_gender, mask_feature, self.config.base_seed)
+        train_data, val_data, test_data = self.dataset_generator.prepare_data(male_ratio, mask_gender, mask_features, self.config.base_seed)
 
         replicates = []
         for rep in range(self.config.replicate):
@@ -93,7 +93,7 @@ class ExperimentRunner:
             "parameters": {
                 "male_ratio": male_ratio,
                 "mask_gender": mask_gender,
-                "mask_feature": mask_feature,
+                "mask_features": mask_features,
             },
             "replicates": replicates,
         }
@@ -106,15 +106,15 @@ class ExperimentRunner:
         os.makedirs(self.config.results_path, exist_ok=True)
 
         mask_genders = self.config.mask_genders if self.config.mask_genders else [None]
-        mask_features = self.config.mask_features if self.config.mask_features else [None]
-        setups = list(itertools.product(self.config.male_ratios, mask_genders, mask_features))
+        mask_features_set = self.config.mask_features if self.config.mask_features else [None]
+        setups = list(itertools.product(self.config.male_ratios, mask_genders, mask_features_set))
 
         self.logger.info(f"Running {len(setups)} experiments with {self.config.replicate} replicates each")
         self.logger.debug(f"Experiments: {setups}")
 
         experiments = []
-        for male_ratio, mask_gender, mask_feature in setups:
-            result = self.run_experiment(male_ratio, mask_gender, mask_feature)
+        for male_ratio, mask_gender, mask_features in setups:
+            result = self.run_experiment(male_ratio, mask_gender, mask_features)
             experiments.append(result)
 
             timestamp = int(datetime.now().timestamp())
