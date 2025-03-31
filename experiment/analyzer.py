@@ -107,10 +107,7 @@ class BiasAnalyzer:
         demographic_parity = abs(male_selection_rate - female_selection_rate)
         self.logger.debug(f"Demographic parity difference: {demographic_parity:.3f}")
 
-        # TODO: `tpr_diff` and `fpr_diff` are always the same. Just use one of them.
-        tpr_diff = abs(male_metrics["tpr"] - female_metrics["tpr"])
-        fpr_diff = abs(male_metrics["fpr"] - female_metrics["fpr"])
-        equalized_odds = max(tpr_diff, fpr_diff)
+        equalized_odds = abs(male_metrics["tpr"] - female_metrics["tpr"])
         self.logger.debug(f"Equalized odds: {equalized_odds:.3f}")
 
         conditional_use_accuracy_equality = abs(male_metrics["ppv"] - female_metrics["ppv"])
