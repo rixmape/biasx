@@ -10,6 +10,21 @@ class Gender(Enum):
     FEMALE = 1
 
 
+class FeatureName(Enum):
+    """Facial feature types used for landmark identification."""
+
+    LEFT_EYE = "left_eye"
+    RIGHT_EYE = "right_eye"
+    NOSE = "nose"
+    LIPS = "lips"
+    LEFT_CHEEK = "left_cheek"
+    RIGHT_CHEEK = "right_cheek"
+    CHIN = "chin"
+    FOREHEAD = "forehead"
+    LEFT_EYEBROW = "left_eyebrow"
+    RIGHT_EYEBROW = "right_eyebrow"
+
+
 @dataclass
 class FacialFeature:
     """Dataclass encapsulating the coordinates and name of a facial feature's bounding box, with an optional attention score."""
