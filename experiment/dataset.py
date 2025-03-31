@@ -114,6 +114,7 @@ class DatasetGenerator:
         def process(img_bytes, label):
             image = tf.io.decode_image(img_bytes, channels=3 if not self.config.grayscale else 1, expand_animations=False)
             image = tf.image.resize(image, [self.config.image_size, self.config.image_size])
+            image = tf.cast(image, tf.float32) / 255.0
 
             if mask_gender is not None and mask_features is not None and label == mask_gender:
                 image_np = image.numpy()
@@ -123,7 +124,7 @@ class DatasetGenerator:
             if self.config.grayscale and image.shape[-1] != 1:
                 image = tf.image.rgb_to_grayscale(image)
 
-            return tf.cast(image, tf.float32) / 255.0, label
+            return image, label
 
         result = tf.py_function(process, [image_bytes, label], [tf.float32, tf.int64])
         result[0].set_shape([self.config.image_size, self.config.image_size, 1 if self.config.grayscale else 3])
@@ -131,7 +132,7 @@ class DatasetGenerator:
 
         return result
 
-    def _create_dataset(self, df: pd.DataFrame, mask_gender: Optional[int], mask_features: Optional[list[str]], purpose: str) -> tf.data.Dataset:
+    def _create_dataset(self, df: pd.DataFrame, purpose: str, mask_gender: Optional[int] = None, mask_features: Optional[list[str]] = None) -> tf.data.Dataset:
         """Creates a TensorFlow dataset from image bytes and labels, applying the decoding and processing function with parallel mapping."""
         self.logger.info(f"Creating {purpose} dataset from {len(df)} samples")
 
@@ -181,13 +182,13 @@ class DatasetGenerator:
 
         batch_size = self.config.batch_size
 
-        train_data = self._create_dataset(train_df, mask_gender, mask_features, "TRAINING").batch(batch_size).cache()
+        train_data = self._create_dataset(train_df, "TRAINING", mask_gender=mask_gender, mask_features=mask_features).batch(batch_size).cache()
         self.logger.debug(f"Training dataset cached with {len(train_df)} samples ({len(train_df) // batch_size + 1} batches)")
 
-        val_data = self._create_dataset(val_df, mask_gender, mask_features, "VALIDATION").batch(batch_size).cache()
+        val_data = self._create_dataset(val_df, "VALIDATION").batch(batch_size).cache()
         self.logger.debug(f"Validation dataset cached with {len(val_df)} samples ({len(val_df) // batch_size + 1} batches)")
 
-        test_data = self._create_dataset(test_df, mask_gender, mask_features, "TEST").batch(batch_size)
+        test_data = self._create_dataset(test_df, "TEST").batch(batch_size)
         self.logger.debug(f"Test dataset created with {len(test_df)} samples ({len(test_df) // batch_size + 1} batches)")
 
         self.logger.info("Dataset preparation complete")
