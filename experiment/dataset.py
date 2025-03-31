@@ -1,5 +1,7 @@
+import os
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 import tensorflow as tf
 from huggingface_hub import hf_hub_download
@@ -154,6 +156,31 @@ class DatasetGenerator:
         self.logger.debug(f"{purpose} dataset creation complete")
         return dataset.prefetch(tf.data.AUTOTUNE)
 
+    def save_images_from_dataset(self, data: tf.data.Dataset, purpose: str, output_path: str) -> None:
+        """Save images from a dataset to a directory."""
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+            self.logger.debug(f"Created directory for {purpose} dataset: {output_path}")
+
+        image_count = 0
+
+        for batch in data:
+            images = batch[0] if isinstance(batch, tuple) else batch["image"]
+
+            for i in range(images.shape[0]):
+                image_tensor = images[i]
+                image_np = image_tensor.numpy()
+
+                if image_np.dtype in [tf.float32, tf.float64]:
+                    image_np = (image_np * 255.0).astype(np.uint8)
+
+                filename = f"image_{image_count:04d}.png"
+                filepath = os.path.join(output_path, filename)
+                tf.keras.utils.save_img(filepath, image_np, data_format="channels_last")
+                image_count += 1
+
+        self.logger.info(f"Successfully saved {image_count} images to {output_path}")
+
     def split_dataset(self, seed: int, df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """Splits the dataset into training, validation, and test sets using stratified sampling based on gender."""
         self.logger.info("Splitting dataset into train, validation, and test sets")
@@ -171,7 +198,7 @@ class DatasetGenerator:
 
         return train, val, test
 
-    def prepare_data(self, male_ratio: float, mask_gender: Optional[int], mask_features: Optional[list[str]], seed: int) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
+    def prepare_data(self, male_ratio: float, mask_gender: Optional[int], mask_features: Optional[list[str]], seed: int, exp_id: str) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
         """Loads, samples by gender, splits the dataset, and returns batched and cached TensorFlow datasets for training, validation, and testing."""
         self.logger.info(f"Preparing dataset: male_ratio={male_ratio}, mask_gender={mask_gender}, mask_feature={mask_features}, seed={seed}")
 
@@ -182,14 +209,20 @@ class DatasetGenerator:
 
         batch_size = self.config.batch_size
 
-        train_data = self._create_dataset(train_df, "TRAINING", mask_gender=mask_gender, mask_features=mask_features).batch(batch_size).cache()
+        train_data = self._create_dataset(train_df, "training", mask_gender=mask_gender, mask_features=mask_features).batch(batch_size).cache()
         self.logger.debug(f"Training dataset cached with {len(train_df)} samples ({len(train_df) // batch_size + 1} batches)")
+        if self.config.save_train_dataset:
+            self.save_images_from_dataset(train_data, "train", f"{self.config.output_path}/{exp_id}/train")
 
-        val_data = self._create_dataset(val_df, "VALIDATION").batch(batch_size).cache()
+        val_data = self._create_dataset(val_df, "validation").batch(batch_size).cache()
         self.logger.debug(f"Validation dataset cached with {len(val_df)} samples ({len(val_df) // batch_size + 1} batches)")
+        if self.config.save_val_dataset:
+            self.save_images_from_dataset(val_data, "val", f"{self.config.output_path}/{exp_id}/val")
 
-        test_data = self._create_dataset(test_df, "TEST").batch(batch_size)
+        test_data = self._create_dataset(test_df, "testing").batch(batch_size)
         self.logger.debug(f"Test dataset created with {len(test_df)} samples ({len(test_df) // batch_size + 1} batches)")
+        if self.config.save_test_dataset:
+            self.save_images_from_dataset(test_data, "test", f"{self.config.output_path}/{exp_id}/test")
 
         self.logger.info("Dataset preparation complete")
 

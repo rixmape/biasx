@@ -78,7 +78,7 @@ class ExperimentRunner:
         gender_str = Gender(mask_gender).name.lower() if mask_gender is not None else "none"
         exp_id = f"male_{int(male_ratio * 100)}_mask_{features_str}_of_{gender_str}"
 
-        train_data, val_data, test_data = self.dataset_generator.prepare_data(male_ratio, mask_gender, mask_features, self.config.base_seed)
+        train_data, val_data, test_data = self.dataset_generator.prepare_data(male_ratio, mask_gender, mask_features, self.config.base_seed, exp_id)
 
         replicates = []
         for rep in range(self.config.replicate):
@@ -103,7 +103,7 @@ class ExperimentRunner:
         self.logger.info("Starting all experiments")
         self.logger.debug(f"Experiments configuration: {self.config}")
 
-        os.makedirs(self.config.results_path, exist_ok=True)
+        os.makedirs(self.config.output_path, exist_ok=True)
 
         mask_genders = self.config.mask_genders if self.config.mask_genders else [None]
         mask_features_set = self.config.mask_features if self.config.mask_features else [None]
@@ -118,7 +118,7 @@ class ExperimentRunner:
             experiments.append(result)
 
             timestamp = int(datetime.now().timestamp())
-            path = os.path.join(self.config.results_path, f"experiments_{timestamp}.json")
+            path = os.path.join(self.config.output_path, f"experiments_{timestamp}.json")
             with open(path, "w") as f:
                 json.dump(experiments, f)
 

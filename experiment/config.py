@@ -9,6 +9,7 @@ from datatypes import Gender, FeatureName
 class Config:
     """Configuration dataclass for experiment parameters, dataset, and model settings."""
 
+    # Experiment parameters
     replicate: int
     male_ratios: Optional[list[float]] = field(default_factory=lambda: [0.5])
     mask_genders: Optional[list[int]] = field(default_factory=list)
@@ -16,9 +17,15 @@ class Config:
     mask_padding: int = 0
     feature_attention_threshold: Optional[float] = 0.5
     base_seed: Optional[int] = 42
-    results_path: str = "outputs"
+
+    # File management parameters
+    save_train_dataset: bool = False
+    save_test_dataset: bool = False
+    save_val_dataset: bool = False
+    output_path: str = "outputs"
     log_path: str = "logs"
 
+    # Dataset parameters
     dataset_name: Literal["utkface", "fairface"] = "utkface"
     dataset_size: int = 5000
     val_split: float = 0.1
@@ -26,6 +33,7 @@ class Config:
     image_size: int = 48
     grayscale: bool = True
 
+    # Model parameters
     batch_size: int = 64
     epochs: int = 10
 
@@ -66,7 +74,9 @@ class Config:
         if self.base_seed is not None and (not isinstance(self.base_seed, int) or self.base_seed < 0):
             raise ValueError(f"Base seed must be a non-negative integer if specified. Got {self.base_seed}.")
 
-        if not isinstance(self.results_path, str) or not self.results_path:
+    def _validate_filepaths_params(self):
+        """Validates file management parameters."""
+        if not isinstance(self.output_path, str) or not self.output_path:
             raise ValueError("Results path must be a non-empty string.")
 
         if not isinstance(self.log_path, str) or not self.log_path:
@@ -100,5 +110,6 @@ class Config:
     def __post_init__(self):
         """Runs all validation checks after initialization."""
         self._validate_experiment_params()
+        self._validate_filepaths_params()
         self._validate_dataset_params()
         self._validate_model_params()
