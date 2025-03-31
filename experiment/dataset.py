@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pandas as pd
 import tensorflow as tf
 from huggingface_hub import hf_hub_download
@@ -106,22 +108,22 @@ class DatasetGenerator:
 
         return combined
 
-    def _decode_and_process_image(self, image_bytes: tf.Tensor, label: tf.Tensor, mask_gender: int, mask_feature: str) -> tuple[tf.Tensor, tf.Tensor]:
+    def _decode_and_process_image(self, image_bytes: tf.Tensor, label: tf.Tensor, mask_gender: Optional[int], mask_features: Optional[list[str]]) -> tuple[tf.Tensor, tf.Tensor]:
         """Decodes image bytes, resizes the image, applies masking based on gender and feature if needed, and normalizes pixel values."""
 
-        def process(img_bytes, lbl):
+        def process(img_bytes, label):
             image = tf.io.decode_image(img_bytes, channels=3 if not self.config.grayscale else 1, expand_animations=False)
             image = tf.image.resize(image, [self.config.image_size, self.config.image_size])
 
-            if mask_gender is not None and mask_feature is not None and lbl == mask_gender:
+            if mask_gender is not None and mask_features is not None and label == mask_gender:
                 image_np = image.numpy()
-                masked_image = self.feature_masker.apply_mask(image_np, mask_feature)
+                masked_image = self.feature_masker.apply_mask(image_np, mask_features)
                 image = tf.convert_to_tensor(masked_image)
 
             if self.config.grayscale and image.shape[-1] != 1:
                 image = tf.image.rgb_to_grayscale(image)
 
-            return tf.cast(image, tf.float32) / 255.0, lbl
+            return tf.cast(image, tf.float32) / 255.0, label
 
         result = tf.py_function(process, [image_bytes, label], [tf.float32, tf.int64])
         result[0].set_shape([self.config.image_size, self.config.image_size, 1 if self.config.grayscale else 3])
@@ -129,24 +131,24 @@ class DatasetGenerator:
 
         return result
 
-    def _create_dataset(self, df: pd.DataFrame, mask_gender: int, mask_feature: str, purpose: str) -> tf.data.Dataset:
+    def _create_dataset(self, df: pd.DataFrame, mask_gender: Optional[int], mask_features: Optional[list[str]], purpose: str) -> tf.data.Dataset:
         """Creates a TensorFlow dataset from image bytes and labels, applying the decoding and processing function with parallel mapping."""
-        self.logger.info(f"Creating {purpose} TensorFlow dataset from {len(df)} samples")
+        self.logger.info(f"Creating {purpose} dataset from {len(df)} samples")
 
         male_count = (df["gender"] == Gender.MALE.value).sum()
         female_count = (df["gender"] == Gender.FEMALE.value).sum()
-        self.logger.debug(f"{purpose} dataset gender distribution: Male={male_count} ({male_count/len(df):.2%}), Female={female_count} ({female_count/len(df):.2%})")
+        self.logger.debug(f"{purpose} dataset gender distribution: male={male_count} ({male_count/len(df):.2%}), female={female_count} ({female_count/len(df):.2%})")
 
-        if mask_gender is not None and mask_feature is not None:
+        if mask_gender is not None and mask_features is not None:
             gender_name = Gender(mask_gender).name
             masked_count = (df["gender"] == mask_gender).sum()
-            self.logger.debug(f"{purpose} dataset masking: Feature '{mask_feature}' will be masked for {gender_name} gender ({masked_count} images, {masked_count/len(df):.2%} of this split)")
+            self.logger.debug(f"{purpose} masking: features={mask_features}, gender={gender_name}, image_count={masked_count} ({masked_count/len(df):.2%})")
         else:
             self.logger.debug(f"{purpose} dataset: No feature masking applied")
 
         # TODO: Add image ID column to log messages
         dataset = tf.data.Dataset.from_tensor_slices((df["image_bytes"].values, df["gender"].values))
-        dataset = dataset.map(lambda x, y: self._decode_and_process_image(x, y, mask_gender, mask_feature), num_parallel_calls=tf.data.AUTOTUNE)
+        dataset = dataset.map(lambda x, y: self._decode_and_process_image(x, y, mask_gender, mask_features), num_parallel_calls=tf.data.AUTOTUNE)
 
         self.logger.debug(f"{purpose} dataset creation complete")
         return dataset.prefetch(tf.data.AUTOTUNE)
@@ -168,9 +170,9 @@ class DatasetGenerator:
 
         return train, val, test
 
-    def prepare_data(self, male_ratio: float, mask_gender: int, mask_feature: str, seed: int) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
+    def prepare_data(self, male_ratio: float, mask_gender: Optional[int], mask_features: Optional[list[str]], seed: int) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
         """Loads, samples by gender, splits the dataset, and returns batched and cached TensorFlow datasets for training, validation, and testing."""
-        self.logger.info(f"Preparing dataset: male_ratio={male_ratio}, mask_gender={mask_gender}, mask_feature={mask_feature}, seed={seed}")
+        self.logger.info(f"Preparing dataset: male_ratio={male_ratio}, mask_gender={mask_gender}, mask_feature={mask_features}, seed={seed}")
 
         df = self._load_dataset()
         df = self._sample_by_gender(male_ratio, seed, df)
@@ -179,13 +181,13 @@ class DatasetGenerator:
 
         batch_size = self.config.batch_size
 
-        train_data = self._create_dataset(train_df, mask_gender, mask_feature, "TRAINING").batch(batch_size).cache()
+        train_data = self._create_dataset(train_df, mask_gender, mask_features, "TRAINING").batch(batch_size).cache()
         self.logger.debug(f"Training dataset cached with {len(train_df)} samples ({len(train_df) // batch_size + 1} batches)")
 
-        val_data = self._create_dataset(val_df, mask_gender, mask_feature, "VALIDATION").batch(batch_size).cache()
+        val_data = self._create_dataset(val_df, mask_gender, mask_features, "VALIDATION").batch(batch_size).cache()
         self.logger.debug(f"Validation dataset cached with {len(val_df)} samples ({len(val_df) // batch_size + 1} batches)")
 
-        test_data = self._create_dataset(test_df, mask_gender, mask_feature, "TEST").batch(batch_size)
+        test_data = self._create_dataset(test_df, mask_gender, mask_features, "TEST").batch(batch_size)
         self.logger.debug(f"Test dataset created with {len(test_df)} samples ({len(test_df) // batch_size + 1} batches)")
 
         self.logger.info("Dataset preparation complete")

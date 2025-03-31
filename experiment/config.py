@@ -12,7 +12,7 @@ class Config:
     replicate: int
     male_ratios: Optional[list[float]] = field(default_factory=lambda: [0.5])
     mask_genders: Optional[list[int]] = field(default_factory=list)
-    mask_features: Optional[list[str]] = field(default_factory=list)
+    mask_features: Optional[list[list[str]]] = field(default_factory=list)
     mask_padding: int = 0
     feature_attention_threshold: Optional[float] = 0.5
     base_seed: Optional[int] = 42
@@ -45,13 +45,16 @@ class Config:
             allowed_genders = [g.value for g in Gender]
             for gender_val in self.mask_genders:
                 if not isinstance(gender_val, int) or gender_val not in allowed_genders:
-                    raise ValueError(f"Each mask_gender must be an integer representing a Gender value ({allowed_genders}). Got {gender_val}.")
+                    raise ValueError(f"Each mask_gender must be an integer representing a `Gender` value ({allowed_genders}). Got {gender_val}.")
 
         if self.mask_features is not None:
             allowed_features = [f.value for f in FeatureName]
-            for feature_name in self.mask_features:
-                if not isinstance(feature_name, str) or feature_name not in allowed_features:
-                    raise ValueError(f"Each mask_feature must be a valid FeatureName string ({allowed_features}). Got {feature_name}.")
+            for feature_list in self.mask_features:
+                if not isinstance(feature_list, list):
+                    raise ValueError(f"Each mask_features entry must be a list. Got {feature_list}.")
+                for feature in feature_list:
+                    if not isinstance(feature, str) or feature not in allowed_features:
+                        raise ValueError(f"Each mask_feature must be a string representing a `FeatureName` value {allowed_features}. Got {feature}.")
 
         if not isinstance(self.mask_padding, int) or self.mask_padding < 0:
             raise ValueError(f"Mask padding must be a non-negative integer. Got {self.mask_padding}.")
