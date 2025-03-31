@@ -39,12 +39,17 @@ class FeatureMasker:
 
     def _detect_landmarks(self, image: np.ndarray) -> Any:
         """Converts the input image to RGB (if necessary) and detects facial landmarks using the loaded landmarker."""
-        if image.shape[-1] == 1 or len(image.shape) == 2:
-            rgb = cv2.cvtColor((image * 255).astype(np.uint8), cv2.COLOR_GRAY2RGB)
-        else:
-            rgb = image
+        copied = image.copy()
 
-        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+        if copied.dtype == np.float32:
+            copied = copied * 255
+
+        copied = copied.astype(np.uint8)
+
+        if copied.shape[-1] == 1 or len(copied.shape) == 2:
+            copied = cv2.cvtColor(copied, cv2.COLOR_GRAY2RGB)
+
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=copied)
         result = self.landmarker.detect(mp_image)
 
         return result.face_landmarks[0] if result.face_landmarks else None
@@ -76,30 +81,26 @@ class FeatureMasker:
         """Applies a mask by setting the pixel values to zero within the bounding box of the specified facial feature in the image."""
         pix_coords = self._get_landmarks_in_pixels(image)
         if pix_coords is None:
+            self.logger.warning("No landmarks detected during masking")
             return image
 
-        result = image.copy()
         for feature in features:
             min_x, min_y, max_x, max_y = self._get_bbox(pix_coords, feature)
-            result[min_y:max_y, min_x:max_x] = 0
+            image[min_y:max_y, min_x:max_x] = 0
 
-        return result
+        return image
 
     def get_features(self, image: np.ndarray) -> list[FacialFeature]:
         """Returns a list of features representing bounding boxes for all defined facial features in the image."""
         pix_coords = self._get_landmarks_in_pixels(image)
         if pix_coords is None:
+            self.logger.warning("No landmarks detected during feature extraction")
             return []
 
         features = []
         for feature_name in self.feature_map.keys():
             min_x, min_y, max_x, max_y = self._get_bbox(pix_coords, feature_name)
             feature = FacialFeature(min_x, min_y, max_x, max_y, feature_name)
-
-            if feature.get_area() == 0:
-                self.logger.warning(f"Feature '{feature}' ignored: area=0, min_x={min_x}, min_y={min_y}, max_x={max_x}, max_y={max_y}")
-                continue
-
             features.append(feature)
 
         return features
