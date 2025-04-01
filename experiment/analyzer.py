@@ -1,144 +1,129 @@
 from collections import defaultdict
+from typing import List
 
 import numpy as np
 
 # isort: off
-from datatypes import FacialFeature, Gender
+from datatypes import AnalysisResult, BiasMetrics, Feature, FeatureDistribution, Gender, GenderPerformanceMetrics, ImageDetail
 from utils import setup_logger
 
 
 class BiasAnalyzer:
-    """Class that computes bias metrics by analyzing feature probabilities, confusion matrices, and gender-based performance statistics."""
 
     def __init__(self, log_path: str):
         self.logger = setup_logger(name="bias_analyzer", log_path=log_path)
 
-    def _compute_feature_metrics(self, labels: np.ndarray, features: list[list[FacialFeature]]) -> dict[str, dict[str, float]]:
-        """Computes per-feature probabilities by aggregating counts from the provided feature boxes."""
-        counts = defaultdict(lambda: defaultdict(int))
-        for label, feature_boxes in zip(labels, features):
-            for feature_box in feature_boxes:
-                counts[feature_box.name][Gender(label).name] += 1
+    def _compute_feature_distributions(
+        self,
+        image_details: List[ImageDetail],
+    ) -> List[FeatureDistribution]:
+        self.logger.info("Computing feature distributions based on key features.")
+        feature_counts = defaultdict(lambda: defaultdict(int))
+        label_counts = defaultdict(int)
 
-        self.logger.info(f"Computing occurence probabilities for {len(counts)} features")
+        for image_detail in image_details:
+            true_label = image_detail.label
+            gender_name = true_label.name
+            label_counts[gender_name] += 1
 
-        male_count = (labels == Gender.MALE.value).sum()
-        female_count = (labels == Gender.FEMALE.value).sum()
+            for feature_detail in image_detail.detected_features:
+                if feature_detail.is_key_feature:
+                    feature_counts[feature_detail.feature][gender_name] += 1
 
-        analysis = {}
-        for feature_name, count in counts.items():
-            male_prob = count[Gender.MALE.name] / max(male_count, 1)
-            female_prob = count[Gender.FEMALE.name] / max(female_count, 1)
-            bias = abs(male_prob - female_prob)
-            analysis[feature_name] = {"male": male_prob, "female": female_prob, "bias": bias}
+        male_total = label_counts[Gender.MALE.name]
+        female_total = label_counts[Gender.FEMALE.name]
+        distributions = []
+        all_possible_features = set(Feature)
 
-            self.logger.debug(f"Feature '{feature_name}': male_prob={male_prob:.3f}, female_prob={female_prob:.3f}, bias={bias:.3f}")
+        for feature_enum in all_possible_features:
+            gender_count = feature_counts[feature_enum]
+            male_prob = gender_count[Gender.MALE.name] / max(male_total, 1)
+            female_prob = gender_count[Gender.FEMALE.name] / max(female_total, 1)
+            dist = FeatureDistribution(
+                feature=feature_enum,
+                male_distribution=male_prob,
+                female_distribution=female_prob,
+            )
+            distributions.append(dist)
 
-        return analysis
+        return distributions
 
-    def _compute_confusion_matrix(self, labels: np.ndarray, preds: np.ndarray) -> dict[str, dict[str, int]]:
-        """Constructs a confusion matrix by comparing true labels with predictions for both male and female classes."""
-        self.logger.info("Computing confusion matrix")
+    def _compute_gender_performance_metrics(
+        self,
+        positive_class: Gender,
+        true_labels: np.ndarray,
+        predicted_labels: np.ndarray,
+    ) -> GenderPerformanceMetrics:
+        self.logger.info(f"Computing performance metrics for {positive_class.name} as Positive.")
 
-        male_actual = labels == Gender.MALE.value
-        female_actual = labels == Gender.FEMALE.value
-        male_pred = preds == Gender.MALE.value
-        female_pred = preds == Gender.FEMALE.value
+        positive_val = positive_class.value
 
-        tp = int((male_actual & male_pred).sum())
-        fn = int((male_actual & female_pred).sum())
-        fp = int((female_actual & male_pred).sum())
-        tn = int((female_actual & female_pred).sum())
+        is_positive_actual = true_labels == positive_val
+        is_negative_actual = true_labels != positive_val
+        is_positive_pred = predicted_labels == positive_val
+        is_negative_pred = predicted_labels != positive_val
 
-        total = tp + tn + fp + fn
-        accuracy = (tp + tn) / max(total, 1)
+        tp = int(np.sum(is_positive_actual & is_positive_pred))
+        fn = int(np.sum(is_positive_actual & is_negative_pred))
+        fp = int(np.sum(is_negative_actual & is_positive_pred))
+        tn = int(np.sum(is_negative_actual & is_negative_pred))
 
-        self.logger.debug(f"Confusion matrix: TP={tp}, FN={fn}, FP={fp}, TN={tn}")
-        self.logger.debug(f"Overall accuracy: {accuracy:.3f} ({tp + tn}/{total} correct)")
+        metrics = GenderPerformanceMetrics(positive_class=positive_class, tp=tp, fp=fp, tn=tn, fn=fn)
 
-        return {
-            "true_male": {"predicted_male": tp, "predicted_female": fn},
-            "true_female": {"predicted_male": fp, "predicted_female": tn},
-        }
+        self.logger.debug(f"{positive_class.name} metrics: {metrics.model_dump()}")
+        return metrics
 
-    def _compute_gender_metrics(self, cm: dict) -> tuple[dict[str, float], dict[str, float]]:
-        """Calculates gender-specific performance metrics such as TPR, FPR, PPV, and FDR using the confusion matrix data."""
-        self.logger.info("Computing gender-specific performance metrics")
+    def _compute_bias_metrics(
+        self,
+        male_metrics: GenderPerformanceMetrics,
+        female_metrics: GenderPerformanceMetrics,
+        feature_distributions: List[FeatureDistribution],
+    ) -> BiasMetrics:
+        self.logger.info("Computing overall bias scores.")
 
-        tp = cm["true_male"]["predicted_male"]
-        fn = cm["true_male"]["predicted_female"]
-        fp = cm["true_female"]["predicted_male"]
-        tn = cm["true_female"]["predicted_female"]
+        males_predicted_positive = male_metrics.tp + male_metrics.fp
+        females_predicted_positive = female_metrics.tp + female_metrics.fp
+        total_males = male_metrics.tp + male_metrics.fn
+        total_females = female_metrics.tp + female_metrics.fn
 
-        tpr_male = tp / max(tp + fn, 1)
-        fpr_male = fp / max(fp + tn, 1)
-        ppv_male = tp / max(tp + fp, 1)
-        fdr_male = fp / max(tp + fp, 1)
+        male_select_rate = males_predicted_positive / max(total_males, 1)
+        female_select_rate = females_predicted_positive / max(total_females, 1)
+        demographic_parity = abs(male_select_rate - female_select_rate)
 
-        tpr_female = tn / max(tn + fp, 1)
-        fpr_female = fn / max(fn + tp, 1)
-        ppv_female = tn / max(tn + fn, 1)
-        fdr_female = fn / max(tn + fn, 1)
+        equalized_odds = abs(male_metrics.tpr - female_metrics.tpr)
+        conditional_use_accuracy_equality = abs(male_metrics.ppv - female_metrics.ppv)
+        mean_feature_distribution_bias = np.mean([dist.distribution_bias for dist in feature_distributions]) if feature_distributions else 0.0
 
-        self.logger.debug(f"Male metrics: TPR={tpr_male:.3f}, FPR={fpr_male:.3f}, PPV={ppv_male:.3f}, FDR={fdr_male:.3f}")
-        self.logger.debug(f"Female metrics: TPR={tpr_female:.3f}, FPR={fpr_female:.3f}, PPV={ppv_female:.3f}, FDR={fdr_female:.3f}")
-
-        return (
-            {"tpr": tpr_male, "fpr": fpr_male, "ppv": ppv_male, "fdr": fdr_male},
-            {"tpr": tpr_female, "fpr": fpr_female, "ppv": ppv_female, "fdr": fdr_female},
+        bias_metrics_result = BiasMetrics(
+            demographic_parity=demographic_parity,
+            equalized_odds=equalized_odds,
+            conditional_use_accuracy_equality=conditional_use_accuracy_equality,
+            mean_feature_distribution_bias=mean_feature_distribution_bias,
         )
 
-    def _compute_bias_scores(self, cm: dict, male_metrics: dict, female_metrics: dict, feature_probs: dict[str, dict[str, float]]) -> dict[str, float]:
-        """Derives overall bias scores based on demographic parity, equalized odds, conditional use accuracy, treatment equality, and feature attention."""
-        self.logger.info("Computing bias scores across multiple fairness criteria")
+        self.logger.debug(f"Overall bias metrics: {bias_metrics_result.model_dump()}")
+        return bias_metrics_result
 
-        tp_male = cm["true_male"]["predicted_male"]
-        fn_male = cm["true_male"]["predicted_female"]
-        fp_male = cm["true_female"]["predicted_male"]
-        tn_male = cm["true_female"]["predicted_female"]
+    def analyze(
+        self,
+        image_details: List[ImageDetail],
+    ) -> AnalysisResult:
+        self.logger.info(f"Starting bias analysis on {len(image_details)} samples.")
 
-        male_count = tp_male + fn_male
-        female_count = fp_male + tn_male
+        true_labels = np.array([img.label.value for img in image_details])
+        predicted_labels = np.array([img.prediction.value for img in image_details])
 
-        male_selection_rate = tp_male / max(male_count, 1)
-        female_selection_rate = fp_male / max(female_count, 1)
-        self.logger.debug(f"Selection rates: male={male_selection_rate:.3f}, female={female_selection_rate:.3f}")
+        feature_distributions = self._compute_feature_distributions(image_details)
+        male_perf_metrics = self._compute_gender_performance_metrics(Gender.MALE, true_labels, predicted_labels)
+        female_perf_metrics = self._compute_gender_performance_metrics(Gender.FEMALE, true_labels, predicted_labels)
+        bias_metrics = self._compute_bias_metrics(male_perf_metrics, female_perf_metrics, feature_distributions)
 
-        demographic_parity = abs(male_selection_rate - female_selection_rate)
-        self.logger.debug(f"Demographic parity difference: {demographic_parity:.3f}")
+        self.logger.info("Bias analysis completed successfully.")
 
-        equalized_odds = abs(male_metrics["tpr"] - female_metrics["tpr"])
-        self.logger.debug(f"Equalized odds: {equalized_odds:.3f}")
-
-        conditional_use_accuracy_equality = abs(male_metrics["ppv"] - female_metrics["ppv"])
-        self.logger.debug(f"Conditional use accuracy equality: {conditional_use_accuracy_equality:.3f}")
-
-        feature_attention = np.mean([feature["bias"] for feature in feature_probs.values()])
-        self.logger.debug(f"Average feature attention bias: {feature_attention:.3f}")
-
-        return {
-            "demographic_parity": demographic_parity,
-            "equalized_odds": equalized_odds,
-            "conditional_use_accuracy_equality": conditional_use_accuracy_equality,
-            "feature_attention": feature_attention,
-        }
-
-    def analyze(self, labels: np.ndarray, preds: np.ndarray, features: list[list[FacialFeature]]) -> dict:
-        """Integrates feature metrics, confusion matrix, gender metrics, and bias scores to produce a comprehensive bias analysis."""
-        self.logger.info(f"Starting bias analysis on {len(labels)} samples")
-
-        feature_probs = self._compute_feature_metrics(labels, features)
-        confusion_matrix = self._compute_confusion_matrix(labels, preds)
-        male_metrics, female_metrics = self._compute_gender_metrics(confusion_matrix)
-
-        bias_scores = self._compute_bias_scores(confusion_matrix, male_metrics, female_metrics, feature_probs)
-
-        self.logger.info("Bias analysis completed successfully")
-
-        return {
-            "feature_probabilities": feature_probs,
-            "confusion_matrix": confusion_matrix,
-            "male_metrics": male_metrics,
-            "female_metrics": female_metrics,
-            "bias_scores": bias_scores,
-        }
+        return AnalysisResult(
+            feature_distributions=feature_distributions,
+            male_performance_metrics=male_perf_metrics,
+            female_performance_metrics=female_perf_metrics,
+            bias_metrics=bias_metrics,
+            analyzed_images=image_details,
+        )

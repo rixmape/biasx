@@ -1,103 +1,120 @@
-import gc
-from typing import Any
+import os
+from typing import List, Optional, Tuple
 
 import numpy as np
 import tensorflow as tf
 from tf_keras_vis.gradcam_plus_plus import GradcamPlusPlus
 
 # isort: off
-from config import Config
+from config import ExperimentsConfig
+from datatypes import ArtifactSavingLevel, FeatureDetails
 from masker import FeatureMasker
-from datatypes import FacialFeature
 from utils import setup_logger
 
 
 class VisualExplainer:
-    """Class that generates visual explanations by computing Grad-CAM++ heatmaps and extracting feature attention from masked image regions."""
 
-    def __init__(self, config: Config, masker: FeatureMasker, log_path: str):
+    def __init__(self, config: ExperimentsConfig, masker: FeatureMasker, log_path: str):
         self.config = config
-        self.logger = setup_logger(name="visual_explainer", log_path=log_path)
         self.masker = masker
+        self.logger = setup_logger(name="visual_explainer", log_path=log_path)
 
-    def _get_heatmap(self, visualizer: Any, image: np.ndarray, true_label: int) -> np.ndarray:
-        """Generates a Grad-CAM++ heatmap for an image based on its true label using the provided visualizer function."""
-        score_fn = lambda output: output[0][true_label]
-        expanded_img = np.expand_dims(image, axis=0)
-        heatmap = visualizer(score_fn, expanded_img, penultimate_layer="block3_conv3")[0]
+    def setup_heatmap_generator(
+        self,
+        model: tf.keras.Model,
+    ) -> GradcamPlusPlus:
+        replace_to_linear = lambda m: setattr(m.layers[-1], "activation", tf.keras.activations.linear)
+        return GradcamPlusPlus(model, model_modifier=replace_to_linear, clone=True)
 
-        if np.mean(heatmap) < 0.5:
-            quantiles = ", ".join([f"q{i}={np.quantile(heatmap, val):.4f}" for i, val in enumerate([0.25, 0.5, 0.75])])
-            self.logger.warning(f"CAM too low: mean={np.mean(heatmap):.4f}, std={np.std(heatmap):.4f}, {quantiles}")
+    def _calculate_heatmap(
+        self,
+        heatmap_generator: GradcamPlusPlus,
+        image_np: np.ndarray,
+        true_label_index: int,
+    ) -> np.ndarray:
+        target_class = lambda output: output[0][true_label_index]
+        image_batch = np.expand_dims(image_np.astype(np.float32), axis=0)
 
-        return heatmap
+        target_layer = "block3_conv3"
 
-    def _select_key_features(self, features: list[FacialFeature], heatmap: np.ndarray) -> list[FacialFeature]:
-        """Filters feature boxes based on their computed attention from the heatmap, retaining only those above a specified threshold."""
+        model_layer_names = [layer.name for layer in heatmap_generator.model.layers]
+        if target_layer not in model_layer_names:
+            self.logger.error(f"Target layer '{target_layer}' not found in model layers: {model_layer_names}")
+            return np.zeros(image_np.shape[:2], dtype=np.float32)
 
-        key_features = []
-        for feature in features:
-            roi = heatmap[
-                max(0, feature.min_y) : min(heatmap.shape[0], feature.max_y),
-                max(0, feature.min_x) : min(heatmap.shape[1], feature.max_x),
-            ]
-            attention = np.mean(roi)
+        heatmap = heatmap_generator(target_class, image_batch, penultimate_layer=target_layer)[0]
 
-            if attention < self.config.feature_attention_threshold:
-                quantiles = ", ".join([f"q{i}={np.quantile(roi, val):.4f}" for i, val in enumerate([0.25, 0.5, 0.75])])
-                self.logger.warning(f"Feature '{feature.name}' ignored: attention={attention:.4f}, std={np.std(roi):.4f}, {quantiles}")
-                continue
+        min_val, max_val = np.min(heatmap), np.max(heatmap)
+        normalized_heatmap = (heatmap - min_val) / (max_val - min_val) if max_val > min_val else np.zeros_like(heatmap)
+        return normalized_heatmap
 
-            key_feature = FacialFeature(min_x=feature.min_x, min_y=feature.min_y, max_x=feature.max_x, max_y=feature.max_y, name=feature.name, attention=attention)
-            key_features.append(key_feature)
+    def _calculate_single_feature_attention(
+        self,
+        feature: FeatureDetails,
+        heatmap: np.ndarray,
+    ) -> float:
+        heatmap_height, heatmap_width = heatmap.shape[:2]
+        min_y, max_y = max(0, feature.min_y), min(heatmap_height, feature.max_y)
+        min_x, max_x = max(0, feature.min_x), min(heatmap_width, feature.max_x)
 
-        if not key_features:
-            self.logger.warning("No features exceeded the attention threshold")
+        if min_y >= max_y or min_x >= max_x:
+            return 0.0
 
-        return key_features
+        feature_attention_region = heatmap[min_y:max_y, min_x:max_x]
+        return np.mean(feature_attention_region) if feature_attention_region.size > 0 else 0.0
 
-    def explain(self, model: tf.keras.Model, test_data: tf.data.Dataset) -> list[list[FacialFeature]]:
-        """Iterates over test dataset images to generate heatmaps, extract feature boxes, and compile key features for explanation."""
-        self.logger.info("Starting visual explanation generation")
+    def _save_heatmap(
+        self,
+        heatmap: np.ndarray,
+        image_id: str,
+        heatmap_dir: str,
+    ) -> str:
+        if self.config.output.artifact_level != ArtifactSavingLevel.FULL:
+            return ""
 
-        modifier = lambda m: setattr(m.layers[-1], "activation", tf.keras.activations.linear)
-        visualizer = GradcamPlusPlus(model, model_modifier=modifier)
+        if not os.path.exists(heatmap_dir):
+            os.makedirs(heatmap_dir)
 
-        key_features = []
-        batch_count = 0
-        image_count = 0
-        empty_feature_count = 0
+        heatmap_filename = f"{image_id}.npy"
+        heatmap_full_path = os.path.join(heatmap_dir, heatmap_filename)
+        np.save(heatmap_full_path, heatmap.astype(np.float16))
+        heatmap_rel_path = os.path.relpath(heatmap_full_path, self.config.output.base_dir)
+        return heatmap_rel_path
 
-        self.logger.info(f"Processing batches for feature attention with {self.config.feature_attention_threshold:.4f} threshold")
+    def _compute_feature_details(
+        self,
+        features: List[FeatureDetails],
+        heatmap: np.ndarray,
+        image_id: str,
+    ) -> List[FeatureDetails]:
+        if not features:
+            self.logger.warning(f"[{image_id}] No features detected by masker for attention calculation.")
+            return []
 
-        for batch in test_data:
-            batch_count += 1
-            images, labels = batch
-            batch_size = len(images)
+        for feature_detail in features:
+            attention_score = self._calculate_single_feature_attention(feature_detail, heatmap)
+            is_key = attention_score >= self.config.core.key_feature_threshold
 
-            self.logger.debug(f"Processing batch {batch_count} with {batch_size} images")
+            feature_detail.attention_score = float(attention_score)
+            feature_detail.is_key_feature = bool(is_key)
 
-            for i in range(batch_size):
-                image = images[i].numpy()
-                label = int(labels[i].numpy())
-                image_count += 1
+            if is_key:
+                self.logger.debug(f"[{image_id}] Feature '{feature_detail.feature.name}' identified as key (attention: {attention_score:.4f}).")
 
-                heatmap = self._get_heatmap(visualizer, image, label)
-                boxes = self.masker.get_features(image)
+        return features
 
-                if not boxes:
-                    self.logger.warning(f"No facial features detected in image {image_count}. This may indicate an issue with face detection.")
-                    empty_feature_count += 1
+    def generate_explanation_for_image(
+        self,
+        heatmap_generator: GradcamPlusPlus,
+        image_np: np.ndarray,
+        label: int,
+        image_id: str,
+        heatmap_dir: str,
+    ) -> Tuple[Optional[str], List[FeatureDetails]]:
 
-                filtered_boxes = self._select_key_features(boxes, heatmap)
-                key_features.append(filtered_boxes)
+        heatmap = self._calculate_heatmap(heatmap_generator, image_np, label)
+        heatmap_path = self._save_heatmap(heatmap, image_id, heatmap_dir)
+        detected_features = self.masker.get_features(image_np, image_id)
+        feature_details = self._compute_feature_details(detected_features, heatmap, image_id)
 
-            if batch_count % 5 == 0:
-                self.logger.info(f"Processed {image_count} images across {batch_count} batches")
-
-            tf.keras.backend.clear_session()
-            gc.collect()
-
-        self.logger.info(f"Processed {image_count} images across {batch_count} batches")
-
-        return key_features
+        return heatmap_path, feature_details

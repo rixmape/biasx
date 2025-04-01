@@ -1,229 +1,240 @@
 import os
-from typing import Optional
+from typing import Literal, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from config import ExperimentsConfig
 from huggingface_hub import hf_hub_download
 from sklearn.model_selection import train_test_split
 
 # isort: off
-from config import Config
+from datatypes import ArtifactSavingLevel, MaskDetails, Gender
 from masker import FeatureMasker
-from datatypes import Gender
 from utils import setup_logger
 
 
 class DatasetGenerator:
-    """Class that loads, processes, samples, and splits the dataset, then creates TensorFlow datasets for model training and evaluation."""
 
-    def __init__(self, config: Config, feature_masker: FeatureMasker, log_path: str):
+    def __init__(
+        self,
+        config: ExperimentsConfig,
+        feature_masker: FeatureMasker,
+        log_path: str,
+    ):
         self.config = config
-        self.logger = setup_logger(name="dataset_generator", log_path=log_path)
         self.feature_masker = feature_masker
+        self.logger = setup_logger(name="dataset_generator", log_path=log_path)
 
-    def _load_dataset(self) -> pd.DataFrame:
-        """Downloads and loads the dataset from Hugging Face Hub, filters by valid age, and extracts image bytes and labels."""
-        self.logger.info(f"Downloading {self.config.dataset_name} dataset")
-        path = hf_hub_download(repo_id=f"rixmape/{self.config.dataset_name}", filename="data/train-00000-of-00001.parquet", repo_type="dataset")
-        self.logger.debug(f"Dataset successfully downloaded")
+    def _load_raw_dataframe(self) -> pd.DataFrame:
+        self.logger.info(f"Downloading {self.config.dataset.source_name.value} dataset.")
+        path = hf_hub_download(
+            repo_id=f"rixmape/{self.config.dataset.source_name.value}",
+            filename="data/train-00000-of-00001.parquet",
+            repo_type="dataset",
+        )
+        df = pd.read_parquet(path, columns=["image_id", "image", "gender", "race", "age"])
+        self.logger.info(f"Raw dataset loaded: {len(df)} rows.")
+        return df
 
-        # TODO: Include image ID column for detailed logging
-        df = pd.read_parquet(path, columns=["image", "gender", "race", "age"])
-        self.logger.debug(f"Raw dataset: {df.shape[0]} rows, {df.shape[1]} columns")
-
+    def _process_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        df["image_id"] = df["image_id"].astype(str).str[:8]  # Ensure ID is string
         df["image_bytes"] = df["image"].apply(lambda x: x["bytes"])
         df = df.drop(columns=["image"])
 
-        initial_count = len(df)
-        df = df[df["age"] > 0]
-        filtered_count = len(df)
-        self.logger.debug(f"Removed 0-9 years old samples: {initial_count - filtered_count} ({(initial_count - filtered_count) / initial_count:.2%})")
+        df["age"] = df["age"].astype(int)
+        infant_mask = df["age"] > 0
+        df = df[infant_mask]
 
-        male_count = (df["gender"] == Gender.MALE.value).sum()
-        female_count = (df["gender"] == Gender.FEMALE.value).sum()
-        self.logger.debug(f"Gender distribution: male={male_count} ({male_count/len(df):.2%}), female={female_count} ({female_count/len(df):.2%})")
-
-        self.logger.info(f"Processed dataset: {df.shape[0]} rows, {df.shape[1]} columns")
-
+        self.logger.info(f"Processed dataset: {len(df)} rows remaining after filtering.")
         return df
 
-    def _sample_by_strata(self, df: pd.DataFrame, sample_size: int, seed: int) -> list[pd.DataFrame]:
-        """Stratifies the dataset by race and age, then samples each group proportionally based on the desired sample size."""
+    def _sample_by_strata(self, df: pd.DataFrame, target_sample_size: int, seed: int) -> pd.DataFrame:
         samples = []
-        strata_sampled = 0
-        strata_skipped = 0
+        total_rows = len(df)
+        if total_rows == 0:
+            return pd.DataFrame(columns=df.columns)
 
         for strata_name, group in df.groupby("strata"):
-            grp_size = len(group)
-            grp_sample_size = round(sample_size * (grp_size / len(df)))
-
-            if grp_sample_size == 0:
-                self.logger.warning(f"Strata '{strata_name}': Skipped (size {grp_size} too small for proportional sampling)")
-                strata_skipped += 1
-                continue
-
-            replacement_needed = grp_size < grp_sample_size
+            group_size = len(group)
+            group_sample_size = max(1, round(target_sample_size * (group_size / total_rows)))
+            replacement_needed = group_size < group_sample_size
 
             if replacement_needed:
-                self.logger.debug(f"Strata '{strata_name}': Using replacement sampling ({grp_size} available, {grp_sample_size} needed)")
+                self.logger.debug(f"Strata '{strata_name}': Using replacement sampling ({group_size} available, {group_sample_size} needed).")
 
-            sample = group.sample(n=grp_sample_size, random_state=seed, replace=replacement_needed)
+            sample = group.sample(n=group_sample_size, random_state=seed, replace=replacement_needed)
             samples.append(sample)
-            strata_sampled += 1
 
-        return samples
+        return pd.concat(samples)
 
-    def _sample_by_gender(self, male_ratio: float, seed: int, df: pd.DataFrame) -> pd.DataFrame:
-        """Samples the dataset separately by gender using the specified male ratio and stratified sampling."""
-        ratios = {Gender.MALE: male_ratio, Gender.FEMALE: 1.0 - male_ratio}
+    def _get_sampled_gender_subset(self, df: pd.DataFrame, gender: Gender, gender_target_size: int, seed: int) -> pd.DataFrame:
+        gender_df = df[df["gender"] == gender.value].copy()
+        sample_size = len(gender_df)
+        self.logger.info(f"Targeting {gender_target_size} from {sample_size} available {gender.name.lower()} images.")
 
+        if sample_size < gender_target_size:
+            self.logger.warning(f"Available {gender.name.lower()} samples ({sample_size}) is less than target size ({gender_target_size}). Using replacement sampling.")
+            if sample_size == 0:
+                return pd.DataFrame(columns=df.columns)
+
+        strata_sample = self._sample_by_strata(gender_df, gender_target_size, seed)
+        actual_size = len(strata_sample)
+
+        if actual_size < gender_target_size:
+            self.logger.warning(f"Actual {gender.name.lower()} sample size ({actual_size}) is less than target ({gender_target_size}) after stratified sampling.")
+
+        return strata_sample
+
+    def _sample_by_gender(self, df: pd.DataFrame, target_male_proportion: float, seed: int) -> pd.DataFrame:
         df["strata"] = df["race"].astype(str) + "_" + df["age"].astype(str)
-        strata_counts = df.groupby("strata").size()
-        self.logger.info(f"Found {len(strata_counts)} unique race-age groups for stratified sampling")
+        self.logger.info(f"Found {df['strata'].nunique()} unique strata for sampling.")
 
-        samples = []
-        for gender, target_ratio in ratios.items():
-            gender_sample_size = round(self.config.dataset_size * target_ratio)
-            gender_df = df[df["gender"] == gender.value]
+        target_female_proportion = 1.0 - target_male_proportion
+        target_male_size = round(self.config.dataset.target_size * target_male_proportion)
+        target_female_size = round(self.config.dataset.target_size * target_female_proportion)
 
-            self.logger.info(f"Targetting {gender_sample_size} from {len(gender_df)} available {gender.name.lower()} images ({target_ratio:.2%} of total)")
+        male_samples = self._get_sampled_gender_subset(df, Gender.MALE, target_male_size, seed)
+        female_samples = self._get_sampled_gender_subset(df, Gender.FEMALE, target_female_size, seed)
 
-            if len(gender_df) < gender_sample_size:
-                self.logger.warning(f"Available {gender.name.lower()} samples ({len(gender_df)}) is less than target {gender_sample_size} samples")
+        combined_df = pd.concat([male_samples, female_samples])
+        if combined_df.empty:
+            self.logger.warning("Sampling resulted in an empty DataFrame.")
+            return combined_df
 
-            strata_samples = self._sample_by_strata(gender_df, gender_sample_size, seed)
-            gender_sample = pd.concat(strata_samples)
-            actual_ratio = (gender_sample["gender"] / gender.value).mean()
-            samples.append(gender_sample)
+        combined_df = combined_df.sample(frac=1, random_state=seed).reset_index(drop=True)
+        combined_df = combined_df.drop(columns=["strata"])
 
-            if actual_ratio < target_ratio:
-                self.logger.warning(f"Actual {gender.name.lower()} ratio ({actual_ratio}) is less than target ratio ({target_ratio})")
+        final_size = len(combined_df)
+        self.logger.info(f"Sampling complete. Final dataset size: {final_size} ({final_size / max(self.config.dataset.target_size, 1):.1%} of target {self.config.dataset.target_size}).")
+        if final_size < self.config.dataset.target_size:
+            self.logger.warning(f"Final dataset size ({final_size}) is less than target size ({self.config.dataset.target_size}).")
 
-        combined = pd.concat(samples).sample(frac=1, random_state=seed).reset_index(drop=True)
-        combined = combined.drop(columns=["strata"])
+        return combined_df
 
-        self.logger.info(f"Sampled {len(combined)} total images ({len(combined) / self.config.dataset_size:.2%} of target size)")
+    def _decode_and_process_image(
+        self,
+        image_bytes: tf.Tensor,
+        label: tf.Tensor,
+        image_id: tf.Tensor,
+        mask_details: Optional[MaskDetails] = None,
+    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
 
-        if len(combined) < self.config.dataset_size:
-            self.logger.warning(f"Final dataset size ({len(combined)}) is less than target size ({self.config.dataset_size})")
-
-        return combined
-
-    def _decode_and_process_image(self, image_bytes: tf.Tensor, label: tf.Tensor, mask_gender: Optional[int], mask_features: Optional[list[str]]) -> tuple[tf.Tensor, tf.Tensor]:
-        """Decodes image bytes, resizes the image, applies masking based on gender and feature if needed, and normalizes pixel values."""
-
-        def process(img_bytes, label):
-            image = tf.io.decode_image(img_bytes, channels=3 if not self.config.grayscale else 1, expand_animations=False)
-            image = tf.image.resize(image, [self.config.image_size, self.config.image_size])
+        def process_py(image_bytes_py, label_py, image_id_py):
+            image = tf.io.decode_image(image_bytes_py, channels=3, expand_animations=False)
+            image = tf.image.resize(image, [self.config.dataset.image_size, self.config.dataset.image_size])
             image = tf.cast(image, tf.float32) / 255.0
+            image_np = image.numpy()
 
-            if mask_gender is not None and mask_features is not None and label == mask_gender:
-                image_np = image.numpy()
-                masked_image = self.feature_masker.apply_mask(image_np, mask_features)
-                image = tf.convert_to_tensor(masked_image)
+            if mask_details:
+                id_str = image_id_py.numpy().decode("utf-8")
+                label_np = label_py.numpy()
+                image_np = self.feature_masker.apply_mask(image_np, label_np, mask_details, id_str)
 
-            if self.config.grayscale and image.shape[-1] != 1:
-                image = tf.image.rgb_to_grayscale(image)
+            if self.config.dataset.use_grayscale:
+                image_np = tf.image.rgb_to_grayscale(image_np).numpy()
 
-            return image, label
+            return image_np.astype(np.float32), label_py, image_id_py
 
-        result = tf.py_function(process, [image_bytes, label], [tf.float32, tf.int64])
-        result[0].set_shape([self.config.image_size, self.config.image_size, 1 if self.config.grayscale else 3])
-        result[1].set_shape([])
+        processed_image, processed_label, processed_id = tf.py_function(
+            func=process_py,
+            inp=[image_bytes, label, image_id],
+            Tout=[tf.float32, label.dtype, image_id.dtype],
+        )
 
-        return result
+        output_channels = 1 if self.config.dataset.use_grayscale else 3
+        processed_image.set_shape([self.config.dataset.image_size, self.config.dataset.image_size, output_channels])
+        processed_label.set_shape([])
+        processed_id.set_shape([])
 
-    def _create_dataset(self, df: pd.DataFrame, purpose: str, mask_gender: Optional[int] = None, mask_features: Optional[list[str]] = None) -> tf.data.Dataset:
-        """Creates a TensorFlow dataset from image bytes and labels, applying the decoding and processing function with parallel mapping."""
-        self.logger.info(f"Creating {purpose} dataset from {len(df)} samples")
+        return processed_image, processed_label, processed_id
 
-        male_count = (df["gender"] == Gender.MALE.value).sum()
-        female_count = (df["gender"] == Gender.FEMALE.value).sum()
-        self.logger.debug(f"{purpose} dataset gender distribution: male={male_count} ({male_count/len(df):.2%}), female={female_count} ({female_count/len(df):.2%})")
+    def _create_tf_dataset(
+        self,
+        df: pd.DataFrame,
+        mask_details: Optional[MaskDetails] = None,
+    ) -> tf.data.Dataset:
+        dataset = tf.data.Dataset.from_tensor_slices((df["image_bytes"].values, df["gender"].values.astype(np.int64), df["image_id"].values))
+        dataset = dataset.map(
+            lambda img_bytes, lbl, img_id: self._decode_and_process_image(img_bytes, lbl, img_id, mask_details),
+            num_parallel_calls=tf.data.AUTOTUNE,
+        )
+        return dataset
 
-        if mask_gender is not None and mask_features is not None:
-            gender_name = Gender(mask_gender).name
-            masked_count = (df["gender"] == mask_gender).sum()
-            self.logger.debug(f"{purpose} masking: features={mask_features}, gender={gender_name}, image_count={masked_count} ({masked_count/len(df):.2%})")
-        else:
-            self.logger.debug(f"{purpose} dataset: No feature masking applied")
+    def _save_images_to_disk(self, dataset: tf.data.Dataset, purpose: str, base_output_directory: str) -> None:
+        specific_output_directory = os.path.join(base_output_directory, f"{purpose}_images")
 
-        # TODO: Add image ID column to log messages
-        dataset = tf.data.Dataset.from_tensor_slices((df["image_bytes"].values, df["gender"].values))
-        dataset = dataset.map(lambda x, y: self._decode_and_process_image(x, y, mask_gender, mask_features), num_parallel_calls=tf.data.AUTOTUNE)
-
-        self.logger.debug(f"{purpose} dataset creation complete")
-        return dataset.prefetch(tf.data.AUTOTUNE)
-
-    def save_images_from_dataset(self, data: tf.data.Dataset, purpose: str, output_path: str) -> None:
-        """Save images from a dataset to a directory."""
-        if not os.path.exists(output_path):
-            os.makedirs(output_path)
-            self.logger.debug(f"Created directory for {purpose} dataset: {output_path}")
+        if not os.path.exists(specific_output_directory):
+            os.makedirs(specific_output_directory)
 
         image_count = 0
+        for image, label, image_id_tensor in dataset:
+            image_np = image.numpy()
+            image_id = image_id_tensor.numpy().decode("utf-8")
 
-        for batch in data:
-            images = batch[0] if isinstance(batch, tuple) else batch["image"]
+            if image_np.dtype in [np.float32, np.float64]:
+                image_np = (image_np * 255.0).clip(0, 255).astype(np.uint8)
+            if image_np.shape[-1] == 1:
+                image_np = np.squeeze(image_np, axis=-1)
 
-            for i in range(images.shape[0]):
-                image_tensor = images[i]
-                image_np = image_tensor.numpy()
+            filename = f"{purpose}_{image_id}.png"
+            filepath = os.path.join(specific_output_directory, filename)
+            tf.keras.utils.save_img(filepath, image_np)
+            image_count += 1
 
-                if image_np.dtype in [tf.float32, tf.float64]:
-                    image_np = (image_np * 255.0).astype(np.uint8)
+        self.logger.info(f"Saved {image_count} images for {purpose} dataset to {specific_output_directory}")
 
-                filename = f"image_{image_count:04d}.png"
-                filepath = os.path.join(output_path, filename)
-                tf.keras.utils.save_img(filepath, image_np, data_format="channels_last")
-                image_count += 1
+    def _build_dataset_split(
+        self,
+        df: pd.DataFrame,
+        purpose: Literal["train", "val", "test"],
+        mask_details: Optional[MaskDetails],
+        output_dir: str,
+        should_save_images: bool,
+    ) -> tf.data.Dataset:
+        self.logger.info(f"Creating {purpose} dataset from {len(df)} samples.")
+        dataset = self._create_tf_dataset(df, mask_details)
 
-        self.logger.info(f"Successfully saved {image_count} images to {output_path}")
+        if should_save_images:
+            self._save_images_to_disk(dataset, purpose, output_dir)
 
-    def split_dataset(self, seed: int, df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-        """Splits the dataset into training, validation, and test sets using stratified sampling based on gender."""
-        self.logger.info("Splitting dataset into train, validation, and test sets")
+        dataset = dataset.prefetch(tf.data.AUTOTUNE)
+        dataset = dataset.batch(self.config.model.batch_size)
+        dataset = dataset.cache()
 
-        target_train_ratio = 1 - self.config.val_split - self.config.test_split
-        target_val_ratio = self.config.val_split
-        target_test_ratio = self.config.test_split
-        self.logger.debug(f"Target splits: train={target_train_ratio:.2%}, validation={target_val_ratio:.2%}, test={target_test_ratio:.2%}")
+        self.logger.info(f"{purpose.capitalize()} dataset build complete.")
+        return dataset
 
-        train_val, test = train_test_split(df, test_size=target_test_ratio, random_state=seed, stratify=df["gender"])
-        effective_val_split = target_val_ratio / (1 - target_test_ratio)
-        train, val = train_test_split(train_val, test_size=effective_val_split, random_state=seed, stratify=train_val["gender"])
+    def _split_dataframe(self, df: pd.DataFrame, seed: int) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+        self.logger.info("Splitting dataset into train, validation, and test sets.")
 
-        self.logger.debug(f"Actual splits: train={len(train) / len(df):.2%}, validation={len(val) / len(df):.2%}, test={len(test) / len(df):.2%}")
+        train_val_df, test_df = train_test_split(df, test_size=self.config.dataset.test_ratio, random_state=seed, stratify=df["gender"])
+        adjusted_val_ratio = self.config.dataset.validation_ratio / (1.0 - self.config.dataset.test_ratio)
+        train_df, val_df = train_test_split(train_val_df, test_size=adjusted_val_ratio, random_state=seed, stratify=train_val_df["gender"])
 
-        return train, val, test
+        self.logger.info(f"Actual splits: train={len(train_df)}, validation={len(val_df)}, test={len(test_df)}.")
+        return train_df, val_df, test_df
 
-    def prepare_data(self, male_ratio: float, mask_gender: Optional[int], mask_features: Optional[list[str]], seed: int, exp_id: str) -> tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
-        """Loads, samples by gender, splits the dataset, and returns batched and cached TensorFlow datasets for training, validation, and testing."""
-        self.logger.info(f"Preparing dataset: male_ratio={male_ratio}, mask_gender={mask_gender}, mask_feature={mask_features}, seed={seed}")
+    def prepare_datasets(
+        self,
+        target_male_proportion: float,
+        mask_details: Optional[MaskDetails],
+        seed: int,
+        experiment_id: str,
+    ) -> Tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
+        self.logger.info(f"Starting Dataset Preparation for Exp '{experiment_id}'")
 
-        df = self._load_dataset()
-        df = self._sample_by_gender(male_ratio, seed, df)
+        raw_df = self._load_raw_dataframe()
+        processed_df = self._process_dataframe(raw_df)
+        sampled_df = self._sample_by_gender(processed_df, target_male_proportion, seed)
+        train_df, val_df, test_df = self._split_dataframe(sampled_df, seed)
 
-        train_df, val_df, test_df = self.split_dataset(seed, df)
+        experiment_output_dir = os.path.join(self.config.output.base_dir, experiment_id)
+        save_images = self.config.output.artifact_level == ArtifactSavingLevel.FULL
 
-        batch_size = self.config.batch_size
+        train_data = self._build_dataset_split(train_df, "train", mask_details, experiment_output_dir, save_images)
+        val_data = self._build_dataset_split(val_df, "val", None, experiment_output_dir, save_images)
+        test_data = self._build_dataset_split(test_df, "test", None, experiment_output_dir, save_images)
 
-        train_data = self._create_dataset(train_df, "training", mask_gender=mask_gender, mask_features=mask_features).batch(batch_size).cache()
-        self.logger.debug(f"Training dataset cached with {len(train_df)} samples ({len(train_df) // batch_size + 1} batches)")
-        if self.config.save_train_dataset:
-            self.save_images_from_dataset(train_data, "train", f"{self.config.output_path}/{exp_id}/train")
-
-        val_data = self._create_dataset(val_df, "validation").batch(batch_size).cache()
-        self.logger.debug(f"Validation dataset cached with {len(val_df)} samples ({len(val_df) // batch_size + 1} batches)")
-        if self.config.save_val_dataset:
-            self.save_images_from_dataset(val_data, "val", f"{self.config.output_path}/{exp_id}/val")
-
-        test_data = self._create_dataset(test_df, "testing").batch(batch_size)
-        self.logger.debug(f"Test dataset created with {len(test_df)} samples ({len(test_df) // batch_size + 1} batches)")
-        if self.config.save_test_dataset:
-            self.save_images_from_dataset(test_data, "test", f"{self.config.output_path}/{exp_id}/test")
-
-        self.logger.info("Dataset preparation complete")
-
+        self.logger.info(f"Dataset Preparation Complete for Exp '{experiment_id}'")
         return train_data, val_data, test_data

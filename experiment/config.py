@@ -1,115 +1,64 @@
-from dataclasses import dataclass, field
-from typing import Literal, Optional
+from typing import List, Optional
+
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 # isort: off
-from datatypes import Gender, FeatureName
+from datatypes import ArtifactSavingLevel, DatasetSource, MaskDetails
 
 
-@dataclass
-class Config:
-    """Configuration dataclass for experiment parameters, dataset, and model settings."""
+class CoreConfig(BaseModel):
+    replicate_count: int = Field(default=5, gt=0)
+    male_proportion_targets: List[float] = Field(default=[0.5])
+    masking_configs: Optional[List[MaskDetails]] = Field(default=None)
+    mask_pixel_padding: int = Field(default=2, ge=0)
+    key_feature_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
+    base_random_seed: int = Field(default=42, ge=0)
 
-    # Experiment parameters
-    replicate: int
-    male_ratios: Optional[list[float]] = field(default_factory=lambda: [0.5])
-    mask_genders: Optional[list[int]] = field(default_factory=list)
-    mask_features: Optional[list[list[str]]] = field(default_factory=list)
-    mask_padding: int = 0
-    feature_attention_threshold: Optional[float] = 0.5
-    base_seed: Optional[int] = 42
+    @field_validator("male_proportion_targets")
+    @classmethod
+    def check_proportions(cls, v: List[float]) -> List[float]:
+        if not v:
+            raise ValueError("male_proportion_targets cannot be empty")
+        if not all(0.0 <= p <= 1.0 for p in v):
+            raise ValueError("All male_proportion_targets must be between 0.0 and 1.0")
+        return v
 
-    # File management parameters
-    save_train_dataset: bool = False
-    save_test_dataset: bool = False
-    save_val_dataset: bool = False
-    output_path: str = "outputs"
-    log_path: str = "logs"
 
-    # Dataset parameters
-    dataset_name: Literal["utkface", "fairface"] = "utkface"
-    dataset_size: int = 5000
-    val_split: float = 0.1
-    test_split: float = 0.2
-    image_size: int = 48
-    grayscale: bool = True
+class DatasetConfig(BaseModel):
+    source_name: DatasetSource = DatasetSource.UTKFACE
+    target_size: int = Field(default=5000, gt=0)
+    validation_ratio: float = Field(default=0.1, ge=0.0, lt=1.0)
+    test_ratio: float = Field(default=0.2, ge=0.0, lt=1.0)
+    image_size: int = Field(default=48, gt=0)
+    use_grayscale: bool = False
 
-    # Model parameters
-    batch_size: int = 64
-    epochs: int = 10
+    @model_validator(mode="after")
+    def check_split_ratios_sum(self) -> "DatasetConfig":
+        if self.validation_ratio + self.test_ratio >= 1.0:
+            raise ValueError("Validation and test ratios must sum to less than 1.0")
+        return self
 
-    def _validate_experiment_params(self):
-        """Validates experiment-specific parameters."""
-        if not isinstance(self.replicate, int) or self.replicate <= 0:
-            raise ValueError(f"Replicate count must be a positive integer. Got {self.replicate}.")
 
-        if self.male_ratios is not None:
-            if not self.male_ratios:
-                raise ValueError("male_ratios list cannot be empty if provided.")
-            for ratio in self.male_ratios:
-                if not isinstance(ratio, float) or not (0.0 <= ratio <= 1.0):
-                    raise ValueError(f"Each male_ratio must be a float between 0.0 and 1.0. Got {ratio}.")
+class ModelConfig(BaseModel):
+    batch_size: int = Field(default=64, gt=0)
+    epochs: int = Field(default=10, gt=0)
 
-        if self.mask_genders is not None:
-            allowed_genders = [g.value for g in Gender]
-            for gender_val in self.mask_genders:
-                if not isinstance(gender_val, int) or gender_val not in allowed_genders:
-                    raise ValueError(f"Each mask_gender must be an integer representing a `Gender` value ({allowed_genders}). Got {gender_val}.")
 
-        if self.mask_features is not None:
-            allowed_features = [f.value for f in FeatureName]
-            for feature_list in self.mask_features:
-                if not isinstance(feature_list, list):
-                    raise ValueError(f"Each mask_features entry must be a list. Got {feature_list}.")
-                for feature in feature_list:
-                    if not isinstance(feature, str) or feature not in allowed_features:
-                        raise ValueError(f"Each mask_feature must be a string representing a `FeatureName` value {allowed_features}. Got {feature}.")
+class OutputConfig(BaseModel):
+    base_dir: str = "outputs"
+    log_dir: str = "logs"
+    artifact_level: ArtifactSavingLevel = ArtifactSavingLevel.FULL
 
-        if not isinstance(self.mask_padding, int) or self.mask_padding < 0:
-            raise ValueError(f"Mask padding must be a non-negative integer. Got {self.mask_padding}.")
+    @field_validator("base_dir", "log_dir")
+    @classmethod
+    def check_dir_names(cls, v: str) -> str:
+        if not v:
+            raise ValueError("Directory names cannot be empty")
+        return v
 
-        if self.feature_attention_threshold is not None:
-            if not isinstance(self.feature_attention_threshold, float) or not (0.0 <= self.feature_attention_threshold <= 1.0):
-                raise ValueError(f"Feature attention threshold must be a float between 0.0 and 1.0 if specified. Got {self.feature_attention_threshold}.")
 
-        if self.base_seed is not None and (not isinstance(self.base_seed, int) or self.base_seed < 0):
-            raise ValueError(f"Base seed must be a non-negative integer if specified. Got {self.base_seed}.")
-
-    def _validate_filepaths_params(self):
-        """Validates file management parameters."""
-        if not isinstance(self.output_path, str) or not self.output_path:
-            raise ValueError("Results path must be a non-empty string.")
-
-        if not isinstance(self.log_path, str) or not self.log_path:
-            raise ValueError("Log path must be a non-empty string.")
-
-    def _validate_dataset_params(self):
-        """Validates dataset-specific parameters."""
-        if not isinstance(self.dataset_size, int) or self.dataset_size <= 0:
-            raise ValueError(f"Dataset size must be a positive integer. Got {self.dataset_size}.")
-
-        if not isinstance(self.val_split, float) or not (0.0 <= self.val_split < 1.0):
-            raise ValueError(f"Validation split must be a float between 0.0 and 1.0 (exclusive of 1.0). Got {self.val_split}.")
-
-        if not isinstance(self.test_split, float) or not (0.0 <= self.test_split < 1.0):
-            raise ValueError(f"Test split must be a float between 0.0 and 1.0 (exclusive of 1.0). Got {self.test_split}.")
-
-        if self.val_split + self.test_split >= 1.0:
-            raise ValueError(f"Validation and test splits must sum to less than 1.0. Got sum: {self.val_split + self.test_split}.")
-
-        if not isinstance(self.image_size, int) or self.image_size <= 0:
-            raise ValueError(f"Image size must be a positive integer. Got {self.image_size}.")
-
-    def _validate_model_params(self):
-        """Validates model-specific parameters."""
-        if not isinstance(self.batch_size, int) or self.batch_size <= 0:
-            raise ValueError(f"Batch size must be a positive integer. Got {self.batch_size}.")
-
-        if not isinstance(self.epochs, int) or self.epochs <= 0:
-            raise ValueError(f"Epochs must be a positive integer. Got {self.epochs}.")
-
-    def __post_init__(self):
-        """Runs all validation checks after initialization."""
-        self._validate_experiment_params()
-        self._validate_filepaths_params()
-        self._validate_dataset_params()
-        self._validate_model_params()
+class ExperimentsConfig(BaseModel):
+    core: CoreConfig = Field(default_factory=CoreConfig)
+    dataset: DatasetConfig = Field(default_factory=DatasetConfig)
+    model: ModelConfig = Field(default_factory=ModelConfig)
+    output: OutputConfig = Field(default_factory=OutputConfig)
