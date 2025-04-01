@@ -1,106 +1,128 @@
 import json
-from typing import Any, Optional
+from typing import Dict, List, Optional, Tuple
 
-import cv2
 import mediapipe as mp
 import numpy as np
 from huggingface_hub import hf_hub_download
 from mediapipe.tasks.python.core.base_options import BaseOptions
-from mediapipe.tasks.python.vision.face_landmarker import FaceLandmarker, FaceLandmarkerOptions
+from mediapipe.tasks.python.vision.face_landmarker import FaceLandmarker, FaceLandmarkerOptions, FaceLandmarkerResult
 
 # isort: off
-from config import Config
-from datatypes import FacialFeature
+from config import ExperimentsConfig
+from datatypes import Feature, FeatureDetails, MaskDetails
 from utils import setup_logger
 
 
 class FeatureMasker:
-    """Class responsible for detecting facial landmarks and applying masks to specific facial features in images."""
 
-    def __init__(self, config: Config, log_path: str):
+    def __init__(self, config: ExperimentsConfig, log_path: str):
         self.config = config
+        self.landmarker = self._load_landmarker()
+        self.feature_indices_map = self._load_feature_indices_map()
         self.logger = setup_logger(name="feature_masker", log_path=log_path)
 
-        self.landmarker = self.load_landmarker()
-        self.feature_map = self.load_feature_map()
-
     @staticmethod
-    def load_landmarker() -> FaceLandmarker:
-        """Loads and returns a pre-trained face landmarker model from the Hugging Face hub using specified options."""
-        model_path = hf_hub_download(repo_id="rixmape/biasx-models", filename="mediapipe_landmarker.task", repo_type="model")
-        options = FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=model_path))
+    def _load_landmarker() -> FaceLandmarker:
+        model_path = hf_hub_download(
+            repo_id="rixmape/biasx-models",
+            filename="mediapipe_landmarker.task",
+            repo_type="model",
+        )
+        options = FaceLandmarkerOptions(
+            base_options=BaseOptions(model_asset_path=model_path),
+            output_face_blendshapes=False,
+            output_facial_transformation_matrixes=False,
+            num_faces=1,
+        )
         return FaceLandmarker.create_from_options(options)
 
     @staticmethod
-    def load_feature_map() -> dict[str, list[int]]:
-        """Retrieves and parses a JSON file mapping facial features to landmark indices from HuggingFace."""
-        path = hf_hub_download(repo_id="rixmape/biasx-models", filename="landmark_map.json", repo_type="model")
-        return json.load(open(path, "r"))
+    def _load_feature_indices_map() -> Dict[Feature, List[int]]:
+        map_path = hf_hub_download(
+            repo_id="rixmape/biasx-models",
+            filename="landmark_map.json",
+            repo_type="model",
+        )
+        with open(map_path, "r") as f:
+            raw_map = json.load(f)
+        feature_map = {Feature(key): value for key, value in raw_map.items()}
+        return feature_map
 
-    def _detect_landmarks(self, image: np.ndarray) -> Any:
-        """Converts the input image to RGB (if necessary) and detects facial landmarks using the loaded landmarker."""
-        copied = image.copy()
+    def _get_pixel_landmarks(self, image_np: np.ndarray, image_id: str) -> List[Tuple[int, int]]:
+        if image_np.dtype in [np.float32, np.float64]:
+            image_uint8 = (image_np * 255).clip(0, 255).astype(np.uint8)
+        else:
+            image_uint8 = image_np.astype(np.uint8)
 
-        if copied.dtype == np.float32:
-            copied = copied * 255
-
-        copied = copied.astype(np.uint8)
-
-        if copied.shape[-1] == 1 or len(copied.shape) == 2:
-            copied = cv2.cvtColor(copied, cv2.COLOR_GRAY2RGB)
-
-        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=copied)
-        result = self.landmarker.detect(mp_image)
-
-        return result.face_landmarks[0] if result.face_landmarks else None
-
-    def _to_pixel_coords(self, landmarks: list, img_shape: tuple[int, int]) -> list[tuple[int, int]]:
-        """Converts normalized landmark coordinates to absolute pixel coordinates based on the image dimensions."""
-        height, width = img_shape[:2]
-        return [(int(pt.x * width), int(pt.y * height)) for pt in landmarks]
-
-    def _get_landmarks_in_pixels(self, image: np.ndarray) -> Optional[list[tuple[int, int]]]:
-        """Obtains facial landmarks in pixel coordinates by detecting landmarks and converting them using `_to_pixel_coords`."""
-        landmarks = self._detect_landmarks(image)
-        if landmarks is None:
-            return None
-        return self._to_pixel_coords(landmarks, image.shape)
-
-    def _get_bbox(self, pix_coords: list[tuple[int, int]], feature: str) -> tuple[int, int, int, int]:
-        """Computes the bounding box for a specified facial feature from pixel coordinates"""
-        pad = max(1, self.config.mask_padding)  # Ensure padding is at least 1 to avoid zero area
-        pts = [pix_coords[i] for i in self.feature_map[feature]]
-        min_x = max(0, min(x for x, _ in pts) - pad)
-        min_y = max(0, min(y for _, y in pts) - pad)
-        max_x = max(x for x, _ in pts) + pad
-        max_y = max(y for _, y in pts) + pad
-        return int(min_x), int(min_y), int(max_x), int(max_y)
-
-    # TODO: Ensure uniform masking area across different features (e.g., 800 pixels, 400 pixels for smaller features)
-    def apply_mask(self, image: np.ndarray, features: list[str]) -> np.ndarray:
-        """Applies a mask by setting the pixel values to zero within the bounding box of the specified facial feature in the image."""
-        pix_coords = self._get_landmarks_in_pixels(image)
-        if pix_coords is None:
-            self.logger.warning("No landmarks detected during masking")
-            return image
-
-        for feature in features:
-            min_x, min_y, max_x, max_y = self._get_bbox(pix_coords, feature)
-            image[min_y:max_y, min_x:max_x] = 0
-
-        return image
-
-    def get_features(self, image: np.ndarray) -> list[FacialFeature]:
-        """Returns a list of features representing bounding boxes for all defined facial features in the image."""
-        pix_coords = self._get_landmarks_in_pixels(image)
-        if pix_coords is None:
-            self.logger.warning("No landmarks detected during feature extraction")
+        if len(image_uint8.shape) != 3 or image_uint8.shape[-1] != 3:
+            self.logger.error(f"[{image_id}] Invalid image shape/channels for landmark detection: {image_uint8.shape}")
             return []
 
-        features = []
-        for feature_name in self.feature_map.keys():
-            min_x, min_y, max_x, max_y = self._get_bbox(pix_coords, feature_name)
-            feature = FacialFeature(min_x, min_y, max_x, max_y, feature_name)
-            features.append(feature)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_uint8)
+        detection_result: FaceLandmarkerResult = self.landmarker.detect(mp_image)
 
-        return features
+        if not detection_result or not detection_result.face_landmarks:
+            self.logger.warning(f"[{image_id}] No landmarks detected.")
+            return []
+
+        landmarks = detection_result.face_landmarks[0]
+        img_size = self.config.dataset.image_size
+        pixel_coords = [(int(pt.x * img_size), int(pt.y * img_size)) for pt in landmarks]
+        return pixel_coords
+
+    def _get_feature_bbox(
+        self,
+        pixel_coords: List[Tuple[int, int]],
+        feature: Feature,
+        image_id: str,
+    ) -> Tuple[int, int, int, int]:
+        indices = self.feature_indices_map[feature]
+        if not indices or max(indices) >= len(pixel_coords):
+            self.logger.warning(f"[{image_id}] Invalid or missing indices for feature '{feature.value}'.")
+            return None
+
+        points = [pixel_coords[i] for i in indices]
+        min_x = min(x for x, y in points)
+        min_y = min(y for x, y in points)
+        max_x = max(x for x, y in points)
+        max_y = max(y for x, y in points)
+
+        pad = self.config.core.mask_pixel_padding
+        img_size = self.config.dataset.image_size
+        min_x_pad = max(0, min_x - pad)
+        min_y_pad = max(0, min_y - pad)
+        max_x_pad = min(img_size, max_x + pad)
+        max_y_pad = min(img_size, max_y + pad)
+
+        return min_x_pad, min_y_pad, max_x_pad, max_y_pad
+
+    def apply_mask(self, image_np: np.ndarray, label: int, mask_details: Optional[MaskDetails], image_id: str) -> np.ndarray:
+        if not mask_details or label != mask_details.target_gender.value:
+            return image_np
+
+        pixel_coords = self._get_pixel_landmarks(image_np, image_id)
+        if not pixel_coords:
+            return image_np
+
+        masked_image = image_np.copy()
+        for feature in mask_details.target_features:
+            min_x, min_y, max_x, max_y = self._get_feature_bbox(pixel_coords, feature, image_id)
+            masked_image[min_y:max_y, min_x:max_x] = 0
+
+        return masked_image
+
+    def get_features(self, image_np: np.ndarray, image_id: str) -> List[FeatureDetails]:
+        pixel_coords = self._get_pixel_landmarks(image_np, image_id)
+        if not pixel_coords:
+            return []
+
+        detected_features: List[FeatureDetails] = []
+        for feature in self.feature_indices_map.keys():
+            min_x, min_y, max_x, max_y = self._get_feature_bbox(pixel_coords, feature, image_id)
+            feature_detail = FeatureDetails(feature=feature, min_x=min_x, min_y=min_y, max_x=max_x, max_y=max_y)
+            detected_features.append(feature_detail)
+
+        if not detected_features:
+            self.logger.warning(f"[{image_id}] No valid feature bounding boxes could be generated.")
+
+        return detected_features
