@@ -1,94 +1,203 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Experiment Results",
-    "description": "A list containing the results for each experiment conducted.",
-    "type": "array",
-    "items": {
-        "$ref": "#/$defs/ExperimentResult"
-    },
-    "$defs": {
-        "Gender": {
-            "description": "Gender classification.",
+    "title": "ExperimentResult",
+    "description": "Schema for the final output results of a bias analysis experiment.",
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "Unique identifier for the experiment run (SHA256 hash of config).",
             "type": "string",
-            "enum": [
-                "MALE",
-                "FEMALE"
-            ]
+            "minLength": 1
         },
-        "Feature": {
-            "description": "Facial features detected.",
-            "type": "string",
-            "enum": [
-                "LEFT_EYE",
-                "RIGHT_EYE",
-                "NOSE",
-                "LIPS",
-                "LEFT_CHEEK",
-                "RIGHT_CHEEK",
-                "CHIN",
-                "FOREHEAD",
-                "LEFT_EYEBROW",
-                "RIGHT_EYEBROW"
-            ]
-        },
-        "MaskDetails": {
-            "description": "Specifies which features to mask for a target gender.",
+        "config": {
+            "description": "Configuration used for this experiment run.",
             "type": "object",
             "properties": {
-                "target_gender": {
-                    "$ref": "#/$defs/Gender",
-                    "description": "The gender group for which features should be masked."
-                },
-                "target_features": {
-                    "description": "List of facial features to be masked.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/$defs/Feature"
-                    },
-                    "minItems": 1
-                }
-            },
-            "required": [
-                "target_gender",
-                "target_features"
-            ]
-        },
-        "ExperimentParameters": {
-            "description": "Parameters defining a specific experiment.",
-            "type": "object",
-            "properties": {
-                "target_male_proportion": {
-                    "description": "The target proportion of male samples in the dataset (0.0 to 1.0).",
-                    "type": "number",
-                    "minimum": 0.0,
-                    "maximum": 1.0
-                },
-                "feature_mask": {
-                    "description": "Optional feature masking configuration applied during training.",
-                    "oneOf": [
-                        {
-                            "$ref": "#/$defs/MaskDetails"
+                "core": {
+                    "description": "Core experimental parameters.",
+                    "type": "object",
+                    "properties": {
+                        "target_male_proportion": {
+                            "description": "Target proportion of male samples in the dataset (0.0 to 1.0).",
+                            "type": "number",
+                            "minimum": 0.0,
+                            "maximum": 1.0
                         },
-                        {
-                            "type": "null"
+                        "mask_gender": {
+                            "description": "Gender category to apply masking to (if any).",
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "enum": [
+                                0,
+                                1,
+                                null
+                            ],
+                            "description_enum": {
+                                "0": "MALE",
+                                "1": "FEMALE"
+                            }
+                        },
+                        "mask_features": {
+                            "description": "List of facial features to mask (if mask_gender is set).",
+                            "type": [
+                                "array",
+                                "null"
+                            ],
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "left_eye",
+                                    "right_eye",
+                                    "nose",
+                                    "lips",
+                                    "left_cheek",
+                                    "right_cheek",
+                                    "chin",
+                                    "forehead",
+                                    "left_eyebrow",
+                                    "right_eyebrow"
+                                ]
+                            }
+                        },
+                        "mask_pixel_padding": {
+                            "description": "Pixel padding added around feature bounding boxes before masking.",
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 2
+                        },
+                        "key_feature_threshold": {
+                            "description": "Minimum attention score for a feature to be considered 'key' (0.0 to 1.0).",
+                            "type": "number",
+                            "minimum": 0.0,
+                            "maximum": 1.0,
+                            "default": 0.5
+                        },
+                        "random_seed": {
+                            "description": "Random seed used for reproducibility.",
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 42
                         }
+                    },
+                    "required": [
+                        "target_male_proportion",
+                        "mask_pixel_padding",
+                        "key_feature_threshold",
+                        "random_seed"
                     ]
                 },
-                "target_female_proportion": {
-                    "description": "Derived: The target proportion of female samples (1.0 - target_male_proportion).",
-                    "type": "number",
-                    "readOnly": true
+                "dataset": {
+                    "description": "Dataset configuration parameters.",
+                    "type": "object",
+                    "properties": {
+                        "source_name": {
+                            "description": "Source dataset name.",
+                            "type": "string",
+                            "enum": [
+                                "utkface",
+                                "fairface"
+                            ]
+                        },
+                        "target_size": {
+                            "description": "Target number of samples in the final dataset.",
+                            "type": "integer",
+                            "exclusiveMinimum": 0
+                        },
+                        "validation_ratio": {
+                            "description": "Proportion of the dataset to use for validation (0.0 to <1.0).",
+                            "type": "number",
+                            "minimum": 0.0,
+                            "exclusiveMaximum": 1.0
+                        },
+                        "test_ratio": {
+                            "description": "Proportion of the dataset to use for testing (0.0 to <1.0).",
+                            "type": "number",
+                            "minimum": 0.0,
+                            "exclusiveMaximum": 1.0
+                        },
+                        "image_size": {
+                            "description": "Pixel dimension to resize images to (size x size).",
+                            "type": "integer",
+                            "exclusiveMinimum": 0
+                        },
+                        "use_grayscale": {
+                            "description": "Whether to convert images to grayscale.",
+                            "type": "boolean"
+                        }
+                    },
+                    "required": [
+                        "source_name",
+                        "target_size",
+                        "validation_ratio",
+                        "test_ratio",
+                        "image_size",
+                        "use_grayscale"
+                    ]
+                },
+                "model": {
+                    "description": "Model training parameters.",
+                    "type": "object",
+                    "properties": {
+                        "batch_size": {
+                            "description": "Number of samples per gradient update.",
+                            "type": "integer",
+                            "exclusiveMinimum": 0
+                        },
+                        "epochs": {
+                            "description": "Number of training epochs.",
+                            "type": "integer",
+                            "exclusiveMinimum": 0
+                        }
+                    },
+                    "required": [
+                        "batch_size",
+                        "epochs"
+                    ]
+                },
+                "output": {
+                    "description": "Output generation parameters.",
+                    "type": "object",
+                    "properties": {
+                        "base_path": {
+                            "description": "Base directory for saving outputs.",
+                            "type": "string"
+                        },
+                        "log_path": {
+                            "description": "Directory for saving log files.",
+                            "type": "string"
+                        },
+                        "level": {
+                            "description": "Level of output detail to save.",
+                            "type": "string",
+                            "enum": [
+                                "NONE",
+                                "RESULTS_ONLY",
+                                "FULL"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "base_path",
+                        "log_path",
+                        "level"
+                    ]
                 }
             },
             "required": [
-                "target_male_proportion",
-                "feature_mask",
-                "target_female_proportion"
+                "core",
+                "dataset",
+                "model",
+                "output"
             ]
         },
-        "ModelTrainingHistory": {
-            "description": "Record of loss and accuracy during model training.",
-            "type": "object",
+        "history": {
+            "description": "Model training history (loss and accuracy per epoch). Included if output level allows.",
+            "type": [
+                "object",
+                "null"
+            ],
             "properties": {
                 "train_loss": {
                     "description": "List of training loss values per epoch.",
@@ -132,86 +241,169 @@
                 "val_accuracy"
             ]
         },
+        "analysis": {
+            "description": "Results of the bias analysis. Included if output level allows.",
+            "type": [
+                "object",
+                "null"
+            ],
+            "properties": {
+                "feature_distributions": {
+                    "description": "Distribution of key features across genders.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/FeatureDistribution"
+                    }
+                },
+                "male_performance_metrics": {
+                    "description": "Performance metrics calculated with Male as the positive class.",
+                    "$ref": "#/definitions/GenderPerformanceMetrics"
+                },
+                "female_performance_metrics": {
+                    "description": "Performance metrics calculated with Female as the positive class.",
+                    "$ref": "#/definitions/GenderPerformanceMetrics"
+                },
+                "bias_metrics": {
+                    "description": "Overall bias metrics calculated from performance and distributions.",
+                    "$ref": "#/definitions/BiasMetrics"
+                },
+                "analyzed_images": {
+                    "description": "Detailed explanation results for each image analyzed.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Explanation"
+                    }
+                }
+            },
+            "required": [
+                "feature_distributions",
+                "male_performance_metrics",
+                "female_performance_metrics",
+                "bias_metrics",
+                "analyzed_images"
+            ]
+        }
+    },
+    "required": [
+        "id",
+        "config"
+    ],
+    "definitions": {
+        "BoundingBox": {
+            "description": "Represents a bounding box with pixel coordinates.",
+            "type": "object",
+            "properties": {
+                "min_x": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Minimum x-coordinate (left edge)."
+                },
+                "min_y": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Minimum y-coordinate (top edge)."
+                },
+                "max_x": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Maximum x-coordinate (right edge)."
+                },
+                "max_y": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Maximum y-coordinate (bottom edge)."
+                },
+                "area": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Calculated area of the bounding box (width * height)."
+                }
+            },
+            "required": [
+                "min_x",
+                "min_y",
+                "max_x",
+                "max_y",
+                "area"
+            ]
+        },
         "FeatureDetails": {
-            "description": "Details about a detected facial feature, including its location and attention score.",
+            "description": "Details about a detected facial feature, including its bounding box and attention score.",
             "type": "object",
             "properties": {
                 "feature": {
-                    "$ref": "#/$defs/Feature",
-                    "description": "The specific facial feature detected."
+                    "description": "The type of facial feature.",
+                    "type": "string",
+                    "enum": [
+                        "left_eye",
+                        "right_eye",
+                        "nose",
+                        "lips",
+                        "left_cheek",
+                        "right_cheek",
+                        "chin",
+                        "forehead",
+                        "left_eyebrow",
+                        "right_eyebrow"
+                    ]
                 },
-                "min_x": {
-                    "description": "Minimum x-coordinate of the feature's bounding box.",
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "min_y": {
-                    "description": "Minimum y-coordinate of the feature's bounding box.",
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "max_x": {
-                    "description": "Maximum x-coordinate of the feature's bounding box.",
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "max_y": {
-                    "description": "Maximum y-coordinate of the feature's bounding box.",
-                    "type": "integer",
-                    "minimum": 0
+                "bbox": {
+                    "$ref": "#/definitions/BoundingBox"
                 },
                 "attention_score": {
-                    "description": "Attention score from heatmap analysis (0.0 to 1.0).",
+                    "description": "Mean heatmap attention score within the feature's bounding box (0.0 to 1.0).",
                     "type": "number",
                     "minimum": 0.0,
                     "maximum": 1.0
                 },
                 "is_key_feature": {
-                    "description": "Whether the feature's attention score met the key feature threshold.",
+                    "description": "Whether the attention score meets the key feature threshold.",
                     "type": "boolean"
-                },
-                "area": {
-                    "description": "Derived: Area of the feature's bounding box.",
-                    "type": "integer",
-                    "minimum": 0,
-                    "readOnly": true
                 }
             },
             "required": [
                 "feature",
-                "min_x",
-                "min_y",
-                "max_x",
-                "max_y",
+                "bbox",
                 "attention_score",
-                "is_key_feature",
-                "area"
+                "is_key_feature"
             ]
         },
         "FeatureDistribution": {
-            "description": "Distribution of a specific feature being identified as a 'key feature' across genders.",
+            "description": "Distribution of a specific key feature across genders.",
             "type": "object",
             "properties": {
                 "feature": {
-                    "$ref": "#/$defs/Feature",
-                    "description": "The facial feature being analyzed."
+                    "description": "The facial feature being analyzed.",
+                    "type": "string",
+                    "enum": [
+                        "left_eye",
+                        "right_eye",
+                        "nose",
+                        "lips",
+                        "left_cheek",
+                        "right_cheek",
+                        "chin",
+                        "forehead",
+                        "left_eyebrow",
+                        "right_eyebrow"
+                    ]
                 },
                 "male_distribution": {
-                    "description": "Proportion of male samples where this feature was key (0.0 to 1.0).",
+                    "description": "Proportion of male samples where this was a key feature (0.0 to 1.0).",
                     "type": "number",
                     "minimum": 0.0,
                     "maximum": 1.0
                 },
                 "female_distribution": {
-                    "description": "Proportion of female samples where this feature was key (0.0 to 1.0).",
+                    "description": "Proportion of female samples where this was a key feature (0.0 to 1.0).",
                     "type": "number",
                     "minimum": 0.0,
                     "maximum": 1.0
                 },
                 "distribution_bias": {
-                    "description": "Derived: Absolute difference between male and female distributions.",
+                    "description": "Absolute difference between male and female distributions.",
                     "type": "number",
-                    "readOnly": true
+                    "minimum": 0.0
                 }
             },
             "required": [
@@ -222,72 +414,91 @@
             ]
         },
         "GenderPerformanceMetrics": {
-            "description": "Standard classification performance metrics calculated for a specific gender.",
-            "type": "object",
+            "description": "Standard classification performance metrics calculated for a specific gender as the positive class.",
+            "type": [
+                "object",
+                "null"
+            ],
             "properties": {
                 "positive_class": {
-                    "$ref": "#/$defs/Gender",
-                    "description": "The gender considered as the positive class for these metrics."
+                    "description": "The gender treated as the positive class for these metrics.",
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1
+                    ],
+                    "description_enum": {
+                        "0": "MALE",
+                        "1": "FEMALE"
+                    }
                 },
                 "tp": {
-                    "description": "True Positives count.",
+                    "description": "True Positives.",
                     "type": "integer",
                     "minimum": 0
                 },
                 "fp": {
-                    "description": "False Positives count.",
+                    "description": "False Positives.",
                     "type": "integer",
                     "minimum": 0
                 },
                 "tn": {
-                    "description": "True Negatives count.",
+                    "description": "True Negatives.",
                     "type": "integer",
                     "minimum": 0
                 },
                 "fn": {
-                    "description": "False Negatives count.",
+                    "description": "False Negatives.",
                     "type": "integer",
                     "minimum": 0
                 },
                 "tpr": {
-                    "description": "Derived: True Positive Rate (Recall/Sensitivity).",
+                    "description": "True Positive Rate (Recall/Sensitivity).",
                     "type": "number",
-                    "readOnly": true
+                    "minimum": 0.0,
+                    "maximum": 1.0
                 },
                 "fpr": {
-                    "description": "Derived: False Positive Rate.",
+                    "description": "False Positive Rate.",
                     "type": "number",
-                    "readOnly": true
+                    "minimum": 0.0,
+                    "maximum": 1.0
                 },
                 "tnr": {
-                    "description": "Derived: True Negative Rate (Specificity).",
+                    "description": "True Negative Rate (Specificity).",
                     "type": "number",
-                    "readOnly": true
+                    "minimum": 0.0,
+                    "maximum": 1.0
                 },
                 "fnr": {
-                    "description": "Derived: False Negative Rate.",
+                    "description": "False Negative Rate.",
                     "type": "number",
-                    "readOnly": true
+                    "minimum": 0.0,
+                    "maximum": 1.0
                 },
                 "ppv": {
-                    "description": "Derived: Positive Predictive Value (Precision).",
+                    "description": "Positive Predictive Value (Precision).",
                     "type": "number",
-                    "readOnly": true
+                    "minimum": 0.0,
+                    "maximum": 1.0
                 },
                 "npv": {
-                    "description": "Derived: Negative Predictive Value.",
+                    "description": "Negative Predictive Value.",
                     "type": "number",
-                    "readOnly": true
+                    "minimum": 0.0,
+                    "maximum": 1.0
                 },
                 "fdr": {
-                    "description": "Derived: False Discovery Rate.",
+                    "description": "False Discovery Rate.",
                     "type": "number",
-                    "readOnly": true
+                    "minimum": 0.0,
+                    "maximum": 1.0
                 },
                 "_for": {
-                    "description": "Derived: False Omission Rate.",
+                    "description": "False Omission Rate.",
                     "type": "number",
-                    "readOnly": true
+                    "minimum": 0.0,
+                    "maximum": 1.0
                 }
             },
             "required": [
@@ -307,8 +518,11 @@
             ]
         },
         "BiasMetrics": {
-            "description": "Metrics assessing fairness and bias between gender groups.",
-            "type": "object",
+            "description": "Overall fairness and bias metrics.",
+            "type": [
+                "object",
+                "null"
+            ],
             "properties": {
                 "demographic_parity": {
                     "description": "Absolute difference in selection rates between genders.",
@@ -316,17 +530,17 @@
                     "minimum": 0.0
                 },
                 "equalized_odds": {
-                    "description": "Absolute difference in true positive rates between genders.",
+                    "description": "Absolute difference in true positive rates (TPR) between genders.",
                     "type": "number",
                     "minimum": 0.0
                 },
                 "conditional_use_accuracy_equality": {
-                    "description": "Absolute difference in positive predictive values between genders.",
+                    "description": "Absolute difference in positive predictive values (PPV) between genders.",
                     "type": "number",
                     "minimum": 0.0
                 },
                 "mean_feature_distribution_bias": {
-                    "description": "Average absolute difference in key feature distributions between genders.",
+                    "description": "Average absolute difference in key feature distributions across all features.",
                     "type": "number",
                     "minimum": 0.0
                 }
@@ -338,8 +552,8 @@
                 "mean_feature_distribution_bias"
             ]
         },
-        "ImageDetail": {
-            "description": "Detailed results for a single image from the test set.",
+        "Explanation": {
+            "description": "Detailed explanation for a single analyzed image.",
             "type": "object",
             "properties": {
                 "image_id": {
@@ -348,15 +562,31 @@
                     "minLength": 1
                 },
                 "label": {
-                    "$ref": "#/$defs/Gender",
-                    "description": "The true gender label of the image."
+                    "description": "True label (gender) of the image.",
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1
+                    ],
+                    "description_enum": {
+                        "0": "MALE",
+                        "1": "FEMALE"
+                    }
                 },
                 "prediction": {
-                    "$ref": "#/$defs/Gender",
-                    "description": "The gender predicted by the model."
+                    "description": "Predicted label (gender) for the image.",
+                    "type": "integer",
+                    "enum": [
+                        0,
+                        1
+                    ],
+                    "description_enum": {
+                        "0": "MALE",
+                        "1": "FEMALE"
+                    }
                 },
                 "confidence_scores": {
-                    "description": "Model's confidence scores for each class (e.g., [male_confidence, female_confidence]).",
+                    "description": "List of prediction confidence scores (e.g., [male_conf, female_conf]).",
                     "type": "array",
                     "items": {
                         "type": "number",
@@ -367,17 +597,17 @@
                     "maxItems": 2
                 },
                 "heatmap_path": {
-                    "description": "Relative path to the saved heatmap file (if saved), else null.",
+                    "description": "Relative path to the saved heatmap file (if saved).",
                     "type": [
                         "string",
                         "null"
                     ]
                 },
                 "detected_features": {
-                    "description": "List of facial features detected in this image with their details.",
+                    "description": "List of detected facial features and their details.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/$defs/FeatureDetails"
+                        "$ref": "#/definitions/FeatureDetails"
                     }
                 }
             },
@@ -386,132 +616,7 @@
                 "label",
                 "prediction",
                 "confidence_scores",
-                "heatmap_path",
                 "detected_features"
-            ]
-        },
-        "AnalysisResult": {
-            "description": "Aggregated bias analysis results for a single replicate.",
-            "type": "object",
-            "properties": {
-                "feature_distributions": {
-                    "description": "Distribution of key features across genders.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/$defs/FeatureDistribution"
-                    }
-                },
-                "male_performance_metrics": {
-                    "description": "Performance metrics with MALE as the positive class.",
-                    "oneOf": [
-                        {
-                            "$ref": "#/$defs/GenderPerformanceMetrics"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "female_performance_metrics": {
-                    "description": "Performance metrics with FEMALE as the positive class.",
-                    "oneOf": [
-                        {
-                            "$ref": "#/$defs/GenderPerformanceMetrics"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "bias_metrics": {
-                    "description": "Overall fairness metrics comparing gender groups.",
-                    "oneOf": [
-                        {
-                            "$ref": "#/$defs/BiasMetrics"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "analyzed_images": {
-                    "description": "Detailed results for each image analyzed in this replicate.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/$defs/ImageDetail"
-                    }
-                }
-            },
-            "required": [
-                "feature_distributions",
-                "male_performance_metrics",
-                "female_performance_metrics",
-                "bias_metrics",
-                "analyzed_images"
-            ]
-        },
-        "ReplicateResult": {
-            "description": "Results from a single run (replicate) of an experiment with a specific random seed.",
-            "type": "object",
-            "properties": {
-                "seed": {
-                    "description": "The random seed used for this replicate.",
-                    "type": "integer",
-                    "minimum": 0
-                },
-                "history": {
-                    "description": "Model training history for this replicate (if saved).",
-                    "oneOf": [
-                        {
-                            "$ref": "#/$defs/ModelTrainingHistory"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                },
-                "analysis": {
-                    "description": "Bias analysis results for this replicate (if saved).",
-                    "oneOf": [
-                        {
-                            "$ref": "#/$defs/AnalysisResult"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ]
-                }
-            },
-            "required": [
-                "seed",
-                "history",
-                "analysis"
-            ]
-        },
-        "ExperimentResult": {
-            "description": "Contains the parameters and all replicate results for a single experiment.",
-            "type": "object",
-            "properties": {
-                "id": {
-                    "description": "Unique identifier for the experiment (e.g., 'prop_050_mask_none').",
-                    "type": "string",
-                    "minLength": 1
-                },
-                "parameters": {
-                    "$ref": "#/$defs/ExperimentParameters"
-                },
-                "replicates": {
-                    "description": "List of results, one for each replicate run under these parameters.",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/$defs/ReplicateResult"
-                    }
-                }
-            },
-            "required": [
-                "id",
-                "parameters",
-                "replicates"
             ]
         }
     }
