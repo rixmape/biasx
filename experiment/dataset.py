@@ -1,44 +1,34 @@
 import os
-from typing import Literal, Optional, Tuple
+from typing import Generator, Tuple
 
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from config import ExperimentsConfig
+from config import Config
+from datatypes import ArtifactSavingLevel, DatasetSplit, Gender
 from huggingface_hub import hf_hub_download
-from sklearn.model_selection import train_test_split
-
-# isort: off
-from datatypes import ArtifactSavingLevel, MaskDetails, Gender
 from masker import FeatureMasker
+from sklearn.model_selection import train_test_split
 from utils import setup_logger
 
 
 class DatasetGenerator:
 
-    def __init__(
-        self,
-        config: ExperimentsConfig,
-        feature_masker: FeatureMasker,
-        log_path: str,
-    ):
+    def __init__(self, config: Config, feature_masker: FeatureMasker, log_path: str, exp_id: str):
         self.config = config
         self.feature_masker = feature_masker
-        self.logger = setup_logger(name="dataset_generator", log_path=log_path)
+        self.logger = setup_logger(name="dataset_generator", log_path=log_path, id=exp_id)
+        self.logger.info("Completed dataset generator initialization")
 
     def _load_raw_dataframe(self) -> pd.DataFrame:
         self.logger.info(f"Downloading {self.config.dataset.source_name.value} dataset.")
-        path = hf_hub_download(
-            repo_id=f"rixmape/{self.config.dataset.source_name.value}",
-            filename="data/train-00000-of-00001.parquet",
-            repo_type="dataset",
-        )
+        path = hf_hub_download(repo_id=f"rixmape/{self.config.dataset.source_name.value}", filename="data/train-00000-of-00001.parquet", repo_type="dataset")
         df = pd.read_parquet(path, columns=["image_id", "image", "gender", "race", "age"])
         self.logger.info(f"Raw dataset loaded: {len(df)} rows.")
         return df
 
     def _process_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        df["image_id"] = df["image_id"].astype(str).str[:8]  # Ensure ID is string
+        df["image_id"] = df["image_id"].astype(str).str[:8]
         df["image_bytes"] = df["image"].apply(lambda x: x["bytes"])
         df = df.drop(columns=["image"])
 
@@ -86,12 +76,12 @@ class DatasetGenerator:
 
         return strata_sample
 
-    def _sample_by_gender(self, df: pd.DataFrame, target_male_proportion: float, seed: int) -> pd.DataFrame:
+    def _sample_by_gender(self, df: pd.DataFrame, seed: int) -> pd.DataFrame:
         df["strata"] = df["race"].astype(str) + "_" + df["age"].astype(str)
         self.logger.info(f"Found {df['strata'].nunique()} unique strata for sampling.")
 
-        target_female_proportion = 1.0 - target_male_proportion
-        target_male_size = round(self.config.dataset.target_size * target_male_proportion)
+        target_female_proportion = 1.0 - self.config.core.target_male_proportion
+        target_male_size = round(self.config.dataset.target_size * self.config.core.target_male_proportion)
         target_female_size = round(self.config.dataset.target_size * target_female_proportion)
 
         male_samples = self._get_sampled_gender_subset(df, Gender.MALE, target_male_size, seed)
@@ -112,63 +102,51 @@ class DatasetGenerator:
 
         return combined_df
 
-    def _decode_and_process_image(
-        self,
-        image_bytes: tf.Tensor,
-        label: tf.Tensor,
-        image_id: tf.Tensor,
-        mask_details: Optional[MaskDetails] = None,
-    ) -> Tuple[tf.Tensor, tf.Tensor, tf.Tensor]:
+    def _preprocess_single_image(self, image_bytes: bytes, label: int, image_id: str, purpose: DatasetSplit) -> np.ndarray:
+        image = tf.io.decode_image(image_bytes, channels=3, expand_animations=False)
+        image = tf.image.resize(image, [self.config.dataset.image_size, self.config.dataset.image_size])
+        image = tf.cast(image, tf.float32) / 255.0
+        image_np = image.numpy()
 
-        def process_py(image_bytes_py, label_py, image_id_py):
-            image = tf.io.decode_image(image_bytes_py, channels=3, expand_animations=False)
-            image = tf.image.resize(image, [self.config.dataset.image_size, self.config.dataset.image_size])
-            image = tf.cast(image, tf.float32) / 255.0
-            image_np = image.numpy()
+        if purpose == DatasetSplit.TRAIN:
+            image_np = self.feature_masker.apply_mask(image_np, label, image_id)
 
-            if mask_details:
-                id_str = image_id_py.numpy().decode("utf-8")
-                label_np = label_py.numpy()
-                image_np = self.feature_masker.apply_mask(image_np, label_np, mask_details, id_str)
+        if self.config.dataset.use_grayscale:
+            image_np = tf.image.rgb_to_grayscale(image_np).numpy()
 
-            if self.config.dataset.use_grayscale:
-                image_np = tf.image.rgb_to_grayscale(image_np).numpy()
+        return image_np.astype(np.float32)
 
-            return image_np.astype(np.float32), label_py, image_id_py
+    def _create_generator(self, df: pd.DataFrame, purpose: DatasetSplit) -> Generator[Tuple[np.ndarray, int, str], None, None]:
+        for _, row in df.iterrows():
+            image_bytes = row["image_bytes"]
+            label = int(row["gender"])
+            image_id = row["image_id"]
 
-        processed_image, processed_label, processed_id = tf.py_function(
-            func=process_py,
-            inp=[image_bytes, label, image_id],
-            Tout=[tf.float32, label.dtype, image_id.dtype],
+            processed_image = self._preprocess_single_image(image_bytes, label, image_id, purpose)
+            yield processed_image, label, image_id
+
+    def _create_tf_dataset(self, df: pd.DataFrame, purpose: DatasetSplit) -> tf.data.Dataset:
+        output_shape = (
+            self.config.dataset.image_size,
+            self.config.dataset.image_size,
+            1 if self.config.dataset.use_grayscale else 3,
         )
 
-        output_channels = 1 if self.config.dataset.use_grayscale else 3
-        processed_image.set_shape([self.config.dataset.image_size, self.config.dataset.image_size, output_channels])
-        processed_label.set_shape([])
-        processed_id.set_shape([])
-
-        return processed_image, processed_label, processed_id
-
-    def _create_tf_dataset(
-        self,
-        df: pd.DataFrame,
-        mask_details: Optional[MaskDetails] = None,
-    ) -> tf.data.Dataset:
-        dataset = tf.data.Dataset.from_tensor_slices((df["image_bytes"].values, df["gender"].values.astype(np.int64), df["image_id"].values))
-        dataset = dataset.map(
-            lambda img_bytes, lbl, img_id: self._decode_and_process_image(img_bytes, lbl, img_id, mask_details),
-            num_parallel_calls=tf.data.AUTOTUNE,
+        output_signature = (
+            tf.TensorSpec(shape=output_shape, dtype=tf.float32),
+            tf.TensorSpec(shape=(), dtype=tf.int64),
+            tf.TensorSpec(shape=(), dtype=tf.string),
         )
+
+        dataset = tf.data.Dataset.from_generator(lambda: self._create_generator(df, purpose), output_signature=output_signature)
         return dataset
 
-    def _save_images_to_disk(self, dataset: tf.data.Dataset, purpose: str, base_output_directory: str) -> None:
-        specific_output_directory = os.path.join(base_output_directory, f"{purpose}_images")
-
-        if not os.path.exists(specific_output_directory):
-            os.makedirs(specific_output_directory)
+    def _save_images_to_disk(self, dataset: tf.data.Dataset, purpose: DatasetSplit, base_output_directory: str) -> None:
+        specific_output_directory = os.path.join(base_output_directory, f"{purpose.value.lower()}_images")
+        os.makedirs(specific_output_directory, exist_ok=True)
 
         image_count = 0
-        for image, label, image_id_tensor in dataset:
+        for image, _, image_id_tensor in dataset:
             image_np = image.numpy()
             image_id = image_id_tensor.numpy().decode("utf-8")
 
@@ -177,32 +155,30 @@ class DatasetGenerator:
             if image_np.shape[-1] == 1:
                 image_np = np.squeeze(image_np, axis=-1)
 
-            filename = f"{purpose}_{image_id}.png"
+            filename = f"{purpose.value.lower()}_{image_id}.png"
             filepath = os.path.join(specific_output_directory, filename)
             tf.keras.utils.save_img(filepath, image_np)
             image_count += 1
 
-        self.logger.info(f"Saved {image_count} images for {purpose} dataset to {specific_output_directory}")
+        self.logger.info(f"Saved {image_count} images for {purpose} to {specific_output_directory}")
 
     def _build_dataset_split(
         self,
         df: pd.DataFrame,
-        purpose: Literal["train", "val", "test"],
-        mask_details: Optional[MaskDetails],
+        purpose: DatasetSplit,
         output_dir: str,
-        should_save_images: bool,
     ) -> tf.data.Dataset:
-        self.logger.info(f"Creating {purpose} dataset from {len(df)} samples.")
-        dataset = self._create_tf_dataset(df, mask_details)
+        self.logger.info(f"Creating {purpose} from {len(df)} samples.")
+        dataset = self._create_tf_dataset(df, purpose)
 
-        if should_save_images:
+        if self.config.output.artifact_level == ArtifactSavingLevel.FULL:
             self._save_images_to_disk(dataset, purpose, output_dir)
 
-        dataset = dataset.prefetch(tf.data.AUTOTUNE)
-        dataset = dataset.batch(self.config.model.batch_size)
         dataset = dataset.cache()
+        dataset = dataset.batch(self.config.model.batch_size)
+        dataset = dataset.prefetch(tf.data.AUTOTUNE)
 
-        self.logger.info(f"{purpose.capitalize()} dataset build complete.")
+        self.logger.info(f"{purpose} build complete.")
         return dataset
 
     def _split_dataframe(self, df: pd.DataFrame, seed: int) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -215,26 +191,23 @@ class DatasetGenerator:
         self.logger.info(f"Actual splits: train={len(train_df)}, validation={len(val_df)}, test={len(test_df)}.")
         return train_df, val_df, test_df
 
-    def prepare_datasets(
+    def get_data_splits(
         self,
-        target_male_proportion: float,
-        mask_details: Optional[MaskDetails],
         seed: int,
-        experiment_id: str,
+        exp_id: str,
     ) -> Tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
-        self.logger.info(f"Starting Dataset Preparation for Exp '{experiment_id}'")
+        self.logger.info(f"Starting Dataset Preparation for Exp '{exp_id}'")
 
         raw_df = self._load_raw_dataframe()
         processed_df = self._process_dataframe(raw_df)
-        sampled_df = self._sample_by_gender(processed_df, target_male_proportion, seed)
+        sampled_df = self._sample_by_gender(processed_df, seed)
         train_df, val_df, test_df = self._split_dataframe(sampled_df, seed)
 
-        experiment_output_dir = os.path.join(self.config.output.base_dir, experiment_id)
-        save_images = self.config.output.artifact_level == ArtifactSavingLevel.FULL
+        output_dir = os.path.join(self.config.output.base_dir, exp_id)
 
-        train_data = self._build_dataset_split(train_df, "train", mask_details, experiment_output_dir, save_images)
-        val_data = self._build_dataset_split(val_df, "val", None, experiment_output_dir, save_images)
-        test_data = self._build_dataset_split(test_df, "test", None, experiment_output_dir, save_images)
+        train_data = self._build_dataset_split(train_df, DatasetSplit.TRAIN, output_dir)
+        val_data = self._build_dataset_split(val_df, DatasetSplit.VALIDATION, output_dir)
+        test_data = self._build_dataset_split(test_df, DatasetSplit.TEST, output_dir)
 
-        self.logger.info(f"Dataset Preparation Complete for Exp '{experiment_id}'")
+        self.logger.info(f"Dataset Preparation Complete for Exp '{exp_id}'")
         return train_data, val_data, test_data

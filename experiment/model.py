@@ -3,23 +3,27 @@ from typing import Tuple
 import tensorflow as tf
 
 # isort: off
-from datatypes import ModelTrainingHistory
-from config import ExperimentsConfig
+from config import Config
+from datatypes import ModelHistory
 from utils import setup_logger
 
 
 class ModelTrainer:
+    """Builds and trains the CNN model."""
 
-    def __init__(self, config: ExperimentsConfig, log_path: str):
+    def __init__(self, config: Config, log_path: str, exp_id: str):
+        """Initializes the model trainer with configuration and logger."""
         self.config = config
-        self.logger = setup_logger(name="model_trainer", log_path=log_path)
+        self.logger = setup_logger(name="model_trainer", log_path=log_path, id=exp_id)
 
     def _build_model(self) -> tf.keras.Model:
-        self.logger.info("Building CNN model architecture.")
-
-        model = tf.keras.Sequential()
+        """Constructs the CNN model architecture using TensorFlow/Keras."""
         input_channels = 1 if self.config.dataset.use_grayscale else 3
         input_shape = (self.config.dataset.image_size, self.config.dataset.image_size, input_channels)
+
+        self.logger.info(f"Starting model building: input_shape={input_shape}")
+
+        model = tf.keras.Sequential()
         model.add(tf.keras.layers.Input(shape=input_shape, name="input"))
 
         conv_blocks = [(64, 2), (128, 2), (256, 3)]
@@ -38,34 +42,29 @@ class ModelTrainer:
         model.compile(optimizer=tf.keras.optimizers.Adam(0.0001), loss="sparse_categorical_crossentropy", metrics=["accuracy"])
 
         total_params = model.count_params()
-        self.logger.info(f"Model built successfully: {total_params:,} total parameters.")
+        self.logger.info(f"Completed model building: parameters={total_params:,}")
         return model
 
-    def _remove_image_id_from_dataset(
-        self,
-        dataset: tf.data.Dataset,
-    ) -> tf.data.Dataset:
-        return dataset.map(lambda image, label, image_id: (image, label))
-
-    def train_model(
+    def get_model_and_history(
         self,
         train_data: tf.data.Dataset,
         val_data: tf.data.Dataset,
-    ) -> Tuple[tf.keras.Model, ModelTrainingHistory]:
+    ) -> Tuple[tf.keras.Model, ModelHistory]:
+        """Trains the model on the provided data and returns the model and training history."""
 
-        train_data_fit = self._remove_image_id_from_dataset(train_data)
-        val_data_fit = self._remove_image_id_from_dataset(val_data)
+        train_data_fit = train_data.map(lambda image, label, _: (image, label))
+        val_data_fit = val_data.map(lambda image, label, _: (image, label))
 
         model = self._build_model()
-        self.logger.info(f"Training model for {self.config.model.epochs} epochs with batch size {self.config.model.batch_size}.")
+        self.logger.info(f"Starting model training: epochs={self.config.model.epochs}, batch_size={self.config.model.batch_size}.")
 
         history = model.fit(train_data_fit, validation_data=val_data_fit, epochs=self.config.model.epochs, verbose=0)
-        history = ModelTrainingHistory(
+        history = ModelHistory(
             train_loss=history.history["loss"],
             train_accuracy=history.history["accuracy"],
             val_loss=history.history["val_loss"],
             val_accuracy=history.history["val_accuracy"],
         )
 
-        self.logger.info(f"Training completed: final train_acc={history.train_accuracy[-1]:.4f}, final val_acc={history.val_accuracy[-1]:.4f}")
+        self.logger.info(f"Completed model training: train_acc={history.train_accuracy[-1]:.4f}, val_acc={history.val_accuracy[-1]:.4f}")
         return model, history

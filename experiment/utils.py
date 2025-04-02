@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+from typing import Optional
 
 
 class CustomFormatter(logging.Formatter):
@@ -30,9 +31,18 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-def setup_logger(name: str, log_path: str, include_location: bool = True, console_level: int = logging.INFO, file_level: int = logging.DEBUG, datefmt: str | None = None):
+def setup_logger(
+    name: str,
+    log_path: str,
+    include_location: bool = True,
+    console_level: int = logging.INFO,
+    file_level: int = logging.DEBUG,
+    datefmt: Optional[str] = None,
+    id: Optional[str] = None,
+) -> logging.Logger:
     """Configures and returns a logger with optional location info and colored console output."""
-    log_format_base = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    id_str = f"[{id}] " if id else ""
+    log_format_base = f"%(asctime)s - {id_str}%(name)s - %(levelname)s - %(message)s"
     log_format_location = " (%(filename)s:%(lineno)d)"
     chosen_format = log_format_base + (log_format_location if include_location else "")
 
