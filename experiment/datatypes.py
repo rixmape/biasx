@@ -16,9 +16,9 @@ class DatasetSource(Enum):
 
 
 class DatasetSplit(Enum):
-    TRAIN = auto()
-    VALIDATION = auto()
-    TEST = auto()
+    TRAIN = "train"
+    VALIDATION = "validation"
+    TEST = "test"
 
 
 class Gender(Enum):
@@ -39,19 +39,11 @@ class Feature(Enum):
     RIGHT_EYEBROW = "right_eyebrow"
 
 
-class MaskDetails(BaseModel):
-    target_gender: Gender
-    target_features: List[Feature] = Field(..., min_length=1)
-
-
-class FeatureDetails(BaseModel):
-    feature: Feature
+class BoundingBox(BaseModel):
     min_x: int = Field(..., ge=0)
     min_y: int = Field(..., ge=0)
     max_x: int = Field(..., ge=0)
     max_y: int = Field(..., ge=0)
-    attention_score: float = Field(default=0.0, ge=0.0, le=1.0)
-    is_key_feature: bool = Field(default=False)
 
     @computed_field
     @property
@@ -73,6 +65,13 @@ class FeatureDetails(BaseModel):
         if "min_y" in info.data and v < info.data["min_y"]:
             raise ValueError("max_y must be greater than or equal to min_y")
         return v
+
+
+class FeatureDetails(BaseModel):
+    feature: Feature
+    bbox: BoundingBox = Field(default_factory=BoundingBox)
+    attention_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    is_key_feature: bool = Field(default=False)
 
 
 class GenderPerformanceMetrics(BaseModel):
@@ -130,7 +129,7 @@ class BiasMetrics(BaseModel):
     mean_feature_distribution_bias: float = Field(..., ge=0.0)
 
 
-class ImageDetail(BaseModel):
+class Explanation(BaseModel):
     image_id: str = Field(..., min_length=1)
     label: Gender
     prediction: Gender
@@ -164,10 +163,10 @@ class AnalysisResult(BaseModel):
     male_performance_metrics: Optional[GenderPerformanceMetrics] = Field(default=None)
     female_performance_metrics: Optional[GenderPerformanceMetrics] = Field(default=None)
     bias_metrics: Optional[BiasMetrics] = Field(default=None)
-    analyzed_images: List[ImageDetail] = Field(default_factory=list)
+    analyzed_images: List[Explanation] = Field(default_factory=list)
 
 
-class ModelTrainingHistory(BaseModel):
+class ModelHistory(BaseModel):
     train_loss: List[float] = Field(default_factory=list)
     train_accuracy: List[float] = Field(default_factory=list)
     val_loss: List[float] = Field(default_factory=list)
@@ -188,23 +187,8 @@ class ModelTrainingHistory(BaseModel):
         return v
 
 
-class ReplicateResult(BaseModel):
-    seed: int = Field(..., ge=0)
-    history: Optional[ModelTrainingHistory] = Field(default=None)
-    analysis: Optional[AnalysisResult] = Field(default=None)
-
-
-class ExperimentParameters(BaseModel):
-    target_male_proportion: float = Field(..., ge=0.0, le=1.0)
-    feature_mask: Optional[MaskDetails] = Field(default=None)
-
-    @computed_field
-    @property
-    def target_female_proportion(self) -> float:
-        return 1.0 - self.target_male_proportion
-
-
 class ExperimentResult(BaseModel):
     id: str = Field(..., min_length=1)
-    parameters: ExperimentParameters
-    replicates: List[ReplicateResult] = Field(default_factory=list)
+    config: dict = Field(default_factory=dict)
+    history: Optional[ModelHistory] = Field(default=None)
+    analysis: Optional[AnalysisResult] = Field(default=None)

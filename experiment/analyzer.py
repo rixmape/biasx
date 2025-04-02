@@ -4,18 +4,19 @@ from typing import List
 import numpy as np
 
 # isort: off
-from datatypes import AnalysisResult, BiasMetrics, Feature, FeatureDistribution, Gender, GenderPerformanceMetrics, ImageDetail
+from datatypes import AnalysisResult, BiasMetrics, Feature, FeatureDistribution, Gender, GenderPerformanceMetrics, Explanation
 from utils import setup_logger
 
 
 class BiasAnalyzer:
 
-    def __init__(self, log_path: str):
-        self.logger = setup_logger(name="bias_analyzer", log_path=log_path)
+    def __init__(self, log_path: str, exp_id: str):
+        self.logger = setup_logger(name="bias_analyzer", log_path=log_path, id=exp_id)
+        self.logger.info("Completed bias analyzer initialization")
 
     def _compute_feature_distributions(
         self,
-        image_details: List[ImageDetail],
+        image_details: List[Explanation],
     ) -> List[FeatureDistribution]:
         self.logger.info("Computing feature distributions based on key features.")
         feature_counts = defaultdict(lambda: defaultdict(int))
@@ -104,9 +105,9 @@ class BiasAnalyzer:
         self.logger.debug(f"Overall bias metrics: {bias_metrics_result.model_dump()}")
         return bias_metrics_result
 
-    def analyze(
+    def get_bias_analysis(
         self,
-        image_details: List[ImageDetail],
+        image_details: List[Explanation],
     ) -> AnalysisResult:
         self.logger.info(f"Starting bias analysis on {len(image_details)} samples.")
 

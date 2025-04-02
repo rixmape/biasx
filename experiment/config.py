@@ -3,25 +3,16 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 # isort: off
-from datatypes import ArtifactSavingLevel, DatasetSource, MaskDetails
+from datatypes import ArtifactSavingLevel, DatasetSource, Feature, Gender
 
 
 class CoreConfig(BaseModel):
-    replicate_count: int = Field(default=5, gt=0)
-    male_proportion_targets: List[float] = Field(default=[0.5])
-    masking_configs: Optional[List[MaskDetails]] = Field(default=None)
+    target_male_proportion: float = Field(..., ge=0.0, le=1.0)
+    mask_gender: Optional[Gender] = Field(default=None)
+    mask_features: Optional[List[Feature]] = Field(default=None)
     mask_pixel_padding: int = Field(default=2, ge=0)
     key_feature_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
-    base_random_seed: int = Field(default=42, ge=0)
-
-    @field_validator("male_proportion_targets")
-    @classmethod
-    def check_proportions(cls, v: List[float]) -> List[float]:
-        if not v:
-            raise ValueError("male_proportion_targets cannot be empty")
-        if not all(0.0 <= p <= 1.0 for p in v):
-            raise ValueError("All male_proportion_targets must be between 0.0 and 1.0")
-        return v
+    random_seed: int = Field(default=42, ge=0)
 
 
 class DatasetConfig(BaseModel):
@@ -57,7 +48,7 @@ class OutputConfig(BaseModel):
         return v
 
 
-class ExperimentsConfig(BaseModel):
+class Config(BaseModel):
     core: CoreConfig = Field(default_factory=CoreConfig)
     dataset: DatasetConfig = Field(default_factory=DatasetConfig)
     model: ModelConfig = Field(default_factory=ModelConfig)
