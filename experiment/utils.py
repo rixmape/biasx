@@ -1,7 +1,9 @@
 import logging
 import os
 import sys
-from typing import Optional
+
+# isort: off
+from config import Config
 
 
 class CustomFormatter(logging.Formatter):
@@ -14,67 +16,50 @@ class CustomFormatter(logging.Formatter):
     bold_red = "\x1b[31;1m"
     reset = "\x1b[0m"
 
-    def __init__(self, fmt: str, datefmt: str | None = None):
-        self.base_fmt = fmt
-        self.base_datefmt = datefmt
+    def __init__(self, fmt: str):
+        self.fmt = fmt
         self.formats = {
-            logging.DEBUG: self.grey + self.base_fmt + self.reset,
-            logging.INFO: self.blue + self.base_fmt + self.reset,
-            logging.WARNING: self.yellow + self.base_fmt + self.reset,
-            logging.ERROR: self.red + self.base_fmt + self.reset,
-            logging.CRITICAL: self.bold_red + self.base_fmt + self.reset,
+            logging.DEBUG: self.grey + self.fmt + self.reset,
+            logging.INFO: self.blue + self.fmt + self.reset,
+            logging.WARNING: self.yellow + self.fmt + self.reset,
+            logging.ERROR: self.red + self.fmt + self.reset,
+            logging.CRITICAL: self.bold_red + self.fmt + self.reset,
         }
 
     def format(self, record):
-        log_fmt = self.formats.get(record.levelno, self.base_fmt)
-        formatter = logging.Formatter(log_fmt, datefmt=self.base_datefmt)
+        log_fmt = self.formats.get(record.levelno, self.fmt)
+        formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
 
 
-def setup_logger(
-    name: str,
-    log_path: str,
-    include_location: bool = True,
+def create_logger(
+    config: Config,
     console_level: int = logging.INFO,
     file_level: int = logging.DEBUG,
-    datefmt: Optional[str] = None,
-    id: Optional[str] = None,
 ) -> logging.Logger:
-    """Configures and returns a logger with optional location info and colored console output."""
-    id_str = f"[{id}] " if id else ""
-    log_format_base = f"%(asctime)s - {id_str}%(name)s - %(levelname)s - %(message)s"
-    log_format_location = " (%(filename)s:%(lineno)d)"
-    chosen_format = log_format_base + (log_format_location if include_location else "")
+    """Creates a logger with both console and file handler."""
+    id = config.experiment_id
+    format = f"%(asctime)s -  %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
 
-    os.makedirs(log_path, exist_ok=True)
-    log_filename = os.path.join(log_path, f"{name}.log")
+    os.makedirs(config.output.log_path, exist_ok=True)
+    filename = os.path.join(config.output.log_path, f"{id}.log")
 
-    logger = logging.getLogger(name)
+    logger = logging.getLogger(id)
     logger.setLevel(min(console_level, file_level))
     logger.propagate = False
 
     if logger.hasHandlers():
         logger.handlers.clear()
 
-    file_handler = logging.FileHandler(log_filename)
+    file_handler = logging.FileHandler(filename, mode="w")
     file_handler.setLevel(file_level)
-    file_handler.setFormatter(logging.Formatter(chosen_format, datefmt=datefmt))
+    file_handler.setFormatter(logging.Formatter(format))
 
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(console_level)
-    console_handler.setFormatter(CustomFormatter(chosen_format, datefmt=datefmt))
+    console_handler.setFormatter(CustomFormatter(format))
 
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
 
     return logger
-
-
-if __name__ == "__main__":
-    logger = setup_logger("my_app", "logs", console_level=logging.INFO, file_level=logging.DEBUG)
-
-    logger.debug("This is a debug message (should appear in file only).")
-    logger.info("This is an info message.")
-    logger.warning("This is a warning message.")
-    logger.error("This is an error message.")
-    logger.critical("This is a critical message.")

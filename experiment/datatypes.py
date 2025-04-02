@@ -4,7 +4,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, ValidationInfo, computed_field, field_validator
 
 
-class ArtifactSavingLevel(Enum):
+class OutputLevel(Enum):
     NONE = auto()
     RESULTS_ONLY = auto()
     FULL = auto()
