@@ -1,23 +1,24 @@
+import logging
 import os
 from typing import Generator, Tuple
 
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from config import Config
-from datatypes import ArtifactSavingLevel, DatasetSplit, Gender
 from huggingface_hub import hf_hub_download
-from masker import FeatureMasker
 from sklearn.model_selection import train_test_split
-from utils import setup_logger
 
+# isort: off
+from datatypes import OutputLevel, DatasetSplit, Gender
+from config import Config
+from masker import FeatureMasker
 
 class DatasetGenerator:
 
-    def __init__(self, config: Config, feature_masker: FeatureMasker, log_path: str, exp_id: str):
+    def __init__(self, config: Config, logger: logging.Logger, feature_masker: FeatureMasker):
         self.config = config
+        self.logger = logger
         self.feature_masker = feature_masker
-        self.logger = setup_logger(name="dataset_generator", log_path=log_path, id=exp_id)
         self.logger.info("Completed dataset generator initialization")
 
     def _load_raw_dataframe(self) -> pd.DataFrame:
@@ -28,7 +29,7 @@ class DatasetGenerator:
         return df
 
     def _process_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        df["image_id"] = df["image_id"].astype(str).str[:8]
+        df["image_id"] = df["image_id"].astype(str).str[:16]
         df["image_bytes"] = df["image"].apply(lambda x: x["bytes"])
         df = df.drop(columns=["image"])
 
@@ -141,9 +142,13 @@ class DatasetGenerator:
         dataset = tf.data.Dataset.from_generator(lambda: self._create_generator(df, purpose), output_signature=output_signature)
         return dataset
 
-    def _save_images_to_disk(self, dataset: tf.data.Dataset, purpose: DatasetSplit, base_output_directory: str) -> None:
-        specific_output_directory = os.path.join(base_output_directory, f"{purpose.value.lower()}_images")
-        os.makedirs(specific_output_directory, exist_ok=True)
+    def _save_images_to_disk(self, dataset: tf.data.Dataset, purpose: DatasetSplit) -> None:
+        path = os.path.join(
+            self.config.output.base_path,
+            self.config.experiment_id,
+            f"{purpose.value.lower()}_images",
+        )
+        os.makedirs(path, exist_ok=True)
 
         image_count = 0
         for image, _, image_id_tensor in dataset:
@@ -156,23 +161,22 @@ class DatasetGenerator:
                 image_np = np.squeeze(image_np, axis=-1)
 
             filename = f"{purpose.value.lower()}_{image_id}.png"
-            filepath = os.path.join(specific_output_directory, filename)
+            filepath = os.path.join(path, filename)
             tf.keras.utils.save_img(filepath, image_np)
             image_count += 1
 
-        self.logger.info(f"Saved {image_count} images for {purpose} to {specific_output_directory}")
+        self.logger.info(f"Saved {image_count} images for {purpose} to {path}")
 
     def _build_dataset_split(
         self,
         df: pd.DataFrame,
         purpose: DatasetSplit,
-        output_dir: str,
     ) -> tf.data.Dataset:
         self.logger.info(f"Creating {purpose} from {len(df)} samples.")
         dataset = self._create_tf_dataset(df, purpose)
 
-        if self.config.output.artifact_level == ArtifactSavingLevel.FULL:
-            self._save_images_to_disk(dataset, purpose, output_dir)
+        if self.config.output.level == OutputLevel.FULL:
+            self._save_images_to_disk(dataset, purpose)
 
         dataset = dataset.cache()
         dataset = dataset.batch(self.config.model.batch_size)
@@ -191,23 +195,20 @@ class DatasetGenerator:
         self.logger.info(f"Actual splits: train={len(train_df)}, validation={len(val_df)}, test={len(test_df)}.")
         return train_df, val_df, test_df
 
-    def get_data_splits(
+    def prepare_datasets(
         self,
         seed: int,
-        exp_id: str,
     ) -> Tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
-        self.logger.info(f"Starting Dataset Preparation for Exp '{exp_id}'")
+        self.logger.info(f"Starting dataset preparation")
 
         raw_df = self._load_raw_dataframe()
         processed_df = self._process_dataframe(raw_df)
         sampled_df = self._sample_by_gender(processed_df, seed)
         train_df, val_df, test_df = self._split_dataframe(sampled_df, seed)
 
-        output_dir = os.path.join(self.config.output.base_dir, exp_id)
+        train_data = self._build_dataset_split(train_df, DatasetSplit.TRAIN)
+        val_data = self._build_dataset_split(val_df, DatasetSplit.VALIDATION)
+        test_data = self._build_dataset_split(test_df, DatasetSplit.TEST)
 
-        train_data = self._build_dataset_split(train_df, DatasetSplit.TRAIN, output_dir)
-        val_data = self._build_dataset_split(val_df, DatasetSplit.VALIDATION, output_dir)
-        test_data = self._build_dataset_split(test_df, DatasetSplit.TEST, output_dir)
-
-        self.logger.info(f"Dataset Preparation Complete for Exp '{exp_id}'")
+        self.logger.info(f"Completed dataset preparation")
         return train_data, val_data, test_data

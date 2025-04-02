@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 from typing import List
 
@@ -5,13 +6,14 @@ import numpy as np
 
 # isort: off
 from datatypes import AnalysisResult, BiasMetrics, Feature, FeatureDistribution, Gender, GenderPerformanceMetrics, Explanation
-from utils import setup_logger
+from config import Config
 
 
 class BiasAnalyzer:
 
-    def __init__(self, log_path: str, exp_id: str):
-        self.logger = setup_logger(name="bias_analyzer", log_path=log_path, id=exp_id)
+    def __init__(self, config: Config, logger: logging.Logger):
+        self.config = config
+        self.logger = logger
         self.logger.info("Completed bias analyzer initialization")
 
     def _compute_feature_distributions(

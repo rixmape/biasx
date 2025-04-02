@@ -1,9 +1,11 @@
+import hashlib
+from functools import cache, cached_property
 from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 # isort: off
-from datatypes import ArtifactSavingLevel, DatasetSource, Feature, Gender
+from datatypes import OutputLevel, DatasetSource, Feature, Gender
 
 
 class CoreConfig(BaseModel):
@@ -36,13 +38,13 @@ class ModelConfig(BaseModel):
 
 
 class OutputConfig(BaseModel):
-    base_dir: str = "outputs"
-    log_dir: str = "logs"
-    artifact_level: ArtifactSavingLevel = ArtifactSavingLevel.FULL
+    base_path: str = "outputs"
+    log_path: str = "logs"
+    level: OutputLevel = OutputLevel.FULL
 
-    @field_validator("base_dir", "log_dir")
+    @field_validator("base_path", "log_path")
     @classmethod
-    def check_dir_names(cls, v: str) -> str:
+    def check_paths(cls, v: str) -> str:
         if not v:
             raise ValueError("Directory names cannot be empty")
         return v
@@ -53,3 +55,10 @@ class Config(BaseModel):
     dataset: DatasetConfig = Field(default_factory=DatasetConfig)
     model: ModelConfig = Field(default_factory=ModelConfig)
     output: OutputConfig = Field(default_factory=OutputConfig)
+
+    @cached_property
+    def experiment_id(self) -> str:
+        """Generates a unique experiment ID based on the current configuration."""
+        config_json = self.model_dump_json()
+        hash_object = hashlib.sha256(config_json.encode())
+        return hash_object.hexdigest()[:16]

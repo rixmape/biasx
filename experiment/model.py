@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple
 
 import tensorflow as tf
@@ -5,16 +6,15 @@ import tensorflow as tf
 # isort: off
 from config import Config
 from datatypes import ModelHistory
-from utils import setup_logger
 
 
 class ModelTrainer:
     """Builds and trains the CNN model."""
 
-    def __init__(self, config: Config, log_path: str, exp_id: str):
+    def __init__(self, config: Config, logger: logging.Logger):
         """Initializes the model trainer with configuration and logger."""
         self.config = config
-        self.logger = setup_logger(name="model_trainer", log_path=log_path, id=exp_id)
+        self.logger = logger
 
     def _build_model(self) -> tf.keras.Model:
         """Constructs the CNN model architecture using TensorFlow/Keras."""

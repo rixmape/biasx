@@ -1,10 +1,8 @@
-import hashlib
 import json
 import os
 import random
 import warnings
-from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import numpy as np
 import tensorflow as tf
@@ -14,11 +12,11 @@ from tf_keras_vis.gradcam_plus_plus import GradcamPlusPlus
 from analyzer import BiasAnalyzer
 from config import Config
 from dataset import DatasetGenerator
-from datatypes import AnalysisResult, ArtifactSavingLevel, ExperimentResult, Gender, Explanation, ModelHistory
+from datatypes import AnalysisResult, OutputLevel, ExperimentResult, Gender, Explanation, ModelHistory
 from explainer import VisualExplainer
 from masker import FeatureMasker
 from model import ModelTrainer
-from utils import setup_logger
+from utils import create_logger
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 warnings.filterwarnings("ignore")
@@ -27,42 +25,19 @@ warnings.filterwarnings("ignore")
 class ExperimentRunner:
     """Manages the setup, execution, and analysis of a single bias analysis experiment."""
 
-    def __init__(self, config: Optional[Config] = None):
+    def __init__(self, config: Config):
         """Initializes the experiment runner with configuration."""
-        self.config = config or Config()
-        self.exp_id = self._generate_experiment_id()
-        self.output_path = self._create_output_directory()
-        self.log_path = self._create_log_directory()
-        self.logger = setup_logger(name="experiment_runner", log_path=self.log_path, id=self.exp_id)
-
+        self.config = config
+        self.logger = create_logger(config)
         self._set_random_seeds()
 
-        self.feature_masker = FeatureMasker(self.config, self.log_path, self.exp_id)
-        self.dataset_generator = DatasetGenerator(self.config, self.feature_masker, self.log_path, self.exp_id)
-        self.model_trainer = ModelTrainer(self.config, self.log_path, self.exp_id)
-        self.visual_explainer = VisualExplainer(self.config, self.feature_masker, self.log_path, self.exp_id)
-        self.bias_analyzer = BiasAnalyzer(self.log_path, self.exp_id)
+        self.feature_masker = FeatureMasker(self.config, self.logger)
+        self.dataset_generator = DatasetGenerator(self.config, self.logger, self.feature_masker)
+        self.model_trainer = ModelTrainer(self.config, self.logger)
+        self.visual_explainer = VisualExplainer(self.config, self.logger, self.feature_masker)
+        self.bias_analyzer = BiasAnalyzer(self.config, self.logger)
 
-        self.logger.info(f"Completed experiment runner initialization")
-
-    def _generate_experiment_id(self) -> str:
-        """Generates a unique experiment ID based on a hash of the configuration."""
-        config_json = self.config.model_dump_json()
-        hash_object = hashlib.sha256(config_json.encode())
-        return hash_object.hexdigest()[:16]
-
-    def _create_output_directory(self) -> str:
-        """Creates the main output directory for the experiment."""
-        output_dir = os.path.join(self.config.output.base_dir, self.exp_id)
-        os.makedirs(output_dir, exist_ok=True)
-        return output_dir
-
-    def _create_log_directory(self) -> str:
-        """Creates a timestamped log directory for the experiment run."""
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        log_dir_path = os.path.join(self.config.output.log_dir, f"exp_{self.exp_id}_{timestamp}")
-        os.makedirs(log_dir_path, exist_ok=True)
-        return log_dir_path
+        self.logger.info(f"Completed experiment runner initialization: id={self.config.experiment_id}")
 
     def _set_random_seeds(self) -> None:
         """Sets random seeds for reproducibility across libraries."""
@@ -99,7 +74,6 @@ class ExperimentRunner:
                 image_np,
                 true_label,
                 image_id,
-                self.output_path,
             )
 
             detail = Explanation(
@@ -144,20 +118,20 @@ class ExperimentRunner:
     ) -> ExperimentResult:
         """Saves the experiment configuration, training history, and bias analysis results to a JSON file."""
         self.logger.info(f"Saving experiment results to JSON file")
-        save_results = self.config.output.artifact_level in [
-            ArtifactSavingLevel.RESULTS_ONLY,
-            ArtifactSavingLevel.FULL,
+        save_results = self.config.output.level in [
+            OutputLevel.RESULTS_ONLY,
+            OutputLevel.FULL,
         ]
 
         result = ExperimentResult(
-            id=self.exp_id,
+            id=self.config.experiment_id,
             config=self.config.model_dump(mode="json"),
             history=history if save_results else None,
             analysis=analysis if save_results else None,
         )
 
-        filename = f"results_{self.exp_id}.json"
-        path = os.path.join(self.output_path, filename)
+        filename = f"{self.config.experiment_id}.json"
+        path = os.path.join(self.config.output.base_path, filename)
 
         try:
             with open(path, "w") as f:
@@ -172,7 +146,7 @@ class ExperimentRunner:
         """Executes the full experiment pipeline: data prep, model training, explanation, and bias analysis."""
         self.logger.info(f"Starting experiment run")
 
-        splits = self.dataset_generator.get_data_splits(self.config.core.random_seed, self.exp_id)
+        splits = self.dataset_generator.prepare_datasets(self.config.core.random_seed)
         train_data, val_data, test_data = splits
 
         model, history = self.model_trainer.get_model_and_history(train_data, val_data)

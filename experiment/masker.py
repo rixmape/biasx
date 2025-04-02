@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Dict, List, Optional, Tuple
 
 import mediapipe as mp
@@ -10,16 +11,15 @@ from mediapipe.tasks.python.vision.face_landmarker import FaceLandmarker, FaceLa
 # isort: off
 from config import Config
 from datatypes import BoundingBox, Feature, FeatureDetails
-from utils import setup_logger
 
 
 class FeatureMasker:
     """Detects facial features, provides bounding boxes, and applies masks."""
 
-    def __init__(self, config: Config, log_path: str, exp_id: str):
+    def __init__(self, config: Config, logger: logging.Logger):
         """Initializes the FeatureMasker with configuration and logger."""
         self.config = config
-        self.logger = setup_logger(name="feature_masker", log_path=log_path, id=exp_id)
+        self.logger = logger
         self.landmarker = self._load_landmarker()
         self.feature_indices_map = self._load_feature_indices_map()
         self.logger.info("Completed feature masker initialization")

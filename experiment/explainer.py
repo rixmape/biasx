@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import List, Optional, Tuple
 
@@ -7,19 +8,18 @@ from tf_keras_vis.gradcam_plus_plus import GradcamPlusPlus
 
 # isort: off
 from config import Config
-from datatypes import ArtifactSavingLevel, FeatureDetails
+from datatypes import OutputLevel, FeatureDetails
 from masker import FeatureMasker
-from utils import setup_logger
 
 
 class VisualExplainer:
     """Generates visual explanations (heatmaps) and calculates feature attention."""
 
-    def __init__(self, config: Config, masker: FeatureMasker, log_path: str, exp_id: str):
+    def __init__(self, config: Config, logger: logging.Logger, masker: FeatureMasker):
         """Initializes the VisualExplainer with configuration, masker, and logger."""
         self.config = config
+        self.logger = logger
         self.masker = masker
-        self.logger = setup_logger(name="visual_explainer", log_path=log_path, id=exp_id)
         self.logger.info("Completed visual explainer initialization")
 
     def _calculate_heatmap(
@@ -82,26 +82,24 @@ class VisualExplainer:
         self,
         heatmap: np.ndarray,
         image_id: str,
-        base_output_path: str,
     ) -> Optional[str]:
         """Saves the heatmap array to disk if artifact saving is enabled."""
-        if self.config.output.artifact_level != ArtifactSavingLevel.FULL:
-            self.logger.debug(f"[{image_id}] Skipping heatmap saving: artifact level is {self.config.output.artifact_level.name}")
+        if self.config.output.level != OutputLevel.FULL:
+            self.logger.debug(f"[{image_id}] Skipping heatmap saving: artifact level is {self.config.output.level.name}")
             return None
 
-        heatmap_dir = os.path.join(base_output_path, "heatmaps")
-        os.makedirs(heatmap_dir, exist_ok=True)
+        path = os.path.join(self.config.output.base_path, self.config.experiment_id, "heatmaps")
+        os.makedirs(path, exist_ok=True)
 
-        heatmap_filename = f"{image_id}.npy"
-        heatmap_full_path = os.path.join(heatmap_dir, heatmap_filename)
+        filename = f"{image_id}.npy"
+        filepath = os.path.join(path, filename)
 
         try:
-            np.save(heatmap_full_path, heatmap.astype(np.float16))
-            heatmap_rel_path = os.path.relpath(heatmap_full_path, self.config.output.base_dir)
-            self.logger.debug(f"[{image_id}] Saved heatmap to {heatmap_full_path} (relative: {heatmap_rel_path})")
+            np.save(filepath, heatmap.astype(np.float16))
+            heatmap_rel_path = os.path.relpath(filepath, self.config.output.base_path)
             return heatmap_rel_path
         except Exception as e:
-            self.logger.error(f"[{image_id}] Failed to save heatmap to {heatmap_full_path}: {e}", exc_info=True)
+            self.logger.error(f"[{image_id}] Failed to save heatmap to {filepath}: {e}", exc_info=True)
             return None
 
     def _compute_feature_details(
@@ -134,7 +132,7 @@ class VisualExplainer:
                 key_features_found += 1
 
         if key_features_found == 0:
-            self.logger.info(f"[{image_id}] No key features identified above threshold {self.config.core.key_feature_threshold}.")
+            self.logger.info(f"[{image_id}] No key features above threshold {self.config.core.key_feature_threshold}.")
 
         return features
 
@@ -159,11 +157,10 @@ class VisualExplainer:
         image_np: np.ndarray,
         label: int,
         image_id: str,
-        output_path: str,
     ) -> Tuple[List[FeatureDetails], Optional[str]]:
         """Generates feature details with attention and saves heatmap for a single image."""
         heatmap = self._calculate_heatmap(heatmap_generator, model, image_np, label, image_id)
-        heatmap_path = self._save_heatmap(heatmap, image_id, output_path)
+        heatmap_path = self._save_heatmap(heatmap, image_id)
 
         detected_features = self.masker.get_features(image_np, image_id)
         if not detected_features:
