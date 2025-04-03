@@ -132,7 +132,7 @@ class VisualExplainer:
                 key_features_found += 1
 
         if key_features_found == 0:
-            self.logger.info(f"[{image_id}] No key features above threshold {self.config.core.key_feature_threshold}.")
+            self.logger.warning(f"[{image_id}] No key features above threshold {self.config.core.key_feature_threshold}.")
 
         return features
 

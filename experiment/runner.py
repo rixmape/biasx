@@ -26,7 +26,7 @@ class ExperimentRunner:
     """Manages the setup, execution, and analysis of a single bias analysis experiment."""
 
     def __init__(self, config: Config):
-        """Initializes the experiment runner with configuration."""
+        """Initializes the experiment runner with configuration and sets up components."""
         self.config = config
         self.logger = create_logger(config)
         self._set_random_seeds()
@@ -40,7 +40,7 @@ class ExperimentRunner:
         self.logger.info(f"Completed experiment runner initialization: id={self.config.experiment_id}")
 
     def _set_random_seeds(self) -> None:
-        """Sets random seeds for reproducibility across libraries."""
+        """Sets random seeds for Python, NumPy, and TensorFlow to ensure reproducibility."""
         seed = self.config.core.random_seed
         random.seed(seed)
         np.random.seed(seed)
@@ -49,12 +49,12 @@ class ExperimentRunner:
 
     def _get_batch_explanations(
         self,
-        batch: Tuple[tf.Tensor, tf.Tensor, tf.Tensor],
+        batch: Tuple[tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor, tf.Tensor],
         model: tf.keras.Model,
         heatmap_generator: GradcamPlusPlus,
     ) -> List[Explanation]:
-        """Generates explanations (predictions, confidence, heatmaps, features) for a batch of images."""
-        images, true_labels, image_ids = batch
+        """Generates detailed explanations for a single batch of data from the test set."""
+        images, true_labels, image_ids, races, ages = batch
         batch_size = images.shape[0]
         details = []
 
@@ -65,6 +65,8 @@ class ExperimentRunner:
             image_np = images[i].numpy()
             true_label = int(true_labels[i].numpy())
             image_id = image_ids[i].numpy().decode("utf-8")
+            race = races[i].numpy().decode("utf-8")
+            age = int(ages[i].numpy())
             predicted_label = int(predicted_labels[i])
             confidence_scores = raw_predictions[i].tolist()
 
@@ -80,6 +82,8 @@ class ExperimentRunner:
                 image_id=image_id,
                 label=Gender(true_label),
                 prediction=Gender(predicted_label),
+                race=race,
+                age=age,
                 confidence_scores=confidence_scores,
                 heatmap_path=heatmap_path,
                 detected_features=detected_features,
@@ -93,7 +97,7 @@ class ExperimentRunner:
         test_data: tf.data.Dataset,
         model: tf.keras.Model,
     ) -> List[Explanation]:
-        """Generates explanations for all images in the test dataset."""
+        """Generates explanations for all samples in the provided test dataset."""
         self.logger.info(f"Processing test data for explanations")
 
         heatmap_generator = self.visual_explainer.get_heatmap_generator(model)
@@ -116,7 +120,7 @@ class ExperimentRunner:
         history: ModelHistory,
         analysis: AnalysisResult,
     ) -> ExperimentResult:
-        """Saves the experiment configuration, training history, and bias analysis results to a JSON file."""
+        """Saves the comprehensive experiment results (config, history, analysis) to a JSON file."""
         self.logger.info(f"Saving experiment results to JSON file")
         save_results = self.config.output.level in [
             OutputLevel.RESULTS_ONLY,
@@ -143,7 +147,7 @@ class ExperimentRunner:
         return result
 
     def run_experiment(self) -> ExperimentResult:
-        """Executes the full experiment pipeline: data prep, model training, explanation, and bias analysis."""
+        """Executes the full end-to-end experiment pipeline and returns the final results."""
         self.logger.info(f"Starting experiment run")
 
         splits = self.dataset_generator.prepare_datasets(self.config.core.random_seed)

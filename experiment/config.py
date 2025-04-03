@@ -5,7 +5,7 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 # isort: off
-from datatypes import OutputLevel, DatasetSource, Feature, Gender
+from datatypes import OutputLevel, DatasetSource, Feature, Gender, ProtectedAttribute
 
 
 class CoreConfig(BaseModel):
@@ -15,6 +15,7 @@ class CoreConfig(BaseModel):
     mask_pixel_padding: int = Field(default=2, ge=0)
     key_feature_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
     random_seed: int = Field(default=42, ge=0)
+    protected_attribute: Optional[ProtectedAttribute] = Field(default=ProtectedAttribute.GENDER)
 
 
 class DatasetConfig(BaseModel):

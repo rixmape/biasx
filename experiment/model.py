@@ -9,7 +9,7 @@ from datatypes import ModelHistory
 
 
 class ModelTrainer:
-    """Builds and trains the CNN model."""
+    """Builds and trains the CNN model for the experiment."""
 
     def __init__(self, config: Config, logger: logging.Logger):
         """Initializes the model trainer with configuration and logger."""
@@ -52,8 +52,8 @@ class ModelTrainer:
     ) -> Tuple[tf.keras.Model, ModelHistory]:
         """Trains the model on the provided data and returns the model and training history."""
 
-        train_data_fit = train_data.map(lambda image, label, _: (image, label))
-        val_data_fit = val_data.map(lambda image, label, _: (image, label))
+        train_data_fit = train_data.map(lambda image, label, _id, _race, _age: (image, label))
+        val_data_fit = val_data.map(lambda image, label, _id, _race, _age: (image, label))
 
         model = self._build_model()
         self.logger.info(f"Starting model training: epochs={self.config.model.epochs}, batch_size={self.config.model.batch_size}.")
