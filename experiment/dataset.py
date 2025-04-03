@@ -13,22 +13,31 @@ from datatypes import OutputLevel, DatasetSplit, Gender
 from config import Config
 from masker import FeatureMasker
 
+
 class DatasetGenerator:
+    """Handles loading, processing, sampling, and preparing datasets for the experiment."""
 
     def __init__(self, config: Config, logger: logging.Logger, feature_masker: FeatureMasker):
+        """Initializes the DatasetGenerator with configuration, logger, and feature masker."""
         self.config = config
         self.logger = logger
         self.feature_masker = feature_masker
         self.logger.info("Completed dataset generator initialization")
 
     def _load_raw_dataframe(self) -> pd.DataFrame:
+        """Downloads and loads the raw dataset parquet file from HuggingFace Hub."""
         self.logger.info(f"Downloading {self.config.dataset.source_name.value} dataset.")
-        path = hf_hub_download(repo_id=f"rixmape/{self.config.dataset.source_name.value}", filename="data/train-00000-of-00001.parquet", repo_type="dataset")
+        path = hf_hub_download(
+            repo_id=f"rixmape/{self.config.dataset.source_name.value}",
+            filename="data/train-00000-of-00001.parquet",
+            repo_type="dataset",
+        )
         df = pd.read_parquet(path, columns=["image_id", "image", "gender", "race", "age"])
         self.logger.info(f"Raw dataset loaded: {len(df)} rows.")
         return df
 
     def _process_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Processes the raw dataframe by cleaning IDs, extracting image bytes, and filtering."""
         df["image_id"] = df["image_id"].astype(str).str[:16]
         df["image_bytes"] = df["image"].apply(lambda x: x["bytes"])
         df = df.drop(columns=["image"])
@@ -37,10 +46,18 @@ class DatasetGenerator:
         infant_mask = df["age"] > 0
         df = df[infant_mask]
 
+        df["race"] = df["race"].astype(str)  # Ensure race is string
+
         self.logger.info(f"Processed dataset: {len(df)} rows remaining after filtering.")
         return df
 
-    def _sample_by_strata(self, df: pd.DataFrame, target_sample_size: int, seed: int) -> pd.DataFrame:
+    def _sample_by_strata(
+        self,
+        df: pd.DataFrame,
+        target_sample_size: int,
+        seed: int,
+    ) -> pd.DataFrame:
+        """Performs stratified sampling on a dataframe group, handling potential replacement needs."""
         samples = []
         total_rows = len(df)
         if total_rows == 0:
@@ -59,7 +76,14 @@ class DatasetGenerator:
 
         return pd.concat(samples)
 
-    def _get_sampled_gender_subset(self, df: pd.DataFrame, gender: Gender, gender_target_size: int, seed: int) -> pd.DataFrame:
+    def _get_sampled_gender_subset(
+        self,
+        df: pd.DataFrame,
+        gender: Gender,
+        gender_target_size: int,
+        seed: int,
+    ) -> pd.DataFrame:
+        """Extracts and samples a subset of the dataframe for a specific gender using stratification."""
         gender_df = df[df["gender"] == gender.value].copy()
         sample_size = len(gender_df)
         self.logger.info(f"Targeting {gender_target_size} from {sample_size} available {gender.name.lower()} images.")
@@ -77,7 +101,12 @@ class DatasetGenerator:
 
         return strata_sample
 
-    def _sample_by_gender(self, df: pd.DataFrame, seed: int) -> pd.DataFrame:
+    def _sample_by_gender(
+        self,
+        df: pd.DataFrame,
+        seed: int,
+    ) -> pd.DataFrame:
+        """Samples the dataframe to meet target gender proportions using stratified sampling."""
         df["strata"] = df["race"].astype(str) + "_" + df["age"].astype(str)
         self.logger.info(f"Found {df['strata'].nunique()} unique strata for sampling.")
 
@@ -103,7 +132,14 @@ class DatasetGenerator:
 
         return combined_df
 
-    def _preprocess_single_image(self, image_bytes: bytes, label: int, image_id: str, purpose: DatasetSplit) -> np.ndarray:
+    def _preprocess_single_image(
+        self,
+        image_bytes: bytes,
+        label: int,
+        image_id: str,
+        purpose: DatasetSplit,
+    ) -> np.ndarray:
+        """Decodes, resizes, normalizes, and optionally masks or grayscales a single image."""
         image = tf.io.decode_image(image_bytes, channels=3, expand_animations=False)
         image = tf.image.resize(image, [self.config.dataset.image_size, self.config.dataset.image_size])
         image = tf.cast(image, tf.float32) / 255.0
@@ -117,16 +153,24 @@ class DatasetGenerator:
 
         return image_np.astype(np.float32)
 
-    def _create_generator(self, df: pd.DataFrame, purpose: DatasetSplit) -> Generator[Tuple[np.ndarray, int, str], None, None]:
+    def _create_generator(
+        self,
+        df: pd.DataFrame,
+        purpose: DatasetSplit,
+    ) -> Generator[Tuple[np.ndarray, int, str, str, int], None, None]:
+        """Creates a generator yielding processed images and their associated demographic labels."""
         for _, row in df.iterrows():
             image_bytes = row["image_bytes"]
             label = int(row["gender"])
             image_id = row["image_id"]
+            race = row["race"]
+            age = int(row["age"])
 
             processed_image = self._preprocess_single_image(image_bytes, label, image_id, purpose)
-            yield processed_image, label, image_id
+            yield processed_image, label, image_id, race, age
 
     def _create_tf_dataset(self, df: pd.DataFrame, purpose: DatasetSplit) -> tf.data.Dataset:
+        """Creates a TensorFlow Dataset from the generator with the correct output signature."""
         output_shape = (
             self.config.dataset.image_size,
             self.config.dataset.image_size,
@@ -137,12 +181,22 @@ class DatasetGenerator:
             tf.TensorSpec(shape=output_shape, dtype=tf.float32),
             tf.TensorSpec(shape=(), dtype=tf.int64),
             tf.TensorSpec(shape=(), dtype=tf.string),
+            tf.TensorSpec(shape=(), dtype=tf.string),
+            tf.TensorSpec(shape=(), dtype=tf.int64),
         )
 
-        dataset = tf.data.Dataset.from_generator(lambda: self._create_generator(df, purpose), output_signature=output_signature)
+        dataset = tf.data.Dataset.from_generator(
+            lambda: self._create_generator(df, purpose),
+            output_signature=output_signature,
+        )
         return dataset
 
-    def _save_images_to_disk(self, dataset: tf.data.Dataset, purpose: DatasetSplit) -> None:
+    def _save_images_to_disk(
+        self,
+        dataset: tf.data.Dataset,
+        purpose: DatasetSplit,
+    ) -> None:
+        """Saves processed images from a dataset split to disk if output level is FULL."""
         path = os.path.join(
             self.config.output.base_path,
             self.config.experiment_id,
@@ -151,7 +205,7 @@ class DatasetGenerator:
         os.makedirs(path, exist_ok=True)
 
         image_count = 0
-        for image, _, image_id_tensor in dataset:
+        for image, _, image_id_tensor, _, _ in dataset:  # Unpack all 5 elements
             image_np = image.numpy()
             image_id = image_id_tensor.numpy().decode("utf-8")
 
@@ -172,6 +226,7 @@ class DatasetGenerator:
         df: pd.DataFrame,
         purpose: DatasetSplit,
     ) -> tf.data.Dataset:
+        """Builds a final TensorFlow Dataset split, including caching, batching, and prefetching."""
         self.logger.info(f"Creating {purpose} from {len(df)} samples.")
         dataset = self._create_tf_dataset(df, purpose)
 
@@ -185,12 +240,29 @@ class DatasetGenerator:
         self.logger.info(f"{purpose} build complete.")
         return dataset
 
-    def _split_dataframe(self, df: pd.DataFrame, seed: int) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    def _split_dataframe(
+        self,
+        df: pd.DataFrame,
+        seed: int,
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+        """Splits the sampled dataframe into training, validation, and test sets using stratification."""
         self.logger.info("Splitting dataset into train, validation, and test sets.")
 
-        train_val_df, test_df = train_test_split(df, test_size=self.config.dataset.test_ratio, random_state=seed, stratify=df["gender"])
+        train_val_df, test_df = train_test_split(
+            df,
+            test_size=self.config.dataset.test_ratio,
+            random_state=seed,
+            stratify=df["gender"],
+        )
+
         adjusted_val_ratio = self.config.dataset.validation_ratio / (1.0 - self.config.dataset.test_ratio)
-        train_df, val_df = train_test_split(train_val_df, test_size=adjusted_val_ratio, random_state=seed, stratify=train_val_df["gender"])
+
+        train_df, val_df = train_test_split(
+            train_val_df,
+            test_size=adjusted_val_ratio,
+            random_state=seed,
+            stratify=train_val_df["gender"],
+        )
 
         self.logger.info(f"Actual splits: train={len(train_df)}, validation={len(val_df)}, test={len(test_df)}.")
         return train_df, val_df, test_df
@@ -199,6 +271,7 @@ class DatasetGenerator:
         self,
         seed: int,
     ) -> Tuple[tf.data.Dataset, tf.data.Dataset, tf.data.Dataset]:
+        """Orchestrates the full dataset preparation pipeline from loading to final splits."""
         self.logger.info(f"Starting dataset preparation")
 
         raw_df = self._load_raw_dataframe()
