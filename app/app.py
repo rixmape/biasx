@@ -49,7 +49,12 @@ def display_model_upload_page():
         st.write("### Select from Pre-existing Models")
         repo_id = "4shL3I/biasx-models" # Change to final repo ID
 
-        model_options = utils.retrieve_model_options(repo_id)
+        model_set = st.selectbox("Select a model from Hugging Face",
+                ["baseline_models", "gender_bias_models", "male_attention-bias_models", "female_attention-bias_models"], 
+                key="model_selection", 
+                label_visibility="collapsed")
+        
+        model_options = utils.retrieve_model_options(repo_id, model_set)
         
         selected_model = st.pills("Select a model", 
                 list(model_options.keys()), 
@@ -87,7 +92,7 @@ def display_configuration_page():
         model_upload, model_config = st.columns(2)
         
         with model_upload:
-            st.write(f"# Model: {st.session_state.file_info}")
+            st.write(f"## {st.session_state.file_info}")
             if st.button("Change Model", use_container_width=True):
                 st.session_state.config["model"]["path"] = None
                 st.rerun()

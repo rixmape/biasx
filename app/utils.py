@@ -17,11 +17,10 @@ def create_temp_file(uploaded_file):
         temp_file.write(uploaded_file.read())
         return temp_file.name
 
-@st.cache_data
-def retrieve_model_options(repo_id):
+def retrieve_model_options(repo_id, model_set):
     """Retrieve model options from a given repository ID."""
     try:
-        model_path = hf_hub_download(repo_id=repo_id, filename="models.json")
+        model_path = hf_hub_download(repo_id=repo_id, filename=f"{model_set}.json")
         with open(model_path, "r") as json_file:
             model_options = json.load(json_file)
         return model_options
