@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Datasets - BiasX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Datasets";
+        var mkdocs_page_input_path = "api/datasets.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> BiasX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../getting_started/">Getting Started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../configuration/">Configuration</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../analyzer/">Analyzer</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Datasets</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#biasx.datasets.Dataset">Dataset</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#biasx.datasets.Dataset.__init__">__init__</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#biasx.datasets.Dataset.__iter__">__iter__</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#biasx.datasets.Dataset.__len__">__len__</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../explainers/">Explainers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../models/">Models</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../calculators/">Calculators</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../types/">Types</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../utils/">Utilities</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">BiasX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">API Reference</li>
+      <li class="breadcrumb-item active">Datasets</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="datasets">Datasets</h1>
+<p>This module handles loading and preprocessing image datasets.</p>
+<hr />
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="biasx.datasets.Dataset" class="doc doc-heading">
+            <code>biasx.datasets.Dataset</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Manages facial image datasets and preprocessing for model input.</p>
+<p>Loads dataset information from configuration, handles fetching dataset files
+(e.g., Parquet files from HuggingFace Hub), allows sampling and shuffling,
+and provides an iterator to yield batches of processed image data ready
+for model consumption.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>source</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The identifier for the dataset source (e.g., 'utkface').</p>
+              </div>
+            </li>
+            <li>
+              <b><code>image_width</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The target width to resize images to.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>image_height</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The target height to resize images to.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>color_mode</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.types.ColorMode" href="../types/#biasx.types.ColorMode">ColorMode</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The target color mode ('L' for grayscale, 'RGB').</p>
+              </div>
+            </li>
+            <li>
+              <b><code>single_channel</code></b>
+                  (<code><span title="bool">bool</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Flag indicating if the output NumPy array should
+always have a single channel dimension (relevant for grayscale).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>max_samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Maximum number of samples to load from the dataset.
+If &lt;= 0, all samples are loaded.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>shuffle</code></b>
+                  (<code><span title="bool">bool</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Whether to shuffle the dataset before sampling or iteration.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>seed</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Random seed used for shuffling if <code>shuffle</code> is True.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>batch_size</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The number of images to yield in each batch during iteration.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>dataset_info</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.types.ResourceMetadata
+
+
+  
+      dataclass
+  " href="../types/#biasx.types.ResourceMetadata">ResourceMetadata</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Metadata loaded from configuration
+about the dataset resource (repo ID, filename, column names, etc.).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>dataset_path</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The local path to the downloaded dataset file.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>dataframe</code></b>
+                  (<code><span title="pd.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The pandas DataFrame holding the dataset metadata
+(after potential sampling and shuffling).</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="biasx.datasets.Dataset.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">image_width</span><span class="p">,</span> <span class="n">image_height</span><span class="p">,</span> <span class="n">color_mode</span><span class="p">,</span> <span class="n">single_channel</span><span class="p">,</span> <span class="n">max_samples</span><span class="p">,</span> <span class="n">shuffle</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize the dataset with configuration and preprocessing parameters.</p>
+<p>Loads dataset metadata, potentially samples and shuffles the data based
+on configuration, and sets up image processing parameters.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>source</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Identifier for the dataset source (e.g., "utkface").
+          Must correspond to an entry in <code>dataset_config.json</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>image_width</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Target width for images after resizing.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>image_height</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Target height for images after resizing.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>color_mode</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.types.ColorMode" href="../types/#biasx.types.ColorMode">ColorMode</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Target color mode for images
+                            (e.g., ColorMode.GRAYSCALE).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>single_channel</code></b>
+                  (<code><span title="bool">bool</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>If True and color_mode is GRAYSCALE, ensures
+                   the preprocessed numpy array has a channel dim.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>max_samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The maximum number of samples to use from the dataset.
+               If 0 or negative, uses all samples.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>shuffle</code></b>
+                  (<code><span title="bool">bool</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Whether to shuffle the dataset records.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>seed</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The random seed to use for shuffling if <code>shuffle</code> is True.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>batch_size</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The number of samples per batch for the iterator.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>**kwargs</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Additional keyword arguments passed via configuration.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="biasx.datasets.Dataset.__iter__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__iter__</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Iterate through the dataset, yielding batches of ImageData objects.</p>
+<p>Iterates over the internal DataFrame in steps of <code>self.batch_size</code>.
+For each batch, it loads the PIL images, preprocesses them into a
+NumPy array, extracts metadata, and then constructs a list of
+<code>ImageData</code> objects, where each object contains the ID, PIL image,
+preprocessed NumPy array slice, dimensions, and demographic labels
+for one sample.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Yields:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.ImageData
+
+
+  
+      dataclass
+  " href="../types/#biasx.types.ImageData">ImageData</a>]</code>
+              –
+              <div class="doc-md-description">
+                <p>A list of <code>biasx.types.ImageData</code> objects representing one batch of data.
+The list length will be equal to <code>self.batch_size</code>, except possibly
+for the last batch.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="biasx.datasets.Dataset.__len__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__len__</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of images in the configured dataset.</p>
+<p>Returns the total number of samples in the DataFrame after loading,
+sampling, and shuffling have been applied.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="int">int</span></code>
+              –
+              <div class="doc-md-description">
+                <p>The number of samples in the dataset.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../analyzer/" class="btn btn-neutral float-left" title="Analyzer"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../explainers/" class="btn btn-neutral float-right" title="Explainers">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../analyzer/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../explainers/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

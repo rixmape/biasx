@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Explainers - BiasX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Explainers";
+        var mkdocs_page_input_path = "api/explainers.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> BiasX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../getting_started/">Getting Started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../configuration/">Configuration</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../analyzer/">Analyzer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../datasets/">Datasets</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Explainers</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#explainer">Explainer</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#biasx.explainers.Explainer">Explainer</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#biasx.explainers.Explainer.__init__">__init__</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#biasx.explainers.Explainer.explain_batch">explain_batch</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#faciallandmarker">FacialLandmarker</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#biasx.explainers.FacialLandmarker">FacialLandmarker</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#biasx.explainers.FacialLandmarker.__init__">__init__</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#biasx.explainers.FacialLandmarker.detect">detect</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#classactivationmapper">ClassActivationMapper</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#biasx.explainers.ClassActivationMapper">ClassActivationMapper</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#biasx.explainers.ClassActivationMapper.__init__">__init__</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#biasx.explainers.ClassActivationMapper.generate_heatmap">generate_heatmap</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#biasx.explainers.ClassActivationMapper.process_heatmap">process_heatmap</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../models/">Models</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../calculators/">Calculators</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../types/">Types</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../utils/">Utilities</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">BiasX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">API Reference</li>
+      <li class="breadcrumb-item active">Explainers</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="explainers">Explainers</h1>
+<p>This module provides classes for generating visual explanations like activation maps and detecting facial landmarks.</p>
+<hr />
+<h2 id="explainer">Explainer</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="biasx.explainers.Explainer" class="doc doc-heading">
+            <code>biasx.explainers.Explainer</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Coordinates the generation of visual explanations for model decisions.</p>
+<p>This class integrates the <code>FacialLandmarker</code> and <code>ClassActivationMapper</code>
+to produce comprehensive explanations for a batch of images. It generates
+activation maps, processes them into activation boxes, detects landmark
+boxes, and attempts to label activation boxes based on their spatial overlap
+and proximity to landmark features.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>landmarker</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.explainers.FacialLandmarker" href="#biasx.explainers.FacialLandmarker">FacialLandmarker</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>An instance for detecting facial landmarks.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>activation_mapper</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.explainers.ClassActivationMapper" href="#biasx.explainers.ClassActivationMapper">ClassActivationMapper</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>An instance for generating and
+processing activation maps.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>overlap_threshold</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The minimum Intersection over Area (IoA) threshold
+required between an activation box and a landmark box for the
+activation box to inherit the landmark's feature label.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>distance_metric</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The distance metric (e.g., 'euclidean', 'cityblock')
+used to find the nearest landmark box center for each activation box center.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>batch_size</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The batch size hint used within this explainer, potentially
+influencing internal operations if implemented differently later.
+(Note: Current <code>explain_batch</code> processes the whole input batch at once).</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="biasx.explainers.Explainer.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">landmarker_source</span><span class="p">,</span> <span class="n">cam_method</span><span class="p">,</span> <span class="n">cutoff_percentile</span><span class="p">,</span> <span class="n">threshold_method</span><span class="p">,</span> <span class="n">overlap_threshold</span><span class="p">,</span> <span class="n">distance_metric</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize the visual explainer and its components.</p>
+<p>Creates instances of <code>FacialLandmarker</code> and <code>ClassActivationMapper</code>
+based on the provided configuration parameters. Stores thresholds and
+metrics used for associating activation boxes with features.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>landmarker_source</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.types.LandmarkerSource" href="../types/#biasx.types.LandmarkerSource">LandmarkerSource</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The source for the
+facial landmark model.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>cam_method</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.types.CAMMethod" href="../types/#biasx.types.CAMMethod">CAMMethod</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The class activation mapping
+method to use.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>cutoff_percentile</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The percentile threshold for heatmap processing.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold_method</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.types.ThresholdMethod" href="../types/#biasx.types.ThresholdMethod">ThresholdMethod</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The binarization method
+for heatmap processing.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>overlap_threshold</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The IoA threshold (0.0 to 1.0) for labeling
+activation boxes based on landmark box overlap.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>distance_metric</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.types.DistanceMetric" href="../types/#biasx.types.DistanceMetric">DistanceMetric</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The metric for comparing
+box center distances.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>batch_size</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>A batch size parameter (currently informational).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>**kwargs</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Additional keyword arguments passed via configuration.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="biasx.explainers.Explainer.explain_batch" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">explain_batch</span><span class="p">(</span><span class="n">pil_images</span><span class="p">,</span> <span class="n">preprocessed_images</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">target_classes</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generate visual explanations for a batch of images.</p>
+<p>Orchestrates the explanation process for a batch:</p>
+<ol>
+<li>Generates activation maps using <code>ClassActivationMapper</code>.</li>
+<li>Processes maps into activation boxes using <code>ClassActivationMapper</code>.</li>
+<li>Detects landmark boxes using <code>FacialLandmarker</code>.</li>
+<li>For each image, attempts to assign a <code>FacialFeature</code> label to each
+   activation box by finding the nearest landmark box (based on center
+   distance) and checking if their spatial overlap (IoA) meets the
+   <code>overlap_threshold</code>.</li>
+</ol>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>pil_images</code></b>
+                  (<code><span title="typing.List">List</span>[<span title="PIL.Image.Image">Image</span>]</code>)
+              –
+              <div class="doc-md-description">
+                <p>List of original PIL images in the batch.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>preprocessed_images</code></b>
+                  (<code><span title="typing.List">List</span>[<span title="numpy.ndarray">ndarray</span>]</code>)
+              –
+              <div class="doc-md-description">
+                <p>List of corresponding preprocessed
+images (NumPy arrays) ready for model/CAM input.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>model</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.models.Model" href="../models/#biasx.models.Model">Model</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The model instance (needed by the activation mapper).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>target_classes</code></b>
+                  (<code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.Gender" href="../types/#biasx.types.Gender">Gender</a>]</code>)
+              –
+              <div class="doc-md-description">
+                <p>The target class (Gender) for
+generating the CAM for each corresponding image.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="typing.Tuple">Tuple</span>[<span title="typing.List">List</span>[<span title="numpy.ndarray">ndarray</span>], <span title="typing.List">List</span>[<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.Box
+
+
+  
+      dataclass
+  " href="../types/#biasx.types.Box">Box</a>]], <span title="typing.List">List</span>[<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.Box
+
+
+  
+      dataclass
+  " href="../types/#biasx.types.Box">Box</a>]]]</code>
+              –
+              <div class="doc-md-description">
+                <p>A tuple containing three lists, all aligned with the input batch order:</p>
+<ul>
+<li>List[np.ndarray]: Raw activation maps (heatmaps) for each image.</li>
+<li>List[List[biasx.types.Box]]: Activation boxes for each image. Boxes
+  may have their <code>feature</code> attribute set if successfully labeled.</li>
+<li>List[List[biasx.types.Box]]: Landmark boxes for each image, with
+  their <code>feature</code> attribute set by the landmarker.</li>
+</ul>
+<p>Returns ([], [], []) if the input <code>pil_images</code> list is empty.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><hr />
+<h2 id="faciallandmarker">FacialLandmarker</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="biasx.explainers.FacialLandmarker" class="doc doc-heading">
+            <code>biasx.explainers.FacialLandmarker</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Detects facial landmarks using MediaPipe.</p>
+<p>This class loads a pre-trained MediaPipe face landmark model, specified
+via configuration, and provides a method to detect landmarks in images.
+It maps the detected landmark points to specific facial features based
+on a predefined mapping file.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>source</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.types.LandmarkerSource" href="../types/#biasx.types.LandmarkerSource">LandmarkerSource</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The source identifier for the
+landmarker model used (e.g., MEDIAPIPE).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>landmarker_info</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.types.ResourceMetadata
+
+
+  
+      dataclass
+  " href="../types/#biasx.types.ResourceMetadata">ResourceMetadata</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Metadata loaded from
+configuration about the landmarker model resource.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>model_path</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The local path to the downloaded landmarker model file.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>landmark_mapping</code></b>
+                  (<code><span title="Dict">Dict</span>[<a class="autorefs autorefs-internal" title="biasx.types.FacialFeature" href="../types/#biasx.types.FacialFeature">FacialFeature</a>, <span title="typing.List">List</span>[<span title="int">int</span>]]</code>)
+              –
+              <div class="doc-md-description">
+                <p>A dictionary
+mapping facial features (enum) to lists of landmark indices provided
+by the MediaPipe model.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>detector</code></b>
+                  (<code><span title="mediapipe.tasks.python.vision.FaceLandmarker">FaceLandmarker</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The initialized
+MediaPipe FaceLandmarker instance.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="biasx.explainers.FacialLandmarker.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">source</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize the facial landmark detector.</p>
+<p>Loads resources based on the specified source, sets up the MediaPipe
+FaceLandmarker options, and creates the detector instance.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>source</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.types.LandmarkerSource" href="../types/#biasx.types.LandmarkerSource">LandmarkerSource</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The source of the landmarker
+model to use (e.g., LandmarkerSource.MEDIAPIPE). Corresponds to
+keys in <code>landmarker_config.json</code>.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="biasx.explainers.FacialLandmarker.detect" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">detect</span><span class="p">(</span><span class="n">images</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Detect facial landmarks in one or more images.</p>
+<p>Takes a single PIL image or a list of PIL images, converts them into
+MediaPipe's Image format, and runs detection using the initialized
+landmarker. For each image where landmarks are detected, it converts
+the normalized landmark coordinates to pixel coordinates and groups
+them into bounding boxes based on the <code>self.landmark_mapping</code> for
+each facial feature.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>images</code></b>
+                  (<code><span title="typing.Union">Union</span>[<span title="PIL.Image.Image">Image</span>, <span title="typing.List">List</span>[<span title="PIL.Image.Image">Image</span>]]</code>)
+              –
+              <div class="doc-md-description">
+                <p>A single
+PIL image or a list of PIL images to process.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="typing.List">List</span>[<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.Box
+
+
+  
+      dataclass
+  " href="../types/#biasx.types.Box">Box</a>]]</code>
+              –
+              <div class="doc-md-description">
+                <p>A list of lists of Box objects. The outer list corresponds to the
+input images. Each inner list contains <code>biasx.types.Box</code> objects,
+one for each facial feature defined in the mapping, representing the
+bounding box encompassing the landmarks for that feature in the
+corresponding image. If no landmarks are detected in an image, its
+corresponding inner list will be empty.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><hr />
+<h2 id="classactivationmapper">ClassActivationMapper</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="biasx.explainers.ClassActivationMapper" class="doc doc-heading">
+            <code>biasx.explainers.ClassActivationMapper</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+        <p>Generates and processes class activation maps (CAMs).</p>
+<p>This class uses a specified CAM generation method (e.g., Grad-CAM++, Score-CAM)
+from the <code>tf-keras-vis</code> library to produce heatmaps highlighting regions
+important for a model's classification decision. It also provides methods
+to process these heatmaps by applying thresholding and identifying
+contiguous activated regions as bounding boxes.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>cam_method</code></b>
+                  (<code><span title="tf_keras_vis.ModelVisualization">ModelVisualization</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The instantiated CAM
+visualization object (e.g., GradcamPlusPlus) based on the configured method.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>cutoff_percentile</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The percentile value (0-100) used to determine
+the threshold for filtering low-activation areas in the heatmap.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold_method</code></b>
+                  (<code><span title="Callable">Callable</span>[[<span title="numpy.ndarray">ndarray</span>], <span title="Any">Any</span>]</code>)
+              –
+              <div class="doc-md-description">
+                <p>The thresholding function
+(e.g., skimage.filters.threshold_otsu) used to binarize the filtered heatmap.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="biasx.explainers.ClassActivationMapper.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">cam_method</span><span class="p">,</span> <span class="n">cutoff_percentile</span><span class="p">,</span> <span class="n">threshold_method</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize the activation map generator and processor.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>cam_method</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.types.CAMMethod" href="../types/#biasx.types.CAMMethod">CAMMethod</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The CAM algorithm to use
+(e.g., CAMMethod.GRADCAM_PLUS_PLUS).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>cutoff_percentile</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The percentile (0-100) to use for thresholding
+the raw heatmap. Activations below this percentile are zeroed out.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold_method</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="biasx.types.ThresholdMethod" href="../types/#biasx.types.ThresholdMethod">ThresholdMethod</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The algorithm used
+to binarize the filtered heatmap (e.g., ThresholdMethod.OTSU).</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="biasx.explainers.ClassActivationMapper.generate_heatmap" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">generate_heatmap</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">preprocessed_images</span><span class="p">,</span> <span class="n">target_classes</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generate class activation maps (heatmaps) for preprocessed images.</p>
+<p>Uses the configured CAM method (<code>tf-keras-vis</code>) to generate heatmaps for
+the given images with respect to the specified target classes. It handles
+preparing the images and defining the score function for the visualizer.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>model</code></b>
+                  (<code><span title="tensorflow.keras.Model">Model</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The trained Keras model to explain.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>preprocessed_images</code></b>
+                  (<code><span title="typing.Union">Union</span>[<span title="numpy.ndarray">ndarray</span>, <span title="typing.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]</code>)
+              –
+              <div class="doc-md-description">
+                <p>A single
+preprocessed image (NumPy array) or a list/batch of preprocessed
+images (NumPy array). Assumes images are normalized and correctly shaped.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>target_classes</code></b>
+                  (<code><span title="typing.Union">Union</span>[<a class="autorefs autorefs-internal" title="biasx.types.Gender" href="../types/#biasx.types.Gender">Gender</a>, <span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.Gender" href="../types/#biasx.types.Gender">Gender</a>]]</code>)
+              –
+              <div class="doc-md-description">
+                <p>The target class(es)
+(Gender enum) for which to generate the heatmaps. If a single
+Gender is provided, it's used for all images in the batch.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="typing.List">List</span>[<span title="numpy.ndarray">ndarray</span>]</code>
+              –
+              <div class="doc-md-description">
+                <p>A list of NumPy arrays, where each array is a 2D heatmap corresponding
+to an input image. Returns an empty list if the input is empty.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="biasx.explainers.ClassActivationMapper.process_heatmap" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">process_heatmap</span><span class="p">(</span><span class="n">heatmaps</span><span class="p">,</span> <span class="n">pil_images</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Process heatmaps into bounding boxes of activated regions.</p>
+<p>Takes raw heatmaps, applies a percentile cutoff threshold, binarizes the
+result using the configured thresholding method, identifies connected
+regions (blobs) in the binary map, and converts these regions into
+bounding boxes scaled to the original image dimensions.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>heatmaps</code></b>
+                  (<code><span title="typing.Union">Union</span>[<span title="numpy.ndarray">ndarray</span>, <span title="typing.List">List</span>[<span title="numpy.ndarray">ndarray</span>]]</code>)
+              –
+              <div class="doc-md-description">
+                <p>A single 2D heatmap
+or a list of 2D heatmaps (NumPy arrays) as generated by
+<code>generate_heatmap</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>pil_images</code></b>
+                  (<code><span title="typing.List">List</span>[<span title="PIL.Image.Image">Image</span>]</code>)
+              –
+              <div class="doc-md-description">
+                <p>A list of the original PIL images
+corresponding to the heatmaps, used to get dimensions for scaling.
+Must be the same length as the list of heatmaps.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="typing.List">List</span>[<span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.Box
+
+
+  
+      dataclass
+  " href="../types/#biasx.types.Box">Box</a>]]</code>
+              –
+              <div class="doc-md-description">
+                <p>A list of lists of Box objects. The outer list corresponds to the
+input heatmaps/images. Each inner list contains <code>biasx.types.Box</code>
+objects representing the bounding boxes of activated regions found
+in the corresponding heatmap. Boxes do not have features assigned
+at this stage.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../datasets/" class="btn btn-neutral float-left" title="Datasets"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../models/" class="btn btn-neutral float-right" title="Models">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../datasets/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../models/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
