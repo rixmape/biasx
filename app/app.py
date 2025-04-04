@@ -305,7 +305,7 @@ def display_images(samples, overlay, facial_feature):
         pred_gender = sample.predicted_gender.numerator
         confidence = sample.prediction_confidence
 
-        fig = image_overlays(image, activation, landmark_boxes, bboxes, overlay, facial_feature)
+        fig = image_overlays(image, activation, landmark_boxes, bboxes, overlay, facial_feature, color_mode=st.session_state.config["dataset"]["color_mode"])
 
         with col:
             with st.container(border=True):
