@@ -143,15 +143,18 @@ def display_configuration_page():
                 st.session_state.config["dataset"]["shuffle"] = c2.toggle("Shuffle?", key="enable_shuffle", value=st.session_state.enable_shuffle)
 
             # --- Start Analysis ---
-            if st.button("Start Analysis", type="primary", use_container_width=True):
-                with st.spinner("Analyzing", show_time=True):
-                    analyzer = BiasAnalyzer(st.session_state.config)
-                    st.session_state.result = analyzer.analyze()
-                
-                utils.reset_page()
-                st.session_state.layout = "wide"
-                st.session_state.configuration = False
-                st.rerun()
+            try:
+                if st.button("Start Analysis", type="primary", use_container_width=True):
+                    with st.spinner("Analyzing", show_time=True):
+                        analyzer = BiasAnalyzer(st.session_state.config)
+                        st.session_state.result = analyzer.analyze()
+                    
+                    utils.reset_page()
+                    st.session_state.layout = "wide"
+                    st.session_state.configuration = False
+                    st.rerun()
+            except Exception as e:
+                st.error(e)
 
 def display_visualization_page():
     """Display visualization page with analysis results."""
