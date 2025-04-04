@@ -51,21 +51,23 @@ def display_model_upload_page():
 
         model_set = st.selectbox("Select a model from Hugging Face",
                 ["baseline_models", "gender_bias_models", "male_attention-bias_models", "female_attention-bias_models"], 
-                key="model_selection", 
+                key="model_set_selection", 
                 label_visibility="collapsed")
         
         model_options = utils.retrieve_model_options(repo_id, model_set)
         
         selected_model = st.pills("Select a model", 
                 list(model_options.keys()), 
-                key="pretrained_model", 
+                key="selected_models", 
                 label_visibility="collapsed")
         
         if selected_model:
             utils.show_model_info(model_options[selected_model])
 
         st.markdown("")
-        continue_button = st.button("Continue", type="primary", use_container_width=True)
+
+        disable_continue = selected_model is None
+        continue_button = st.button("Continue", type="primary", use_container_width=True, disabled=disable_continue)
 
         if continue_button:
             with st.spinner("Downloading model..."):
