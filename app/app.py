@@ -80,7 +80,7 @@ def display_model_upload_page():
                 with open(model_path, "rb") as file_data:
                     st.session_state.config["model"]["path"] = utils.create_temp_file(file_data)
 
-                st.session_state.file_info = model_filename
+                st.session_state.file_info = selected_model
 
                 st.success(f"{selected_model} downloaded successfully!")
 
@@ -94,7 +94,7 @@ def display_configuration_page():
         model_upload, model_config = st.columns(2)
         
         with model_upload:
-            st.write(f"## {st.session_state.file_info}")
+            st.write(f"# ModelName: \n## {st.session_state.file_info}")
             if st.button("Change Model", use_container_width=True):
                 st.session_state.config["model"]["path"] = None
                 st.rerun()
