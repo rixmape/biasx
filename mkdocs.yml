@@ -1,0 +1,30 @@
+site_name: BiasX Documentation
+theme: readthedocs
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Getting Started: getting_started.md
+  - Configuration: configuration.md
+  - API Reference:
+    - Analyzer: api/analyzer.md
+    - Datasets: api/datasets.md
+    - Explainers: api/explainers.md
+    - Models: api/models.md
+    - Calculators: api/calculators.md
+    - Types: api/types.md
+    - Utilities: api/utils.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_heading: yes
+            show_source: no
+
+watch:
+  - biasx
+  - docs
+  - mkdocs.yml

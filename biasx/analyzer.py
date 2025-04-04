@@ -14,10 +14,68 @@ from .types import AnalysisResult, Explanation, ImageData
 
 @configurable("analyzer")
 class BiasAnalyzer:
-    """Orchestrates the bias analysis pipeline."""
+    """Orchestrates the end-to-end facial recognition bias analysis pipeline.
+
+    This class coordinates the process of loading data, running model inference,
+    generating visual explanations (activation maps and facial landmarks),
+    and calculating various bias metrics. It integrates functionalities from
+    Dataset, Model, Explainer, and Calculator components.
+
+    Attributes:
+        config (biasx.config.Config): The configuration object holding settings for all
+            components (dataset, model, explainer, calculator).
+        model (biasx.models.Model): An instance of the Model class for performing inference.
+        dataset (biasx.datasets.Dataset): An instance of the Dataset class for loading and
+            preprocessing data.
+        explainer (biasx.explainers.Explainer): An instance of the Explainer class for generating
+            visual explanations.
+        calculator (biasx.calculators.Calculator): An instance of the Calculator class for
+            computing bias metrics.
+        batch_size (int): The batch size used for processing data during
+            analysis, potentially overriding batch sizes specified in
+            component configurations for the analysis loop itself.
+
+    Examples:
+        >>> # Using a configuration dictionary
+        >>> config_dict = {
+        ...     "dataset": {"source": "utkface", "max_samples": 100},
+        ...     "model": {"path": "/path/to/model.h5"},
+        ...     "explainer": {"cam_method": "gradcam"},
+        ...     "calculator": {"precision": 4},
+        ...     "analyzer": {"batch_size": 16}
+        ... } #
+        >>> analyzer = BiasAnalyzer(config=config_dict)
+        >>> results = analyzer.analyze()
+        >>> print(results.disparity_scores)
+
+        >>> # Using a configuration file
+        >>> analyzer = BiasAnalyzer.from_file("config.yaml") #
+        >>> results = analyzer.analyze()
+        >>> print(f"BiasX Score: {results.disparity_scores.biasx}")
+    """
 
     def __init__(self, config: Union[Config, Dict, None] = None, batch_size: int = 32, **kwargs):
-        """Initialize analyzer components from configuration."""
+        """Initializes the BiasAnalyzer and its components.
+
+        Sets up the Dataset, Model, Explainer, and Calculator based on the
+        provided configuration.
+
+        Args:
+            config (Union[biasx.config.Config, Dict, None], optional): A
+                configuration object (Config) or dictionary containing
+                settings for the analyzer and its sub-components (Dataset,
+                Model, Explainer, Calculator). If None, default
+                configurations might be used or an error raised depending
+                on the Config setup. Defaults to None.
+            batch_size (int, optional): The batch size to use when iterating
+                through the dataset during the `analyze` method. This primarily
+                controls the batching within the analyzer's loop, distinct
+                from potential batch sizes used internally by the model or
+                explainer if configured differently. Defaults to 32.
+            **kwargs: Additional keyword arguments, potentially used by the
+                configurable decorator or passed down during component
+                initialization if the Config structure supports it.
+        """
         if config is None:
             config = {}
 
@@ -29,7 +87,30 @@ class BiasAnalyzer:
         self.batch_size = batch_size
 
     def analyze_batch(self, image_data_batch: List[ImageData]) -> List[Explanation]:
-        """Analyze a batch of images through the pipeline."""
+        """Analyzes a single batch of images through the pipeline.
+
+        This method takes a list of ImageData objects, runs model prediction,
+        generates explanations (activation maps, landmarks, labeled boxes),
+        and compiles the results into Explanation objects.
+
+        Args:
+            image_data_batch (List[biasx.types.ImageData]): A list of ImageData
+                objects, typically obtained from iterating over a Dataset
+                instance. Each ImageData object should contain at least
+                the preprocessed image (NumPy array) and the original PIL
+                image.
+
+        Returns:
+            A list of Explanation objects, one for each image in the input
+                batch. Each Explanation object contains the original image data,
+                prediction results (gender, confidence), activation map, activation
+                boxes (potentially labeled with facial features), and landmark
+                boxes. Returns an empty list if the input batch is empty.
+
+        Raises:
+            (Potentially errors from underlying Model or Explainer methods if
+                inference or explanation generation fails).
+        """
         if not image_data_batch:
             return []
 
@@ -67,7 +148,34 @@ class BiasAnalyzer:
         return explanations
 
     def analyze(self) -> AnalysisResult:
-        """Run the full analysis pipeline on the dataset."""
+        """Runs the full bias analysis pipeline on the configured dataset.
+
+        This method iterates through the entire dataset provided by the
+        Dataset component, processing images in batches using `analyze_batch`.
+        It aggregates all the generated Explanation objects and then uses the
+        Calculator component to compute feature-level bias analyses and
+        overall disparity scores (like BiasX and Equalized Odds).
+
+        Returns:
+            An AnalysisResult object containing:
+
+                - `explanations`: A list of all Explanation objects generated for
+                each image in the dataset.
+                - `feature_analyses`: A dictionary mapping each FacialFeature to its
+                calculated FeatureAnalysis (bias score, per-gender probabilities).
+                - `disparity_scores`: A DisparityScores object containing overall
+                metrics like BiasX and Equalized Odds.
+
+                Returns an empty AnalysisResult if the dataset yields no data or
+                no explanations could be generated.
+
+        Note:
+            This method processes the *entire* dataset as configured in the
+            Dataset component (respecting `max_samples`, shuffling, etc.).
+            It can be computationally intensive depending on the dataset size
+            and model complexity. It uses an internal buffer to manage
+            memory usage during explanation aggregation.
+        """
         batch_count = 0
         explanations_buffer = []
         total_explanations = []
@@ -100,5 +208,22 @@ class BiasAnalyzer:
 
     @classmethod
     def from_file(cls, config_file_path: str) -> "BiasAnalyzer":
-        """Create a BiasAnalyzer from a configuration file."""
+        """Creates a BiasAnalyzer instance from a configuration file.
+
+        This factory method provides a convenient way to initialize the
+        analyzer using an external configuration file (e.g., YAML, JSON)
+        that defines the settings for all components.
+
+        Args:
+            config_file_path (str): The path to the configuration file. The file
+                format should be supported by the underlying Config class's
+                `from_file` method.
+
+        Returns:
+            A new instance of BiasAnalyzer configured according to the file.
+
+        Examples:
+            >>> analyzer = BiasAnalyzer.from_file('analysis_config.yaml') #
+            >>> results = analyzer.analyze()
+        """
         return cls(config=Config.from_file(config_file_path))
