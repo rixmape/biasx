@@ -157,7 +157,7 @@ class FeatureMasker:
 
         pixel_coords = self._get_pixel_landmarks(image_np, image_id)
         if not pixel_coords:
-            self.logger.warning(f"[{image_id}] Skipping masking: no landmarks found")
+            # self.logger.warning(f"[{image_id}] Skipping masking: no landmarks found")
             return image_np
 
         masked_image = image_np.copy()
@@ -183,7 +183,7 @@ class FeatureMasker:
         """Detects all facial features and returns their details including bounding boxes."""
         pixel_coords = self._get_pixel_landmarks(image_np, image_id)
         if not pixel_coords:
-            self.logger.warning(f"[{image_id}] Cannot get features: no landmarks found")
+            # self.logger.warning(f"[{image_id}] Cannot get features: no landmarks found")
             return []
 
         img_height, img_width = image_np.shape[:2]
