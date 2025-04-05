@@ -9,26 +9,15 @@ from biasx.analyzer import BiasAnalyzer
 from biasx.config import Config
 from biasx.types import (
     Gender, Age, Race, CAMMethod, ThresholdMethod, DistanceMetric, LandmarkerSource,
-    AnalysisResult, FacialFeature, ImageData, Box, DisparityScores
+    AnalysisResult, FacialFeature, ImageData, Box, DisparityScores, Explanation
 )
 from biasx.models import Model
 from biasx.datasets import Dataset
 from biasx.explainers import Explainer
 from biasx.calculators import Calculator
 
+# Define helper functions directly here instead of importing from tests.test_infrastructure
 
-
-# Import the test infrastructure functions/classes
-from tests.test_infrastructure import (
-    create_test_image_data,
-    create_test_explanation,
-    MockTensorFlowModel,
-    MockDataset,
-    MockExplainer,
-    MockCalculator
-)
-
-# Rest of the file remains the same as in your original implementation
 # Helper function to create test image data for tests
 def create_test_image_data(image_id, gender=Gender.MALE, age=Age.RANGE_20_29, race=Race.WHITE):
     """Create a test ImageData object with controlled properties."""
@@ -49,6 +38,71 @@ def create_test_image_data(image_id, gender=Gender.MALE, age=Age.RANGE_20_29, ra
         age=age,
         race=race
     )
+
+# Helper function to create test explanations
+def create_test_explanation(image_id="test", true_gender=Gender.MALE, pred_gender=Gender.MALE, 
+                           confidence=0.8, activation_boxes=None):
+    """Create a synthetic explanation for testing with specified properties."""
+    image_data = create_test_image_data(image_id=image_id, gender=true_gender)
+    
+    if activation_boxes is None:
+        activation_boxes = []
+    
+    return Explanation(
+        image_data=image_data,
+        predicted_gender=pred_gender,
+        prediction_confidence=confidence,
+        activation_map=np.zeros((10, 10)),
+        activation_boxes=activation_boxes,
+        landmark_boxes=[]
+    )
+
+# Mock classes
+class MockTensorFlowModel:
+    """Mock TensorFlow model for testing."""
+    def __init__(self, input_shape=(48, 48, 1), num_classes=2):
+        self.input_shape = input_shape
+        self.num_classes = num_classes
+    
+    def predict(self, x, **kwargs):
+        batch_size = len(x) if isinstance(x, list) else x.shape[0]
+        return np.random.random((batch_size, self.num_classes))
+
+class MockDataset:
+    """Mock Dataset for testing."""
+    def __init__(self, batch_size=2, num_batches=2):
+        self.batch_size = batch_size
+        self.num_batches = num_batches
+        self._current_batch = 0
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        if self._current_batch >= self.num_batches:
+            raise StopIteration
+        
+        batch_data = [create_test_image_data(f"img_{self._current_batch}_{i}") 
+                      for i in range(self.batch_size)]
+        self._current_batch += 1
+        return batch_data
+
+class MockExplainer:
+    """Mock Explainer for testing."""
+    def explain_batch(self, pil_images, preprocessed_images, model, target_classes):
+        batch_size = len(pil_images)
+        activation_maps = [np.zeros((48, 48)) for _ in range(batch_size)]
+        activation_boxes = [[Box(10, 10, 20, 20)] for _ in range(batch_size)]
+        landmark_boxes = [[Box(10, 10, 20, 20)] for _ in range(batch_size)]
+        return activation_maps, activation_boxes, landmark_boxes
+
+class MockCalculator:
+    """Mock Calculator for testing."""
+    def calculate_feature_biases(self, explanations):
+        return {FacialFeature.NOSE: MagicMock()}
+    
+    def calculate_disparities(self, feature_analyses, explanations):
+        return DisparityScores(biasx=0.3, equalized_odds=0.2)
 
 
 @pytest.fixture
@@ -81,6 +135,24 @@ def integration_config(sample_model_path):
             "batch_size": 8,
         }
     }
+
+
+@pytest.fixture
+def controlled_test_images():
+    """Return a list of controlled test images for consistent testing."""
+    return [Image.new('L', (48, 48), color=128) for _ in range(8)]
+
+
+@pytest.fixture
+def check_activation_regions():
+    """Fixture providing a function to check if activation regions are reasonable."""
+    def _check(boxes, min_size=0, max_size=48):
+        assert all(box.max_x - box.min_x >= min_size for box in boxes)
+        assert all(box.max_y - box.min_y >= min_size for box in boxes)
+        assert all(box.min_x >= 0 and box.min_y >= 0 for box in boxes)
+        assert all(box.max_x <= max_size and box.max_y <= max_size for box in boxes)
+        return True
+    return _check
 
 
 @pytest.mark.integration
