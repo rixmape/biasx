@@ -320,12 +320,14 @@ def image_overlays(image,
                    bounding_boxes: list = None, 
                    overlay: list = None, 
                    facial_feature: list = None,
-                   colors: list = get_landmark_names_and_colors()[1], 
+                   colors: list = get_landmark_names_and_colors()[1],
+                   color_mode: str = "L",
 ):
     """Creates an image with various overlays for visualization."""
     
     fig, ax = plt.subplots()
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    if color_mode == "L":
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = cv2.resize(image, (200, 200))
 
     ax.imshow(image)
