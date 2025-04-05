@@ -17,7 +17,7 @@ def create_temp_file(uploaded_file):
         temp_file.write(uploaded_file.read())
         return temp_file.name
 
-def retrieve_model_options(repo_id, model_set):
+def retrieve_model_options(repo_id: str = "4shL3I/biasx-models", model_set: str = "models"):
     """Retrieve model options from a given repository ID."""
     try:
         model_path = hf_hub_download(repo_id=repo_id, filename=f"{model_set}.json")
@@ -29,7 +29,7 @@ def retrieve_model_options(repo_id, model_set):
         return None
 
 @st.cache_data
-def load_hf_model(repo_id, model_filename):
+def load_hf_model(repo_id: str = "4shL3I/biasx-models", model_filename: str = None):
     """Load a model from the Hugging Face Hub."""
     try:
         model_path = hf_hub_download(repo_id=repo_id, filename=model_filename)

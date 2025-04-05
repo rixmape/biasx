@@ -47,14 +47,8 @@ def display_model_upload_page():
 
     with st.container(border=True):
         st.write("### Select from Pre-existing Models")
-        repo_id = "4shL3I/biasx-models" # Change to final repo ID
-
-        model_set = st.selectbox("Select a model from Hugging Face",
-                ["baseline_models", "gender_bias_models", "male_attention-bias_models", "female_attention-bias_models"], 
-                key="model_set_selection", 
-                label_visibility="collapsed")
         
-        model_options = utils.retrieve_model_options(repo_id, model_set)
+        model_options = utils.retrieve_model_options()
         
         selected_model = st.pills("Select a model", 
                 list(model_options.keys()), 
@@ -74,7 +68,7 @@ def display_model_upload_page():
                 model_filename = model_options[selected_model]["path"]
 
                 # Download the model from Hugging Face
-                model_path = utils.load_hf_model(repo_id, model_filename)
+                model_path = utils.load_hf_model(model_filename=model_filename)
 
                 # Create a temporary file for the downloaded model
                 with open(model_path, "rb") as file_data:
