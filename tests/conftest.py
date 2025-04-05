@@ -3,7 +3,7 @@ import os
 import json
 import tempfile
 import pathlib
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 
 import pytest
 import numpy as np
@@ -14,6 +14,15 @@ from unittest.mock import MagicMock, patch
 
 from biasx.config import Config
 from biasx.types import Age, Box, FacialFeature, Gender, ImageData, Race
+
+
+import tensorflow as tf
+
+from biasx.types import (
+    Age, Box, CAMMethod, ColorMode, DatasetSource, 
+    DistanceMetric, FacialFeature, Gender, ImageData, 
+    LandmarkerSource, Race, ThresholdMethod
+)
 
 # ===== Path Handling Fixtures =====
 
@@ -450,3 +459,244 @@ def mock_cam():
         
         mock.return_value = mapper
         yield mock
+
+@pytest.fixture
+def integration_config():
+    """Return a configuration suitable for integration testing."""
+    return {
+        "model": {
+            "path": "mock_model.h5",  # Will be replaced with actual path in tests
+            "inverted_classes": False,
+            "batch_size": 8,  # Small batch size for faster testing
+        },
+        "explainer": {
+            "landmarker_source": "mediapipe",
+            "cam_method": "gradcam++",
+            "cutoff_percentile": 90,
+            "threshold_method": "otsu",
+            "overlap_threshold": 0.2,
+            "distance_metric": "euclidean",
+            "batch_size": 8,
+        },
+        "dataset": {
+            "source": "utkface",
+            "image_width": 48,  # Small size for testing
+            "image_height": 48,
+            "color_mode": "L",
+            "single_channel": True,
+            "max_samples": 20,  # Limited sample size
+            "shuffle": True,
+            "seed": 42,
+            "batch_size": 8,
+        }
+    }
+
+@pytest.fixture
+def sample_model_path():
+    """Create a temporary model file for testing."""
+    # Create a minimal test model
+    inputs = tf.keras.Input(shape=(48, 48, 1))
+    x = tf.keras.layers.Conv2D(16, (3, 3), activation='relu')(inputs)
+    x = tf.keras.layers.MaxPooling2D((2, 2))(x)
+    x = tf.keras.layers.Flatten()(x)
+    outputs = tf.keras.layers.Dense(2, activation='softmax')(x)
+    model = tf.keras.Model(inputs=inputs, outputs=outputs)
+    
+    # Save to temporary file
+    with tempfile.NamedTemporaryFile(suffix='.h5', delete=False) as temp_file:
+        model_path = temp_file.name
+        model.save(model_path)
+        
+    yield model_path
+    
+    # Clean up after test
+    if os.path.exists(model_path):
+        os.unlink(model_path)
+
+@pytest.fixture
+def controlled_test_images(num_images=4):
+    """Generate a controlled set of test images with known properties."""
+    images = []
+    for i in range(num_images):
+        # Create a base image with a simple pattern
+        img_array = np.zeros((48, 48), dtype=np.uint8)
+        
+        # Add some distinguishing features
+        if i % 2 == 0:  # 'Male-like' features
+            # Add eyes in the upper part
+            img_array[10:15, 15:20] = 200  # Left eye
+            img_array[10:15, 28:33] = 200  # Right eye
+            # Add a larger jaw area
+            img_array[30:40, 15:33] = 150
+        else:  # 'Female-like' features
+            # Add eyes in the upper part
+            img_array[12:16, 16:21] = 200  # Left eye
+            img_array[12:16, 27:32] = 200  # Right eye
+            # Add lips
+            img_array[30:35, 20:28] = 180
+        
+        # Convert to PIL Image
+        pil_image = Image.fromarray(img_array)
+        images.append(pil_image)
+    
+    return images
+
+@pytest.fixture
+def preprocessed_test_images(controlled_test_images):
+    """Create preprocessed versions of the test images."""
+    preprocessed = []
+    for img in controlled_test_images:
+        # Convert to numpy array, normalize, and add channel dimension
+        img_array = np.array(img, dtype=np.float32) / 255.0
+        img_array = np.expand_dims(img_array, axis=-1)  # Add channel dimension
+        preprocessed.append(img_array)
+    return preprocessed
+
+@pytest.fixture
+def test_image_data(controlled_test_images, preprocessed_test_images):
+    """Create test ImageData objects with controlled characteristics."""
+    image_data_list = []
+    for i, (pil_img, preprocessed_img) in enumerate(zip(controlled_test_images, preprocessed_test_images)):
+        # Alternate gender for testing different scenarios
+        gender = Gender.MALE if i % 2 == 0 else Gender.FEMALE
+        
+        image_data = ImageData(
+            image_id=f"test_image_{i}",
+            pil_image=pil_img,
+            preprocessed_image=preprocessed_img,
+            width=48,
+            height=48,
+            gender=gender,
+            age=Age.RANGE_20_29,  # Fixed age for simplicity
+            race=Race.WHITE      # Fixed race for simplicity
+        )
+        image_data_list.append(image_data)
+    
+    return image_data_list
+
+@pytest.fixture
+def mock_activation_maps(num_maps=4):
+    """Generate mock activation maps for testing."""
+    maps = []
+    for i in range(num_maps):
+        # Create base heatmap of zeros
+        heatmap = np.zeros((48, 48))
+        
+        # Add activation patterns based on index
+        if i % 2 == 0:  # 'Male predicted' activation pattern
+            # Activate jaw area
+            heatmap[30:40, 15:33] = 0.8
+        else:  # 'Female predicted' activation pattern
+            # Activate eyes and lips
+            heatmap[12:16, 16:21] = 0.7  # Left eye
+            heatmap[12:16, 27:32] = 0.7  # Right eye
+            heatmap[30:35, 20:28] = 0.9  # Lips
+        
+        maps.append(heatmap)
+    
+    return maps
+
+@pytest.fixture
+def mock_landmark_boxes(num_sets=4):
+    """Generate mock landmark boxes for testing."""
+    landmarks_sets = []
+    for _ in range(num_sets):
+        # Create a standard set of facial landmarks for each image
+        landmarks = [
+            Box(15, 12, 20, 16, feature=FacialFeature.LEFT_EYE),
+            Box(28, 12, 33, 16, feature=FacialFeature.RIGHT_EYE),
+            Box(20, 18, 28, 25, feature=FacialFeature.NOSE),
+            Box(20, 30, 28, 35, feature=FacialFeature.LIPS),
+            Box(10, 20, 15, 30, feature=FacialFeature.LEFT_CHEEK),
+            Box(33, 20, 38, 30, feature=FacialFeature.RIGHT_CHEEK),
+            Box(18, 35, 30, 42, feature=FacialFeature.CHIN),
+            Box(15, 5, 33, 10, feature=FacialFeature.FOREHEAD),
+            Box(15, 10, 20, 12, feature=FacialFeature.LEFT_EYEBROW),
+            Box(28, 10, 33, 12, feature=FacialFeature.RIGHT_EYEBROW),
+        ]
+        landmarks_sets.append(landmarks)
+    
+    return landmarks_sets
+
+@pytest.fixture
+def create_test_explanation():
+    """Fixture that provides a function to create test explanations."""
+    def _create_explanation(
+        image_id="test_image",
+        true_gender=Gender.MALE,
+        pred_gender=Gender.FEMALE,
+        confidence=0.85,
+        activation_boxes=None
+    ):
+        """Create a synthetic explanation with specified properties."""
+        # Create basic image data
+        pil_image = Image.new('L', (48, 48), color=128)
+        img_array = np.ones((48, 48, 1), dtype=np.float32) * 0.5
+        
+        image_data = ImageData(
+            image_id=image_id,
+            pil_image=pil_image,
+            preprocessed_image=img_array,
+            width=48,
+            height=48,
+            gender=true_gender,
+            age=Age.RANGE_20_29,
+            race=Race.WHITE
+        )
+        
+        # Default activation boxes if none provided
+        if activation_boxes is None:
+            activation_boxes = [
+                Box(15, 12, 20, 16, feature=FacialFeature.LEFT_EYE),
+                Box(28, 12, 33, 16, feature=FacialFeature.RIGHT_EYE)
+            ]
+        
+        # Create activation map with simple pattern
+        activation_map = np.zeros((48, 48))
+        for box in activation_boxes:
+            activation_map[box.min_y:box.max_y, box.min_x:box.max_x] = 0.8
+        
+        # Create standard landmark boxes
+        landmark_boxes = [
+            Box(15, 12, 20, 16, feature=FacialFeature.LEFT_EYE),
+            Box(28, 12, 33, 16, feature=FacialFeature.RIGHT_EYE),
+            Box(20, 18, 28, 25, feature=FacialFeature.NOSE),
+            Box(20, 30, 28, 35, feature=FacialFeature.LIPS)
+        ]
+        
+        from biasx.types import Explanation
+        return Explanation(
+            image_data=image_data,
+            predicted_gender=pred_gender,
+            prediction_confidence=confidence,
+            activation_map=activation_map,
+            activation_boxes=activation_boxes,
+            landmark_boxes=landmark_boxes
+        )
+    
+    return _create_explanation
+
+@pytest.fixture
+def check_activation_regions():
+    """Fixture providing a function to verify activation map regions."""
+    def _check_regions(activation_map, predicted_gender):
+        """Verify that activation map regions align with the predicted gender."""
+        # Simple validation based on predicted gender
+        if predicted_gender == Gender.MALE:
+            # For male predictions, expect more activation in jaw/chin area
+            lower_region = activation_map[30:, :]
+            upper_region = activation_map[:20, :]
+            # Lower face should have more activation for male predictions
+            assert np.mean(lower_region) > np.mean(upper_region)
+        else:
+            # For female predictions, expect more activation in eyes/lips
+            eye_region = activation_map[10:20, :]
+            lip_region = activation_map[30:35, 20:28]
+            rest_region = np.delete(activation_map, np.s_[10:20, :], axis=0)
+            rest_region = np.delete(rest_region, np.s_[30:35, 20:28], axis=0)
+            # Eyes and lips should have more activation for female predictions
+            assert (np.mean(eye_region) + np.mean(lip_region))/2 > np.mean(rest_region)
+        
+        return True
+    
+    return _check_regions
