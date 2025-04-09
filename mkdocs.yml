@@ -1,6 +1,37 @@
+# Project information
 site_name: BiasX Documentation
-theme: readthedocs
 
+# Theme configuration
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+
+# Keep your existing navigation structure
 nav:
   - Home: index.md
   - Installation: installation.md
@@ -15,6 +46,7 @@ nav:
     - Types: api/types.md
     - Utilities: api/utils.md
 
+# Keep your existing plugins configuration
 plugins:
   - search
   - mkdocstrings:
@@ -24,7 +56,31 @@ plugins:
             show_root_heading: yes
             show_source: no
 
+# Additional features for better documentation
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+
+# Watch these directories and files for changes
 watch:
   - biasx
   - docs
   - mkdocs.yml
+
+extra_css:
+  - stylesheets/extra.css
+
+repo_url: https://github.com/rixmape/biasx
+repo_name: rixmape/biasx
+
+site_description: A comprehensive toolkit for measuring and explaining gender bias in facial recognition models
+site_author: Rixdon Niño Mape, Jerwin Glen Lucero, Jan Wilhelm Sy
+copyright: Copyright &copy; 2023 - 2025 BiasX Team
