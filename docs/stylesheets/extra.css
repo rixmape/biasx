@@ -1,0 +1,13 @@
+/* Custom styles for BiasX documentation */
+
+/* Example: Make headings in BiasX blue */
+.md-typeset h1,
+.md-typeset h2 {
+  color: #3f51b5; /* Indigo color that matches the theme */
+}
+
+/* Example: Custom styling for code blocks */
+.md-typeset code {
+  background-color: rgba(63, 81, 181, 0.1);
+  color: #3f51b5;
+}
