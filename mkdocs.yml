@@ -5,22 +5,24 @@ site_name: BiasX Documentation
 theme:
   name: material
   palette:
-    # Light mode
+    # Light mode (default)
     - media: "(prefers-color-scheme: light)"
       scheme: default
       primary: indigo
       accent: indigo
       toggle:
-        icon: material/toggle-switch-off-outline
+        icon: material/brightness-7
         name: Switch to dark mode
+    
     # Dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: indigo
       accent: indigo
       toggle:
-        icon: material/toggle-switch
+        icon: material/brightness-4
         name: Switch to light mode
+    
   features:
     - navigation.tabs
     - navigation.sections
@@ -58,16 +60,24 @@ plugins:
 
 # Additional features for better documentation
 markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
-  - admonition
-  - pymdownx.details
   - pymdownx.tabbed:
       alternate_style: true
   - tables
+  - attr_list
+  - md_in_html
 
 # Watch these directories and files for changes
 watch:
@@ -84,3 +94,12 @@ repo_name: rixmape/biasx
 site_description: A comprehensive toolkit for measuring and explaining gender bias in facial recognition models
 site_author: Rixdon Niño Mape, Jerwin Glen Lucero, Jan Wilhelm Sy
 copyright: Copyright &copy; 2023 - 2025 BiasX Team
+
+
+extra_css:
+  - stylesheets/extra.css
+  
+extra_javascript:
+  - javascripts/theme-toggle.js
+
+
