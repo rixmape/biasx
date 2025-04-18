@@ -1,161 +1,995 @@
-<!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <link rel="shortcut icon" href="../../img/favicon.ico" />
-    <title>Types - BiasX Documentation</title>
-    <link rel="stylesheet" href="../../css/theme.css" />
-    <link rel="stylesheet" href="../../css/theme_extra.css" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
-        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
     
-      <script>
-        // Current page data
-        var mkdocs_page_name = "Types";
-        var mkdocs_page_input_path = "api/types.md";
-        var mkdocs_page_url = null;
-      </script>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A comprehensive toolkit for measuring and explaining gender bias in facial recognition models">
+      
+      
+        <meta name="author" content="Rixdon Niño Mape, Jerwin Glen Lucero, Jan Wilhelm Sy">
+      
+      
+      
+        <link rel="prev" href="../calculators/">
+      
+      
+        <link rel="next" href="../utils/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
-    <!--[if lt IE 9]>
-      <script src="../../js/html5shiv.min.js"></script>
-    <![endif]-->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-      <script>hljs.highlightAll();</script> 
-</head>
+    
+      
+        <title>Types - BiasX Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.2afb09e1.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
 
-<body class="wy-body-for-nav" role="document">
 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
-    <div class="wy-side-scroll">
-      <div class="wy-side-nav-search">
-          <a href="../.." class="icon icon-home"> BiasX Documentation
-        </a><div role="search">
-  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
-  </form>
-</div>
-      </div>
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../../installation/">Installation</a>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../../getting_started/">Getting Started</a>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../../configuration/">Configuration</a>
-                </li>
-              </ul>
-              <p class="caption"><span class="caption-text">API Reference</span></p>
-              <ul class="current">
-                  <li class="toctree-l1"><a class="reference internal" href="../analyzer/">Analyzer</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../datasets/">Datasets</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../explainers/">Explainers</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../models/">Models</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../calculators/">Calculators</a>
-                  </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Types</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#enumerations">Enumerations</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.Gender">Gender</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.Age">Age</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.Race">Race</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.FacialFeature">FacialFeature</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.DatasetSource">DatasetSource</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.LandmarkerSource">LandmarkerSource</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.ColorMode">ColorMode</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.CAMMethod">CAMMethod</a>
-        <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#biasx.types.CAMMethod.get_implementation">get_implementation</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.ThresholdMethod">ThresholdMethod</a>
-        <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#biasx.types.ThresholdMethod.get_implementation">get_implementation</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.DistanceMetric">DistanceMetric</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l2"><a class="reference internal" href="#data-classes">Data Classes</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.Box">Box</a>
-        <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#biasx.types.Box.area">area</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#biasx.types.Box.center">center</a>
-    </li>
-        </ul>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.ResourceMetadata">ResourceMetadata</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.ImageData">ImageData</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.Explanation">Explanation</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.FeatureAnalysis">FeatureAnalysis</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.DisparityScores">DisparityScores</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#biasx.types.AnalysisResult">AnalysisResult</a>
-    </li>
-        </ul>
-    </li>
-    </ul>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../utils/">Utilities</a>
-                  </li>
-              </ul>
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#data-types" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="BiasX Documentation" class="md-header__button md-logo" aria-label="BiasX Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            BiasX Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Types
+            
+          </span>
+        </div>
       </div>
     </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../..">BiasX Documentation</a>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
         
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
       </nav>
-      <div class="wy-nav-content">
-        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
-          <li class="breadcrumb-item">API Reference</li>
-      <li class="breadcrumb-item active">Types</li>
-    <li class="wy-breadcrumbs-aside">
-    </li>
-  </ul>
-  <hr/>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-            <div class="section" itemprop="articleBody">
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/rixmape/biasx" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    rixmape/biasx
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting_started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../configuration/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Configuration
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../analyzer/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
               
-                <h1 id="data-types">Data Types</h1>
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="BiasX Documentation" class="md-nav__button md-logo" aria-label="BiasX Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    BiasX Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/rixmape/biasx" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    rixmape/biasx
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Configuration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyzer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Analyzer
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datasets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Datasets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../explainers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Explainers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../calculators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Calculators
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Types
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Types
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#enumerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enumerations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Enumerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.Gender" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gender
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.Age" class="md-nav__link">
+    <span class="md-ellipsis">
+      Age
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.Race" class="md-nav__link">
+    <span class="md-ellipsis">
+      Race
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.FacialFeature" class="md-nav__link">
+    <span class="md-ellipsis">
+      FacialFeature
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.DatasetSource" class="md-nav__link">
+    <span class="md-ellipsis">
+      DatasetSource
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.LandmarkerSource" class="md-nav__link">
+    <span class="md-ellipsis">
+      LandmarkerSource
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.ColorMode" class="md-nav__link">
+    <span class="md-ellipsis">
+      ColorMode
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.CAMMethod" class="md-nav__link">
+    <span class="md-ellipsis">
+      CAMMethod
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CAMMethod">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.CAMMethod.get_implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_implementation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.ThresholdMethod" class="md-nav__link">
+    <span class="md-ellipsis">
+      ThresholdMethod
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ThresholdMethod">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.ThresholdMethod.get_implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_implementation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.DistanceMetric" class="md-nav__link">
+    <span class="md-ellipsis">
+      DistanceMetric
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Classes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.Box" class="md-nav__link">
+    <span class="md-ellipsis">
+      Box
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Box">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.Box.area" class="md-nav__link">
+    <span class="md-ellipsis">
+      area
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.Box.center" class="md-nav__link">
+    <span class="md-ellipsis">
+      center
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.ResourceMetadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      ResourceMetadata
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.ImageData" class="md-nav__link">
+    <span class="md-ellipsis">
+      ImageData
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.Explanation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Explanation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.FeatureAnalysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      FeatureAnalysis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.DisparityScores" class="md-nav__link">
+    <span class="md-ellipsis">
+      DisparityScores
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#biasx.types.AnalysisResult" class="md-nav__link">
+    <span class="md-ellipsis">
+      AnalysisResult
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Utilities
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="data-types">Data Types</h1>
 <p>This module defines common enumerations and data structures used throughout the BiasX library.</p>
 <hr />
 <h2 id="enumerations">Enumerations</h2>
@@ -180,35 +1014,39 @@
         <p>Gender classification labels used in datasets and model outputs.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>MALE</code></b>
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Gender.MALE">MALE</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the male gender, typically assigned the integer value 0.</p>
               </div>
-            </li>
-            <li>
-              <b><code>FEMALE</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Gender.FEMALE">FEMALE</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the female gender, typically assigned the integer value 1.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -255,77 +1093,99 @@
         <p>Age range classification labels, often used in datasets like UTKFace.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>RANGE_0_9</code></b>
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Age.RANGE_0_9">RANGE_0_9</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Age range 0-9 years.</p>
               </div>
-            </li>
-            <li>
-              <b><code>RANGE_10_19</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Age.RANGE_10_19">RANGE_10_19</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Age range 10-19 years.</p>
               </div>
-            </li>
-            <li>
-              <b><code>RANGE_20_29</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Age.RANGE_20_29">RANGE_20_29</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Age range 20-29 years.</p>
               </div>
-            </li>
-            <li>
-              <b><code>RANGE_30_39</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Age.RANGE_30_39">RANGE_30_39</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Age range 30-39 years.</p>
               </div>
-            </li>
-            <li>
-              <b><code>RANGE_40_49</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Age.RANGE_40_49">RANGE_40_49</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Age range 40-49 years.</p>
               </div>
-            </li>
-            <li>
-              <b><code>RANGE_50_59</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Age.RANGE_50_59">RANGE_50_59</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Age range 50-59 years.</p>
               </div>
-            </li>
-            <li>
-              <b><code>RANGE_60_69</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Age.RANGE_60_69">RANGE_60_69</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Age range 60-69 years.</p>
               </div>
-            </li>
-            <li>
-              <b><code>RANGE_70_PLUS</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Age.RANGE_70_PLUS">RANGE_70_PLUS</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Age range 70 years and above.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -372,56 +1232,69 @@
         <p>Race classification labels used in datasets.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>WHITE</code></b>
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Race.WHITE">WHITE</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the White race category.</p>
               </div>
-            </li>
-            <li>
-              <b><code>BLACK</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Race.BLACK">BLACK</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the Black race category.</p>
               </div>
-            </li>
-            <li>
-              <b><code>ASIAN</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Race.ASIAN">ASIAN</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the Asian race category.</p>
               </div>
-            </li>
-            <li>
-              <b><code>INDIAN</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Race.INDIAN">INDIAN</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the Indian race category.</p>
               </div>
-            </li>
-            <li>
-              <b><code>OTHER</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Race.OTHER">OTHER</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents other race categories not listed.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -469,91 +1342,119 @@
 <p>Used to label landmark groups and potentially activation map regions.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>LEFT_EYE</code></b>
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FacialFeature.LEFT_EYE">LEFT_EYE</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The region corresponding to the left eye.</p>
               </div>
-            </li>
-            <li>
-              <b><code>RIGHT_EYE</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FacialFeature.RIGHT_EYE">RIGHT_EYE</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The region corresponding to the right eye.</p>
               </div>
-            </li>
-            <li>
-              <b><code>NOSE</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FacialFeature.NOSE">NOSE</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The region corresponding to the nose.</p>
               </div>
-            </li>
-            <li>
-              <b><code>LIPS</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FacialFeature.LIPS">LIPS</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The region corresponding to the lips.</p>
               </div>
-            </li>
-            <li>
-              <b><code>LEFT_CHEEK</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FacialFeature.LEFT_CHEEK">LEFT_CHEEK</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The region corresponding to the left cheek.</p>
               </div>
-            </li>
-            <li>
-              <b><code>RIGHT_CHEEK</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FacialFeature.RIGHT_CHEEK">RIGHT_CHEEK</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The region corresponding to the right cheek.</p>
               </div>
-            </li>
-            <li>
-              <b><code>CHIN</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FacialFeature.CHIN">CHIN</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The region corresponding to the chin.</p>
               </div>
-            </li>
-            <li>
-              <b><code>FOREHEAD</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FacialFeature.FOREHEAD">FOREHEAD</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The region corresponding to the forehead.</p>
               </div>
-            </li>
-            <li>
-              <b><code>LEFT_EYEBROW</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FacialFeature.LEFT_EYEBROW">LEFT_EYEBROW</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The region corresponding to the left eyebrow.</p>
               </div>
-            </li>
-            <li>
-              <b><code>RIGHT_EYEBROW</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FacialFeature.RIGHT_EYEBROW">RIGHT_EYEBROW</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The region corresponding to the right eyebrow.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -601,35 +1502,39 @@
 <p>Used in configuration to specify which dataset to load.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>UTKFACE</code></b>
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.DatasetSource.UTKFACE">UTKFACE</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the UTKFace dataset.</p>
               </div>
-            </li>
-            <li>
-              <b><code>FAIRFACE</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.DatasetSource.FAIRFACE">FAIRFACE</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the FairFace dataset.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -677,28 +1582,29 @@
 <p>Used in configuration to specify the landmarker implementation.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>MEDIAPIPE</code></b>
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.LandmarkerSource.MEDIAPIPE">MEDIAPIPE</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the MediaPipe face landmarker model.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -746,35 +1652,39 @@
 <p>Used in dataset configuration to specify target image format.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>GRAYSCALE</code></b>
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ColorMode.GRAYSCALE">GRAYSCALE</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents grayscale ('L' mode in PIL).</p>
               </div>
-            </li>
-            <li>
-              <b><code>RGB</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ColorMode.RGB">RGB</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents standard Red-Green-Blue color ('RGB' mode in PIL).</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -823,42 +1733,49 @@
 explanations (heatmaps).</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>GRADCAM</code></b>
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.CAMMethod.GRADCAM">GRADCAM</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the Grad-CAM algorithm.</p>
               </div>
-            </li>
-            <li>
-              <b><code>GRADCAM_PLUS_PLUS</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.CAMMethod.GRADCAM_PLUS_PLUS">GRADCAM_PLUS_PLUS</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the Grad-CAM++ algorithm.</p>
               </div>
-            </li>
-            <li>
-              <b><code>SCORECAM</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.CAMMethod.SCORECAM">SCORECAM</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the Score-CAM algorithm.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -925,42 +1842,49 @@ explanations (heatmaps).</p>
 after initial percentile filtering. Relies on <code>skimage.filters</code>.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>OTSU</code></b>
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ThresholdMethod.OTSU">OTSU</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents Otsu's thresholding method.</p>
               </div>
-            </li>
-            <li>
-              <b><code>SAUVOLA</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ThresholdMethod.SAUVOLA">SAUVOLA</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents Sauvola's thresholding method (local).</p>
               </div>
-            </li>
-            <li>
-              <b><code>TRIANGLE</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ThresholdMethod.TRIANGLE">TRIANGLE</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the Triangle thresholding method.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -996,28 +1920,28 @@ after initial percentile filtering. Relies on <code>skimage.filters</code>.</p>
 associated with the enum member.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Returns:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
                   <code><span title="typing.Callable">Callable</span>[[<span title="numpy.ndarray">ndarray</span>], <span title="typing.Any">Any</span>]</code>
-              –
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The <code>skimage.filters</code> function implementing the selected method.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
     </div>
 
@@ -1053,42 +1977,49 @@ centers and landmark box centers is calculated. Values correspond to
 valid metrics for <code>scipy.spatial.distance.cdist</code>.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>CITYBLOCK</code></b>
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.DistanceMetric.CITYBLOCK">CITYBLOCK</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the Manhattan distance (L1 norm).</p>
               </div>
-            </li>
-            <li>
-              <b><code>COSINE</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.DistanceMetric.COSINE">COSINE</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the Cosine distance.</p>
               </div>
-            </li>
-            <li>
-              <b><code>EUCLIDEAN</code></b>
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.DistanceMetric.EUCLIDEAN">EUCLIDEAN</span></code></td>
+            <td>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Represents the standard Euclidean distance (L2 norm).</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -1140,62 +2071,75 @@ valid metrics for <code>scipy.spatial.distance.cdist</code>.</p>
 <p>Used for both facial landmark features and activation map regions.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>min_x</code></b>
-                  (<code><span title="int">int</span></code>)
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Box.min_x">min_x</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The minimum x-coordinate (left edge) of the box.</p>
               </div>
-            </li>
-            <li>
-              <b><code>min_y</code></b>
-                  (<code><span title="int">int</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Box.min_y">min_y</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The minimum y-coordinate (top edge) of the box.</p>
               </div>
-            </li>
-            <li>
-              <b><code>max_x</code></b>
-                  (<code><span title="int">int</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Box.max_x">max_x</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The maximum x-coordinate (right edge) of the box.</p>
               </div>
-            </li>
-            <li>
-              <b><code>max_y</code></b>
-                  (<code><span title="int">int</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Box.max_y">max_y</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The maximum y-coordinate (bottom edge) of the box.</p>
               </div>
-            </li>
-            <li>
-              <b><code>feature</code></b>
-                  (<code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="biasx.types.FacialFeature" href="#biasx.types.FacialFeature">FacialFeature</a>]</code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Box.feature">feature</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="biasx.types.FacialFeature" href="#biasx.types.FacialFeature">FacialFeature</a>]</code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The facial feature associated with
 this box, if identified (e.g., FacialFeature.NOSE). Defaults to None.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -1289,91 +2233,113 @@ this box, if identified (e.g., FacialFeature.NOSE). Defaults to None.</p>
 <p>Used to store information about datasets and models defined in configuration files.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>repo_id</code></b>
-                  (<code><span title="str">str</span></code>)
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ResourceMetadata.repo_id">repo_id</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The repository ID on HuggingFace Hub (e.g., 'janko/utkface-dataset').</p>
               </div>
-            </li>
-            <li>
-              <b><code>filename</code></b>
-                  (<code><span title="str">str</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ResourceMetadata.filename">filename</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The specific filename within the repository (e.g., 'utkface_aligned_cropped.parquet').</p>
               </div>
-            </li>
-            <li>
-              <b><code>repo_type</code></b>
-                  (<code><span title="str">str</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ResourceMetadata.repo_type">repo_type</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The type of repository on HuggingFace Hub (e.g., 'dataset', 'model').
              Defaults to 'dataset'.</p>
               </div>
-            </li>
-            <li>
-              <b><code>image_id_col</code></b>
-                  (<code><span title="str">str</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ResourceMetadata.image_id_col">image_id_col</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The name of the column containing image identifiers in a dataset.
                 Defaults to "". Relevant only for datasets.</p>
               </div>
-            </li>
-            <li>
-              <b><code>image_col</code></b>
-                  (<code><span title="str">str</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ResourceMetadata.image_col">image_col</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The name of the column containing image data (e.g., bytes) in a dataset.
              Defaults to "". Relevant only for datasets.</p>
               </div>
-            </li>
-            <li>
-              <b><code>gender_col</code></b>
-                  (<code><span title="str">str</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ResourceMetadata.gender_col">gender_col</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The name of the column containing gender labels in a dataset.
               Defaults to "". Relevant only for datasets.</p>
               </div>
-            </li>
-            <li>
-              <b><code>age_col</code></b>
-                  (<code><span title="str">str</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ResourceMetadata.age_col">age_col</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The name of the column containing age labels in a dataset.
            Defaults to "". Relevant only for datasets.</p>
               </div>
-            </li>
-            <li>
-              <b><code>race_col</code></b>
-                  (<code><span title="str">str</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ResourceMetadata.race_col">race_col</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The name of the column containing race labels in a dataset.
             Defaults to "". Relevant only for datasets.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -1424,89 +2390,111 @@ this box, if identified (e.g., FacialFeature.NOSE). Defaults to None.</p>
 dimensions, and demographic labels.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>image_id</code></b>
-                  (<code><span title="str">str</span></code>)
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ImageData.image_id">image_id</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>A unique identifier for the image.</p>
               </div>
-            </li>
-            <li>
-              <b><code>pil_image</code></b>
-                  (<code><span title="typing.Optional">Optional</span>[<span title="PIL.Image.Image">Image</span>]</code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ImageData.pil_image">pil_image</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="PIL.Image.Image">Image</span>]</code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The raw image loaded as a PIL object.
                                Defaults to None.</p>
               </div>
-            </li>
-            <li>
-              <b><code>preprocessed_image</code></b>
-                  (<code><span title="typing.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ImageData.preprocessed_image">preprocessed_image</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="numpy.ndarray">ndarray</span>]</code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The image after numerical
 preprocessing (e.g., resizing, normalization, type conversion),
 ready for model input. Defaults to None.</p>
               </div>
-            </li>
-            <li>
-              <b><code>width</code></b>
-                  (<code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ImageData.width">width</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The width of the <code>preprocessed_image</code>. Defaults to None.</p>
               </div>
-            </li>
-            <li>
-              <b><code>height</code></b>
-                  (<code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ImageData.height">height</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="int">int</span>]</code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The height of the <code>preprocessed_image</code>. Defaults to None.</p>
               </div>
-            </li>
-            <li>
-              <b><code>gender</code></b>
-                  (<code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="biasx.types.Gender" href="#biasx.types.Gender">Gender</a>]</code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ImageData.gender">gender</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="biasx.types.Gender" href="#biasx.types.Gender">Gender</a>]</code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The ground truth gender label for the image.
                        Defaults to None.</p>
               </div>
-            </li>
-            <li>
-              <b><code>age</code></b>
-                  (<code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="biasx.types.Age" href="#biasx.types.Age">Age</a>]</code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ImageData.age">age</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="biasx.types.Age" href="#biasx.types.Age">Age</a>]</code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The ground truth age label for the image. Defaults to None.</p>
               </div>
-            </li>
-            <li>
-              <b><code>race</code></b>
-                  (<code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="biasx.types.Race" href="#biasx.types.Race">Race</a>]</code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.ImageData.race">race</span></code></td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="biasx.types.Race" href="#biasx.types.Race">Race</a>]</code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The ground truth race label for the image. Defaults to None.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -1557,87 +2545,103 @@ ready for model input. Defaults to None.</p>
 outputs (activation maps, boxes).</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>image_data</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="biasx.types.ImageData
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Explanation.image_data">image_data</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="biasx.types.ImageData
 
 
   
       dataclass
-  " href="#biasx.types.ImageData">ImageData</a></code>)
-              –
+  " href="#biasx.types.ImageData">ImageData</a></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The original data associated with the image.</p>
               </div>
-            </li>
-            <li>
-              <b><code>predicted_gender</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="biasx.types.Gender" href="#biasx.types.Gender">Gender</a></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Explanation.predicted_gender">predicted_gender</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="biasx.types.Gender" href="#biasx.types.Gender">Gender</a></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The gender predicted by the model.</p>
               </div>
-            </li>
-            <li>
-              <b><code>prediction_confidence</code></b>
-                  (<code><span title="float">float</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Explanation.prediction_confidence">prediction_confidence</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The model's confidence score for the prediction.</p>
               </div>
-            </li>
-            <li>
-              <b><code>activation_map</code></b>
-                  (<code><span title="numpy.ndarray">ndarray</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Explanation.activation_map">activation_map</span></code></td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The raw 2D heatmap generated by the CAM method.</p>
               </div>
-            </li>
-            <li>
-              <b><code>activation_boxes</code></b>
-                  (<code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.Box
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Explanation.activation_boxes">activation_boxes</span></code></td>
+            <td>
+                  <code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.Box
 
 
   
       dataclass
-  " href="#biasx.types.Box">Box</a>]</code>)
-              –
+  " href="#biasx.types.Box">Box</a>]</code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Bounding boxes derived from the activation map.
                           Boxes may have their <code>feature</code> attribute set if linked
                           to a landmark.</p>
               </div>
-            </li>
-            <li>
-              <b><code>landmark_boxes</code></b>
-                  (<code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.Box
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.Explanation.landmark_boxes">landmark_boxes</span></code></td>
+            <td>
+                  <code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.Box
 
 
   
       dataclass
-  " href="#biasx.types.Box">Box</a>]</code>)
-              –
+  " href="#biasx.types.Box">Box</a>]</code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>Bounding boxes detected for facial landmarks,
                         with their <code>feature</code> attribute set.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -1688,59 +2692,69 @@ outputs (activation maps, boxes).</p>
 misclassifications for each gender group, and the resulting bias score.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>feature</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="biasx.types.FacialFeature" href="#biasx.types.FacialFeature">FacialFeature</a></code>)
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FeatureAnalysis.feature">feature</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="biasx.types.FacialFeature" href="#biasx.types.FacialFeature">FacialFeature</a></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The facial feature being analyzed.</p>
               </div>
-            </li>
-            <li>
-              <b><code>bias_score</code></b>
-                  (<code><span title="float">float</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FeatureAnalysis.bias_score">bias_score</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The absolute difference between <code>male_probability</code> and
                 <code>female_probability</code>. A measure of bias associated
                 with this feature.</p>
               </div>
-            </li>
-            <li>
-              <b><code>male_probability</code></b>
-                  (<code><span title="float">float</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FeatureAnalysis.male_probability">male_probability</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The probability that this feature was activated
                       in images where the true gender was male, but the
                       model predicted incorrectly.</p>
               </div>
-            </li>
-            <li>
-              <b><code>female_probability</code></b>
-                  (<code><span title="float">float</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.FeatureAnalysis.female_probability">female_probability</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>The probability that this feature was activated
                         in images where the true gender was female, but the
                         model predicted incorrectly.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -1790,30 +2804,35 @@ misclassifications for each gender group, and the resulting bias score.</p>
 <p>Aggregates results across features and performance metrics.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>biasx</code></b>
-                  (<code><span title="float">float</span></code>)
-              –
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.DisparityScores.biasx">biasx</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>An overall bias score, calculated as the average of the
            absolute <code>bias_score</code> values across all analyzed features
            in <code>FeatureAnalysis</code>. Defaults to 0.0.</p>
               </div>
-            </li>
-            <li>
-              <b><code>equalized_odds</code></b>
-                  (<code><span title="float">float</span></code>)
-              –
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.DisparityScores.equalized_odds">equalized_odds</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>A fairness metric representing the maximum disparity
                     between male and female groups in either the True
@@ -1821,12 +2840,11 @@ misclassifications for each gender group, and the resulting bias score.</p>
                     A score of 0 indicates perfect equality in these error rates.
                     Defaults to 0.0.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -1877,65 +2895,72 @@ misclassifications for each gender group, and the resulting bias score.</p>
 disparity scores.</p>
 
 
-<table class="field-list">
-  <colgroup>
-    <col class="field-name" />
-    <col class="field-body" />
-  </colgroup>
-  <tbody valign="top">
-    <tr class="field">
-      <th class="field-name">Attributes:</th>
-      <td class="field-body">
-        <ul class="first simple">
-            <li>
-              <b><code>explanations</code></b>
-                  (<code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.Explanation
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.AnalysisResult.explanations">explanations</span></code></td>
+            <td>
+                  <code><span title="typing.List">List</span>[<a class="autorefs autorefs-internal" title="biasx.types.Explanation
 
 
   
       dataclass
-  " href="#biasx.types.Explanation">Explanation</a>]</code>)
-              –
+  " href="#biasx.types.Explanation">Explanation</a>]</code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>A list containing an <code>Explanation</code> object
 for every image analyzed in the run. Defaults to an empty list.</p>
               </div>
-            </li>
-            <li>
-              <b><code>feature_analyses</code></b>
-                  (<code><span title="typing.Dict">Dict</span>[<a class="autorefs autorefs-internal" title="biasx.types.FacialFeature" href="#biasx.types.FacialFeature">FacialFeature</a>, <a class="autorefs autorefs-internal" title="biasx.types.FeatureAnalysis
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.AnalysisResult.feature_analyses">feature_analyses</span></code></td>
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[<a class="autorefs autorefs-internal" title="biasx.types.FacialFeature" href="#biasx.types.FacialFeature">FacialFeature</a>, <a class="autorefs autorefs-internal" title="biasx.types.FeatureAnalysis
 
 
   
       dataclass
-  " href="#biasx.types.FeatureAnalysis">FeatureAnalysis</a>]</code>)
-              –
+  " href="#biasx.types.FeatureAnalysis">FeatureAnalysis</a>]</code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>A dictionary mapping
 each analyzed <code>FacialFeature</code> to its corresponding <code>FeatureAnalysis</code> object.
 Defaults to an empty dictionary.</p>
               </div>
-            </li>
-            <li>
-              <b><code>disparity_scores</code></b>
-                  (<code><a class="autorefs autorefs-internal" title="biasx.types.DisparityScores
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="biasx.types.AnalysisResult.disparity_scores">disparity_scores</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="biasx.types.DisparityScores
 
 
   
       dataclass
-  " href="#biasx.types.DisparityScores">DisparityScores</a></code>)
-              –
+  " href="#biasx.types.DisparityScores">DisparityScores</a></code>
+            </td>
+            <td>
               <div class="doc-md-description">
                 <p>An object containing the calculated overall
 bias metrics (<code>biasx</code>, <code>equalized_odds</code>). Defaults to a <code>DisparityScores</code>
 object with default (0.0) values.</p>
               </div>
-            </li>
-        </ul>
-      </td>
-    </tr>
-  </tbody>
-</table>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
 
 
 
@@ -1962,51 +2987,73 @@ object with default (0.0) values.</p>
     </div>
 
 </div>
-              
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
             </div>
-          </div><footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../calculators/" class="btn btn-neutral float-left" title="Calculators"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../utils/" class="btn btn-neutral float-right" title="Utilities">Next <span class="icon icon-circle-arrow-right"></span></a>
-    </div>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <!-- Copyright etc -->
-  </div>
-
-  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
-</footer>
           
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
-      </div>
-
-    </section>
-
-  </div>
-
-  <div class="rst-versions" role="note" aria-label="Versions">
-  <span class="rst-current-version" data-toggle="rst-current-version">
-    
-    
-      <span><a href="../calculators/" style="color: #fcfcfc">&laquo; Previous</a></span>
-    
-    
-      <span><a href="../utils/" style="color: #fcfcfc">Next &raquo;</a></span>
-    
-  </span>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
 </div>
-    <script src="../../js/jquery-3.6.0.min.js"></script>
-    <script>var base_url = "../..";</script>
-    <script src="../../js/theme_extra.js"></script>
-    <script src="../../js/theme.js"></script>
-      <script src="../../search/main.js"></script>
-    <script>
-        jQuery(function () {
-            SphinxRtdTheme.Navigation.enable(true);
-        });
-    </script>
-
-</body>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.sections", "navigation.top", "navigation.expand", "navigation.indexes", "navigation.tracking", "navigation.search.highlight", "navigation.search.suggest", "navigation.search.share", "navigation.search.highlight", "toc.integrate", "search.highlight", "search.share", "content.tabs.link", "content.code.copy"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+        <script src="../../javascripts/theme-toggle.js"></script>
+      
+    
+  </body>
 </html>
