@@ -113,6 +113,9 @@ def initialize_session_state():
     if "model_config" not in st.session_state:
         st.session_state.model_config = {"height": 48, "width": 48, "color_mode": "Grayscale", "channel": "Single"}
 
+    if "start_analysis" not in st.session_state:
+        st.session_state.start_analysis = False
+
 
 def reset_config():
     """Reset all configuration settings."""

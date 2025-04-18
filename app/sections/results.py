@@ -1,6 +1,7 @@
 import streamlit as st
 
 # isort: off
+from biasx.analyzer import BiasAnalyzer
 from utils import filter_samples, reset_page
 from visualizations.feature_analysis import create_radar_chart, create_feature_probability_chart
 from visualizations.model_performance import create_confusion_matrix, create_classwise_performance_chart, create_precision_recall_curve, create_roc_curve
@@ -172,6 +173,17 @@ def display_return_button():
 
 def display_visualization_page():
     """Display visualization page with analysis results across tabs."""
+    if st.session_state.get("start_analysis", False):
+        try:
+            with st.spinner("Analyzing...", show_time=True):
+                analyzer = BiasAnalyzer(st.session_state.config)
+                st.session_state.result = analyzer.analyze()
+            st.session_state.start_analysis = False
+        except Exception as e:
+            st.error(f"Analysis failed: {e}")
+            st.session_state.result = None
+            st.session_state.start_analysis = False
+
     if st.session_state.result is None:
         st.error("No analysis results found. Please run an analysis first.")
         display_return_button()

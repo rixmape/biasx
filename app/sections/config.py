@@ -1,9 +1,5 @@
 import streamlit as st
 
-# isort: off
-from biasx import BiasAnalyzer
-from utils import reset_page
-
 
 def display_model_configuration():
     st.write("#### :red-background[&nbsp;1&nbsp;]&nbsp;&nbsp;&nbsp;Face Classification Model")
@@ -74,17 +70,10 @@ def display_buttons():
         st.session_state.config["model"]["path"] = None
         st.rerun()
 
-    # TODO: Move to the results page
-    try:
-        if c2.button("Start Analysis", type="primary", use_container_width=True):
-            with st.spinner("Analyzing", show_time=True):
-                analyzer = BiasAnalyzer(st.session_state.config)
-                st.session_state.result = analyzer.analyze()
-            reset_page()
-            st.session_state.configuration = False
-            st.rerun()
-    except Exception as e:
-        st.error(e)
+    if c2.button("Start Analysis", type="primary", use_container_width=True):
+        st.session_state.start_analysis = True
+        st.session_state.configuration = False
+        st.rerun()
 
 
 def display_configuration_page():
