@@ -12,3 +12,6 @@ build:
 
 upload:
 	python -m twine upload dist/*
+
+tree:
+	tree -I ".git|tmp*|*tmp|.vscode|__pycache__|.venv|tests|outputs|logs"
