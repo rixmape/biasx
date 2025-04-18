@@ -16,6 +16,7 @@ LANDMARKS = [
     "Right Eyebrow",
 ]
 
+# TODO: Use more contrasting colors
 COLORS = [
     "#6A5ACD",
     "#27AE60",
@@ -30,8 +31,9 @@ COLORS = [
 ]
 
 
-def image_overlays(image, heatmap: list = None, landmark_boxes: list = None, bounding_boxes: list = None, overlay: list = None, facial_feature: list = None, color_mode: str = "L"):
+def create_image_with_overlays(image, sample, overlay=None, facial_feature=None, color_mode="L"):
     fig, ax = plt.subplots()
+
     if color_mode == "L":
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = cv2.resize(image, (200, 200))
@@ -39,11 +41,11 @@ def image_overlays(image, heatmap: list = None, landmark_boxes: list = None, bou
     ax.imshow(image)
 
     if "Heatmap" in overlay:
-        heatmap = cv2.resize(heatmap, (200, 200))
+        heatmap = cv2.resize(sample.activation_map, (200, 200))
         ax.imshow(heatmap, cmap="jet", alpha=0.3)
 
     if "Landmark Boxes" in overlay:
-        for i, box in enumerate(landmark_boxes):
+        for i, box in enumerate(sample.landmark_boxes):
             if not facial_feature or (box.feature and box.feature.value in facial_feature):
                 min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
                 color = COLORS[i % len(COLORS)]
@@ -51,7 +53,7 @@ def image_overlays(image, heatmap: list = None, landmark_boxes: list = None, bou
                 ax.add_patch(rect)
 
     if "Bounding Boxes" in overlay:
-        for box in bounding_boxes:
+        for box in sample.activation_boxes:
             if not facial_feature or (box.feature and box.feature.value in facial_feature):
                 min_x, min_y, max_x, max_y = box.min_x, box.min_y, box.max_x, box.max_y
                 rect = patches.Rectangle((min_x, min_y), max_x - min_x, max_y - min_y, linewidth=4, edgecolor="red", facecolor="none")

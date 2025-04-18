@@ -4,7 +4,7 @@ import streamlit as st
 from utils import filter_samples, reset_page
 from visualizations.feature_analysis import create_radar_chart, create_feature_probability_chart
 from visualizations.model_performance import create_confusion_matrix, create_classwise_performance_chart, create_precision_recall_curve, create_roc_curve
-from visualizations.image_analysis import create_legend, image_overlays
+from visualizations.image_analysis import create_legend, create_image_with_overlays
 
 
 def display_feature_analysis_tab(results):
@@ -70,8 +70,26 @@ def display_model_performance_tab(results):
         st.plotly_chart(roc_curve, use_container_width=True)
 
 
+@st.dialog("Image Details")
+def show_image_details_dialog(fig, image_id, true_gender, pred_gender, confidence):
+    st.pyplot(fig)
+
+    col1, col2 = st.columns([2, 3])
+
+    with col1:
+        st.markdown(":gray-background[Image ID]")
+        st.markdown(":gray-background[True Gender]")
+        st.markdown(":gray-background[Predicted Gender]")
+        st.markdown(":gray-background[Confidence]")
+
+    with col2:
+        st.markdown(f"{image_id[:16]}")
+        st.markdown(f"{true_gender}")
+        st.markdown(f"{pred_gender}")
+        st.markdown(f"{confidence:.2f}")
+
+
 def display_images(samples, overlay, facial_feature):
-    """Display image grid with filters and pagination."""
     start, end = st.session_state.page
     ncol = 3
     columns = st.columns(ncol)
@@ -80,21 +98,21 @@ def display_images(samples, overlay, facial_feature):
         col = columns[i % ncol]
 
         image = sample.image_data.preprocessed_image
-        activation = sample.activation_map
-        bboxes = sample.activation_boxes
-        landmark_boxes = sample.landmark_boxes
-        true_gender = sample.image_data.gender.numerator
-        pred_gender = sample.predicted_gender.numerator
+        true_gender = sample.image_data.gender.name.capitalize()
+        pred_gender = sample.predicted_gender.name.capitalize()
         confidence = sample.prediction_confidence
+        image_id = sample.image_data.image_id
 
-        fig = image_overlays(image, activation, landmark_boxes, bboxes, overlay, facial_feature, color_mode=st.session_state.config["dataset"]["color_mode"])
+        fig = create_image_with_overlays(image, sample, overlay, facial_feature, color_mode=st.session_state.config["dataset"]["color_mode"])
 
-        with col, st.container(border=True):
+        with col:
             st.pyplot(fig)
-            st.markdown(f"True: {true_gender} / Pred: {pred_gender} / Conf: {confidence:.2f}", unsafe_allow_html=True)
+
+            button_key = f"details_{image_id}_{i}"
+            if st.button("Show Details", key=button_key, use_container_width=True):
+                show_image_details_dialog(fig, image_id, true_gender, pred_gender, confidence)
 
     prev_col, next_col = st.columns(2)
-
     with prev_col:
         if st.session_state.page[0] == 0:
             st.button("← Back", key="disabled_back", disabled=True, use_container_width=True)
@@ -169,5 +187,7 @@ def display_visualization_page():
 
     with tab3:
         display_image_analysis_tab(st.session_state.result)
+
+    st.write("")
 
     display_return_button()
