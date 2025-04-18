@@ -1,9 +1,14 @@
+---
+hide:
+  - navigation
+  - toc
+---
+
 <div class="hero-section">
   <div class="hero-content">
     <h1 class="hero-title">BiasX</h1>
-    <p class="hero-subtitle">Explainable Gender Bias Analysis for Face Classification</p>
-    <p class="hero-tagline">Beyond Detecting Bias, Understanding It.</p>
-    
+    <p class="hero-subtitle">Explainable Gender Bias Analysis for<br>Face Classification</p>
+
     <div class="hero-buttons">
       <a href="installation/" class="md-button md-button--primary">Get Started</a>
       <a href="https://github.com/rixmape/biasx" class="md-button">View on GitHub</a>
@@ -32,7 +37,7 @@
   </div>
 </div>
 
-<div class="compact-feature-cards">
+<div class="feature-cards">
   <div class="feature-card">
     <div class="feature-icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -42,7 +47,7 @@
     <h3>Feature-Level<br>Bias Detection</h3>
     <p>Identify exactly which facial features contribute to gender misclassifications</p>
   </div>
-  
+
   <div class="feature-card">
     <div class="feature-icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -50,9 +55,9 @@
       </svg>
     </div>
     <h3>Comprehensive<br>Metrics</h3>
-    <p>Quantify bias through both traditional fairness metrics and novel feature-based analyses</p>
+    <p>Quantify bias through traditional fairness metrics and feature-based analyses</p>
   </div>
-  
+
   <div class="feature-card">
     <div class="feature-icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -60,9 +65,9 @@
       </svg>
     </div>
     <h3>Visual<br>Explanations</h3>
-    <p>Generate visual heatmaps revealing how models make decisions for different demographics</p>
+    <p>Generate heatmaps to reveal how facial features influence model predictions</p>
   </div>
-  
+
   <div class="feature-card">
     <div class="feature-icon">
       <svg viewBox="0 0 24 24" width="24" height="24">
@@ -70,11 +75,9 @@
       </svg>
     </div>
     <h3>Actionable<br>Insights</h3>
-    <p>Transform abstract bias measurements into concrete improvements for models</p>
+    <p>Transform bias measurements into concrete model improvements</p>
   </div>
 </div>
-
-<div class="section-separator"></div>
 
 ## What is BiasX?
 
@@ -86,7 +89,7 @@ By combining advanced visual explanation techniques like Grad-CAM with facial la
   <div class="workflow-step">
     <div class="step-icon">1</div>
     <div class="step-content">
-      <h3>Analyze Model</h3>
+      <h3>Upload Model</h3>
       <p>Connect to your trained facial classification model</p>
     </div>
   </div>
@@ -94,7 +97,7 @@ By combining advanced visual explanation techniques like Grad-CAM with facial la
   <div class="workflow-step">
     <div class="step-icon">2</div>
     <div class="step-content">
-      <h3>Generate Explanations</h3>
+      <h3>Explain Predictions</h3>
       <p>Create activation maps and detect facial landmarks</p>
     </div>
   </div>
@@ -108,21 +111,9 @@ By combining advanced visual explanation techniques like Grad-CAM with facial la
   </div>
 </div>
 
-## Key Features
-
-| Feature | Description |
-| ------- | ----------- |
-| **Feature-Level Bias Analysis** | Identify exactly which facial features contribute most to gender-specific misclassifications |
-| **Visual Explanation Generation** | Create activation maps visualizing regions the model focuses on during inference |
-| **Facial Landmark Detection** | Automatically detect and label facial features for correlation with model activations |
-| **Comprehensive Metrics** | Calculate both traditional metrics (equalized odds) and novel feature-based bias scores |
-| **Dataset Management** | Handle industry-standard facial image datasets with demographic attributes |
-| **Flexible Configuration** | Easily customize pipelines through a comprehensive configuration system |
-| **Interactive Visualization** | Visualize results through the included web application |
-
 ## Why Use BiasX?
 
-- **Beyond Black-Box Metrics:** Traditional fairness metrics tell you *if* bias exists, but BiasX tells you *why* and *where* it appears in your model.
+- **Explainable Metrics:** Traditional fairness metrics tell you *if* bias exists, BiasX tells you *why* and *where* it appears.
 - **Actionable Insights:** Pinpointing problematic features provides clear directions for model improvement.
 - **Interpretable Results:** Visual explanations make bias findings accessible to both technical and non-technical stakeholders.
 - **Research Framework:** Designed for both practical applications and academic research on algorithmic fairness.
@@ -140,23 +131,22 @@ document.addEventListener('DOMContentLoaded', function() {
   const progress = document.querySelector('.progress');
   const progressText = document.querySelector('.progress-text');
   let percent = 0;
-  
+
   function increaseProgress() {
     if (percent < 100) {
       percent += Math.floor(Math.random() * 10) + 1;
       if (percent > 100) percent = 100;
-      
+
       progress.style.width = percent + '%';
       progressText.textContent = percent + '%';
-      
+
       const delay = percent < 80 ? (Math.random() * 200 + 100) : (Math.random() * 500 + 300);
       setTimeout(increaseProgress, delay);
     } else {
       progressText.textContent = 'Successfully installed biasx';
     }
   }
-  
-  // Start the animation a bit after page loads
+
   setTimeout(increaseProgress, 800);
 });
 </script>

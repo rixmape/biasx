@@ -1,54 +1,66 @@
-# Project information
 site_name: BiasX Documentation
+site_description: A comprehensive toolkit for measuring and explaining gender bias in facial recognition models
+site_author: Rixdon Niño Mape, Jerwin Glen Lucero, Jan Wilhelm Sy
+copyright: Copyright &copy; 2025
 
-# Theme configuration
+repo_url: https://github.com/rixmape/biasx
+repo_name: rixmape/biasx
+
 theme:
   name: material
+
+  font:
+    text: Roboto
+    code: Roboto Mono
+
   palette:
-    # Light mode (default)
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: indigo
+      primary: blue
+      accent: blue
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
-    
-    # Dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: blue
+      accent: blue
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
-    
+
   features:
+    - navigation.instant
     - navigation.tabs
     - navigation.sections
-    - toc.integrate
     - navigation.top
-    - search.suggest
+    - navigation.expand
+    - navigation.indexes
+    - navigation.tracking
+    - navigation.search.highlight
+    - navigation.search.suggest
+    - navigation.search.share
+    - navigation.search.highlight
+    - toc.integrate
     - search.highlight
+    - search.share
     - content.tabs.link
     - content.code.copy
 
-# Keep your existing navigation structure
 nav:
   - Home: index.md
   - Installation: installation.md
   - Getting Started: getting_started.md
   - Configuration: configuration.md
   - API Reference:
-    - Analyzer: api/analyzer.md
-    - Datasets: api/datasets.md
-    - Explainers: api/explainers.md
-    - Models: api/models.md
-    - Calculators: api/calculators.md
-    - Types: api/types.md
-    - Utilities: api/utils.md
+      - Analyzer: api/analyzer.md
+      - Datasets: api/datasets.md
+      - Explainers: api/explainers.md
+      - Models: api/models.md
+      - Calculators: api/calculators.md
+      - Types: api/types.md
+      - Utilities: api/utils.md
 
-# Keep your existing plugins configuration
 plugins:
   - search
   - mkdocstrings:
@@ -58,7 +70,6 @@ plugins:
             show_root_heading: yes
             show_source: no
 
-# Additional features for better documentation
 markdown_extensions:
   - admonition
   - pymdownx.details
@@ -79,7 +90,6 @@ markdown_extensions:
   - attr_list
   - md_in_html
 
-# Watch these directories and files for changes
 watch:
   - biasx
   - docs
@@ -88,18 +98,5 @@ watch:
 extra_css:
   - stylesheets/extra.css
 
-repo_url: https://github.com/rixmape/biasx
-repo_name: rixmape/biasx
-
-site_description: A comprehensive toolkit for measuring and explaining gender bias in facial recognition models
-site_author: Rixdon Niño Mape, Jerwin Glen Lucero, Jan Wilhelm Sy
-copyright: Copyright &copy; 2023 - 2025 BiasX Team
-
-
-extra_css:
-  - stylesheets/extra.css
-  
 extra_javascript:
   - javascripts/theme-toggle.js
-
-
