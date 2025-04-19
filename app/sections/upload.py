@@ -52,5 +52,7 @@ def display_model_upload_page():
     with st.container(border=True):
         display_file_uploader()
 
+    st.write("")
+
     with st.container(border=True):
         display_model_selection(model_options)

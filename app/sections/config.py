@@ -168,8 +168,12 @@ def display_configuration_page():
     with st.container(border=True):
         display_model_configuration()
 
+    st.write("")
+
     with st.container(border=True):
         display_dataset_configuration()
+
+    st.write("")
 
     with st.container(border=True):
         display_explainer_configuration()
