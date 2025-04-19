@@ -3,12 +3,10 @@ hide:
   - navigation
   - toc
 ---
-
 <div class="hero-section">
   <div class="hero-content">
     <h1 class="hero-title">BiasX</h1>
     <p class="hero-subtitle">Explainable Gender Bias Analysis for<br>Face Classification</p>
-
     <div class="hero-buttons">
       <a href="installation/" class="md-button md-button--primary">Get Started</a>
       <a href="https://github.com/rixmape/biasx" class="md-button">View on GitHub</a>

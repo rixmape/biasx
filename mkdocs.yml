@@ -8,7 +8,8 @@ repo_name: rixmape/biasx
 
 theme:
   name: material
-
+  logo: assets/images/logo-biasx-nobg.png 
+  
   font:
     text: Roboto
     code: Roboto Mono

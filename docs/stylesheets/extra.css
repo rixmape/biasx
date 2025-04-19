@@ -477,3 +477,54 @@
   background-color: var(--md-primary-fg-color--dark);
   border-color: var(--md-primary-fg-color--dark);
 }
+
+/* Keep consistent header height */
+.md-header {
+  height: 60px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Resize logo */
+.md-header__button.md-logo img {
+  height: 50px !important;
+  width: auto;
+  object-fit: contain;
+  margin: 0;
+}
+
+/* Make logo + title align in one row */
+.md-header__button.md-logo {
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Fine-tune title */
+.md-header__title {
+  margin-left: 0.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  line-height: 1;
+  white-space: nowrap;
+  color: white;
+  transform: translateY(16px);  /* 👈 This is the magic line */
+}
+
+
+/* Remove top margin and padding */
+.hero-section {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Also remove default spacing added by the main layout wrapper */
+.md-main__inner {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Optional: remove padding from page content */
+.md-content {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
