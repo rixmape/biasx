@@ -3,9 +3,8 @@ import streamlit as st
 
 def display_model_configuration():
     st.write("#### Face Classification Model")
-    st.write("")
 
-    with st.container():
+    with st.container(border=True):
         c1, c2, c3, _ = st.columns(4)
 
         channel = c1.pills(
@@ -38,7 +37,7 @@ def display_model_configuration():
         )
         st.session_state.config["model"]["inverted_classes"] = inverted_classes == "True"
 
-    with st.container():
+    with st.container(border=True):
         c1, c2 = st.columns(2)
 
         st.session_state.config["dataset"]["image_width"] = c1.number_input(
@@ -57,9 +56,8 @@ def display_model_configuration():
 
 def display_dataset_configuration():
     st.write("#### Facial Image Dataset")
-    st.write("")
 
-    with st.container():
+    with st.container(border=True):
         c1, c2, *_ = st.columns(4)
         st.session_state.config["dataset"]["source"] = c1.pills(
             "Dataset Selection",
@@ -80,7 +78,7 @@ def display_dataset_configuration():
         )
         st.session_state.config["dataset"]["shuffle"] = shuffle == "True"
 
-    with st.container():
+    with st.container(border=True):
         c1, c2 = st.columns(2)
         st.session_state.config["dataset"]["max_samples"] = c1.number_input(
             "Sample Size",
@@ -98,21 +96,21 @@ def display_dataset_configuration():
 
 def display_explainer_configuration():
     st.write("#### Visual Explainer")
-    st.write("")
 
-    st.session_state.config["explainer"]["distance_metric"] = st.pills(
-        "Distance Metric",
-        ["euclidean", "cityblock", "cosine"],
-        key="distant_metric",
-        selection_mode="single",
-        default=st.session_state.config["explainer"]["distance_metric"],
-        help="Select the method used to calculate the distance between activation box centers and landmark box centers for feature matching.",
-    )
+    with st.container(border=True):
+        st.session_state.config["explainer"]["distance_metric"] = st.pills(
+            "Distance Metric",
+            ["euclidean", "cityblock", "cosine"],
+            key="distant_metric",
+            selection_mode="single",
+            default=st.session_state.config["explainer"]["distance_metric"],
+            help="Select the method used to calculate the distance between activation box centers and landmark box centers for feature matching.",
+        )
 
-    with st.container():
-        c1, c2 = st.columns(2)
+    c1, c2 = st.columns(2)
 
-        st.session_state.config["explainer"]["cam_method"] = c1.pills(
+    with c1.container(border=True):
+        st.session_state.config["explainer"]["cam_method"] = st.pills(
             "Class Activation Map Method",
             ["gradcam", "gradcam++", "scorecam"],
             key="cam_method",
@@ -120,7 +118,15 @@ def display_explainer_configuration():
             default=st.session_state.config["explainer"]["cam_method"],
             help="Choose the algorithm to generate heatmaps highlighting important regions for model predictions.",
         )
-        st.session_state.config["explainer"]["threshold_method"] = c2.pills(
+        st.session_state.config["explainer"]["cutoff_percentile"] = st.slider(
+            "Cutoff Percentile",
+            key="cam_threshold",
+            value=st.session_state.config["explainer"]["cutoff_percentile"],
+            help="Set the percentile threshold below which activation values in the heatmap will be ignored (set to zero).",
+        )
+
+    with c2.container(border=True):
+        st.session_state.config["explainer"]["threshold_method"] = st.pills(
             "Thresholding Method",
             ["otsu", "triangle", "sauvola"],
             key="threshold_method",
@@ -128,19 +134,7 @@ def display_explainer_configuration():
             default=st.session_state.config["explainer"]["threshold_method"],
             help="Select the algorithm used to binarize the activation heatmap after initial filtering.",
         )
-
-    st.write("")
-
-    with st.container():
-        c1, c2 = st.columns(2)
-
-        st.session_state.config["explainer"]["cutoff_percentile"] = c1.slider(
-            "Cutoff Percentile",
-            key="cam_threshold",
-            value=st.session_state.config["explainer"]["cutoff_percentile"],
-            help="Set the percentile threshold below which activation values in the heatmap will be ignored (set to zero).",
-        )
-        st.session_state.config["explainer"]["overlap_threshold"] = c2.slider(
+        st.session_state.config["explainer"]["overlap_threshold"] = st.slider(
             "Overlap Threshold",
             key="overlap_ratio",
             value=st.session_state.config["explainer"]["overlap_threshold"],
