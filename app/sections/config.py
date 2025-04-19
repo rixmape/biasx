@@ -2,7 +2,7 @@ import streamlit as st
 
 
 def display_model_configuration():
-    st.write("#### :red-background[&nbsp;1&nbsp;]&nbsp;&nbsp;&nbsp;Face Classification Model")
+    st.write("#### Face Classification Model")
     st.write("")
 
     with st.container():
@@ -26,7 +26,7 @@ def display_model_configuration():
 
 
 def display_dataset_configuration():
-    st.write("#### :red-background[&nbsp;2&nbsp;]&nbsp;&nbsp;&nbsp;Facial Image Dataset")
+    st.write("#### Facial Image Dataset")
     st.write("")
 
     with st.container():
@@ -43,7 +43,7 @@ def display_dataset_configuration():
 
 
 def display_explainer_configuration():
-    st.write("#### :red-background[&nbsp;3&nbsp;]&nbsp;&nbsp;&nbsp;Visual Explainer")
+    st.write("#### Visual Explainer")
     st.write("")
 
     st.session_state.config["explainer"]["distance_metric"] = st.pills("Distance Metric", ["euclidean", "cityblock", "cosine"], key="distant_metric", selection_mode="single", default=st.session_state.config["explainer"]["distance_metric"])
