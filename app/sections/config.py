@@ -152,6 +152,7 @@ def display_buttons():
     c1, c2 = st.columns(2)
 
     if c1.button("Change Model", use_container_width=True):
+        st.session_state.show_upload_page = True
         st.session_state.config["model"]["path"] = None
         st.rerun()
 

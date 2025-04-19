@@ -13,11 +13,9 @@ from visualizations.model_performance import create_classwise_performance_chart,
 
 
 @lru_cache()
-def load_chart_descriptions(file_path="chart_descriptions.yaml"):
+def load_chart_descriptions(file_path="app/assets/chart_descriptions.yaml"):
     try:
-        current_dir = pathlib.Path(__file__).parent
-        yaml_path = current_dir / file_path
-        with open(yaml_path, "r") as f:
+        with open(file_path, "r") as f:
             descriptions = yaml.safe_load(f)
         return descriptions
     except FileNotFoundError:
