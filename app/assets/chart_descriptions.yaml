@@ -1,0 +1,48 @@
+feature_analysis:
+  fairness_metrics:
+    title: Fairness Metrics
+    description: |
+      These cards display overall model fairness.
+      The "Bias Score" averages the bias across all facial features, while "Equalized Odds" measures the difference in error rates between genders.
+      Lower scores indicate a fairer model.
+  feature_specific_bias_scores:
+    title: Feature-Specific Bias Scores
+    chart_type: Radar Chart
+    description: |
+      This radar chart shows the bias score calculated for each individual facial feature.
+      Points further from the center represent features associated with higher bias between gender predictions.
+      A smaller, more central shape indicates lower feature-specific bias overall.
+  feature_activation_probabilities:
+    title: Feature Activation Probabilities
+    chart_type: Bar Chart
+    description: |
+      This chart compares how often each facial feature was activated when the model misclassified males versus females.
+      Significant differences in the heights of the male and female bars for a specific feature suggest the model relies on that feature differently and potentially unfairly when making mistakes for each gender.
+      Look for features where one bar is much taller than the other.
+
+model_performance:
+  confusion_matrix:
+    title: Confusion Matrix
+    description: |
+      This matrix shows the model's prediction accuracy for each gender.
+      The diagonal cells represent correct classifications, while off-diagonal cells show where the model made errors (e.g., predicting Male when the true gender was Female).
+      Larger numbers on the diagonal indicate better performance.
+  model_performance_metrics:
+    title: Model Performance Metrics
+    chart_type: Bar Chart
+    description: |
+      This chart displays key performance metrics (Precision, Recall, F1-score) separately for Male and Female classifications.
+      Higher bars signify better performance for that specific metric and gender.
+      Compare the heights of bars for the same metric across genders to assess performance parity.
+  precision_recall_curve:
+    title: Precision-Recall Curve
+    description: |
+      This curve illustrates the tradeoff between identifying true positives (Recall) and the accuracy of positive predictions (Precision).
+      A curve closer to the top-right corner indicates superior performance, capturing many true positives without introducing many false positives.
+      The Area Under the Curve (AUC) quantifies this balance.
+  roc_curves:
+    title: ROC Curves
+    description: |
+      These curves plot the True Positive Rate (sensitivity) against the False Positive Rate (1-specificity) for each gender across different classification thresholds.
+      Curves closer to the top-left corner represent better model discrimination ability.
+      The Area Under the Curve (AUC) provides a single score summarizing overall performance for each gender.

@@ -116,6 +116,9 @@ def initialize_session_state():
     if "start_analysis" not in st.session_state:
         st.session_state.start_analysis = False
 
+    if "show_upload_page" not in st.session_state:
+        st.session_state.show_upload_page = False
+
 
 def reset_config():
     """Reset all configuration settings."""

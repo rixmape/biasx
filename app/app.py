@@ -2,6 +2,7 @@ import streamlit as st
 
 # isort: off
 from utils import initialize_session_state
+from sections.home import display_home_page
 from sections.config import display_configuration_page
 from sections.results import display_visualization_page
 from sections.upload import display_model_upload_page
@@ -20,8 +21,10 @@ def main():
 
     st.title("BiasX Framework")
 
-    if st.session_state.config["model"]["path"] is None:
+    if st.session_state.show_upload_page:
         display_model_upload_page()
+    elif st.session_state.config["model"]["path"] is None:
+        display_home_page()
     elif st.session_state.configuration:
         display_configuration_page()
     else:

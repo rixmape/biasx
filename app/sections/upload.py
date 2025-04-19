@@ -12,6 +12,7 @@ def display_file_uploader():
     if uploaded_file:
         st.session_state.file_info = uploaded_file.name
         st.session_state.config["model"]["path"] = create_temp_file(uploaded_file)
+        st.session_state.show_upload_page = False
         st.rerun()
 
 
@@ -36,6 +37,7 @@ def display_model_selection(model_options):
                 with open(model_path, "rb") as file_handler:
                     st.session_state.config["model"]["path"] = create_temp_file(file_handler)
                 st.session_state.file_info = selected_model
+                st.session_state.show_upload_page = False
                 st.rerun()
 
 
@@ -51,6 +53,8 @@ def display_model_upload_page():
 
     with st.container(border=True):
         display_file_uploader()
+
+    st.write("")
 
     with st.container(border=True):
         display_model_selection(model_options)
