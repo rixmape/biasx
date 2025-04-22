@@ -8,11 +8,11 @@ repo_name: rixmape/biasx
 
 theme:
   name: material
-  logo: assets/images/logo-biasx-nobg.png 
+  logo: assets/images/whte-bg-Photoroom.png  #use no-bg-biasx.png if complete name 
   
   font:
-    text: Roboto
-    code: Roboto Mono
+    text: Roboto 
+    code: Roboto Monoc
 
   palette:
     - media: "(prefers-color-scheme: light)"
@@ -101,3 +101,15 @@ extra_css:
 
 extra_javascript:
   - javascripts/theme-toggle.js
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/rixmape/biasx
+      name: BiasX on GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/biasx/
+      name: BiasX on PyPI
+    - icon: fontawesome/solid/chart-line
+      link: https://biasxframework.streamlit.app/
+      name: BiasX Streamlit App
+

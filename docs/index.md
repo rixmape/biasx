@@ -109,6 +109,22 @@ By combining advanced visual explanation techniques like Grad-CAM with facial la
   </div>
 </div>
 
+<div class="video-tutorial-section">
+  <h2>Video Tutorial</h2>
+  <p>Watch our quick introduction to get started with BiasX:</p>
+  <div class="video-container">
+    <iframe 
+      src="https://www.youtube.com/embed/sni-J6CYu9U" 
+      title="BiasX Tutorial" 
+      frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen>
+    </iframe>
+  </div>
+</div>
+
+
+
 ## Why Use BiasX?
 
 - **Explainable Metrics:** Traditional fairness metrics tell you *if* bias exists, BiasX tells you *why* and *where* it appears.
@@ -147,4 +163,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
   setTimeout(increaseProgress, 800);
 });
+
 </script>
