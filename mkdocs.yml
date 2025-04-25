@@ -12,7 +12,7 @@ theme:
   
   font:
     text: Roboto 
-    code: Roboto Monoc
+    code: Roboto Mono
 
   palette:
     - media: "(prefers-color-scheme: light)"
