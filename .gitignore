@@ -14,7 +14,6 @@ __pycache__/
 
 # Logs and outputs
 logs/
-images/
 outputs/
 
 # Temporary files
