@@ -93,7 +93,7 @@
 .terminal-demo {
   width: 100%;
   max-width: 600px;
-  margin: 4rem auto;
+  margin: 2rem auto 4rem;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
@@ -531,7 +531,7 @@
 
 /* Video tutorial section */
 .video-tutorial-section {
-  padding: 3rem 1rem;
+  /* padding: 3rem 1rem; */
   text-align: center;
   margin: 2rem 0;
 }
@@ -572,7 +572,3 @@
 [data-md-color-scheme="slate"] .video-container {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
-
-
-
-

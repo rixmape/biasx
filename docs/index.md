@@ -113,11 +113,11 @@ By combining advanced visual explanation techniques like Grad-CAM with facial la
   <h2>Video Tutorial</h2>
   <p>Watch our quick introduction to get started with BiasX:</p>
   <div class="video-container">
-    <iframe 
-      src="https://www.youtube.com/embed/sni-J6CYu9U" 
-      title="BiasX Tutorial" 
-      frameborder="0" 
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+    <iframe
+      src="https://www.youtube.com/embed/sni-J6CYu9U"
+      title="BiasX Tutorial"
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       allowfullscreen>
     </iframe>
   </div>
