@@ -93,7 +93,7 @@
 .terminal-demo {
   width: 100%;
   max-width: 600px;
-  margin: 4rem auto;
+  margin: 2rem auto 4rem;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
@@ -476,4 +476,99 @@
 [data-md-color-scheme="slate"] .md-button--primary:hover {
   background-color: var(--md-primary-fg-color--dark);
   border-color: var(--md-primary-fg-color--dark);
+}
+
+/* Keep consistent header height */
+.md-header {
+  height: 70px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Resize logo */
+.md-header__button.md-logo img {
+  height: 60px !important;
+  width: auto;
+  object-fit: contain;
+  margin: 0;
+}
+
+/* Make logo + title align in one row */
+.md-header__button.md-logo {
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Fine-tune title */
+.md-header__title {
+  margin-left: 0.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  line-height: 1;
+  white-space: nowrap;
+  color: white;
+  transform: translateY(16px);  /* 👈 This is the magic line */
+}
+
+
+/* Remove top margin and padding */
+.hero-section {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Also remove default spacing added by the main layout wrapper */
+.md-main__inner {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Optional: remove padding from page content */
+.md-content {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Video tutorial section */
+.video-tutorial-section {
+  /* padding: 3rem 1rem; */
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.video-tutorial-section h2 {
+  margin-bottom: 1rem;
+}
+
+.video-tutorial-section p {
+  margin-bottom: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Dark mode adjustments */
+[data-md-color-scheme="slate"] .video-container {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
