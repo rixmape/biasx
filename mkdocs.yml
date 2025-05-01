@@ -1,5 +1,52 @@
 site_name: BiasX Documentation
-theme: readthedocs
+site_description: A comprehensive toolkit for measuring and explaining gender bias in facial recognition models
+site_author: Rixdon Niño Mape, Jerwin Glen Lucero, Jan Wilhelm Sy
+copyright: Copyright &copy; 2025
+
+repo_url: https://github.com/rixmape/biasx
+repo_name: rixmape/biasx
+
+theme:
+  name: material
+  logo: assets/images/whte-bg-Photoroom.png  #use no-bg-biasx.png if complete name 
+  
+  font:
+    text: Roboto 
+    code: Roboto Mono
+
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.expand
+    - navigation.indexes
+    - navigation.tracking
+    - navigation.search.highlight
+    - navigation.search.suggest
+    - navigation.search.share
+    - navigation.search.highlight
+    - toc.integrate
+    - search.highlight
+    - search.share
+    - content.tabs.link
+    - content.code.copy
 
 nav:
   - Home: index.md
@@ -7,13 +54,13 @@ nav:
   - Getting Started: getting_started.md
   - Configuration: configuration.md
   - API Reference:
-    - Analyzer: api/analyzer.md
-    - Datasets: api/datasets.md
-    - Explainers: api/explainers.md
-    - Models: api/models.md
-    - Calculators: api/calculators.md
-    - Types: api/types.md
-    - Utilities: api/utils.md
+      - Analyzer: api/analyzer.md
+      - Datasets: api/datasets.md
+      - Explainers: api/explainers.md
+      - Models: api/models.md
+      - Calculators: api/calculators.md
+      - Types: api/types.md
+      - Utilities: api/utils.md
 
 plugins:
   - search
@@ -24,7 +71,45 @@ plugins:
             show_root_heading: yes
             show_source: no
 
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+
 watch:
   - biasx
   - docs
   - mkdocs.yml
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/theme-toggle.js
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/rixmape/biasx
+      name: BiasX on GitHub
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/biasx/
+      name: BiasX on PyPI
+    - icon: fontawesome/solid/chart-line
+      link: https://biasxframework.streamlit.app/
+      name: BiasX Streamlit App
+
