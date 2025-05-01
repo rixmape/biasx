@@ -39,20 +39,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function setInitialTheme() {
-    const savedTheme = localStorage.getItem("theme");
-
-    if (savedTheme) {
-      document.body.setAttribute("data-md-color-scheme", savedTheme);
-      updateToggleButtonState(savedTheme);
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const initialTheme = prefersDark ? "slate" : "default";
-      document.body.setAttribute("data-md-color-scheme", initialTheme);
-      updateToggleButtonState(initialTheme);
-    }
-  }
-
   themeToggle.addEventListener("click", toggleTheme);
 
   setInitialTheme();
