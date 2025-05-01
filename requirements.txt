@@ -9,7 +9,11 @@ pyarrow
 scikit-image
 scikit-learn
 scipy
-tensorflow
+tensorflow[and-cuda]
 tf_keras_vis
 mkdocs
--e git+https://github.com/rixmape/biasx.git@1c4680f111d4ed34d2cc5c2571b0dc9e1397695c#egg=biasx
+mkdocstrings[python]
+mkdocs-material
+streamlit
+pytest
+pytest-cov
